@@ -7,6 +7,20 @@ import pathlib
 import tqdm
 import random
 from datasets import *
+import json
+
+
+def read_json_file(json_file):
+    """
+    Read json file
+    :param json_file: name of the json file
+    :return: dictionary with the json data
+    """
+
+    with(open(json_file, 'r+')) as f:
+        data = json.load(f)
+
+    return data
 
 def read_video_file(video_file):
     """
