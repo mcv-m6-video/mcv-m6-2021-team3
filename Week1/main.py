@@ -80,7 +80,7 @@ def main(argv):
         det_dir = join(path, 'results_opticalflow_kitti/results')
         img_dir = join(path, 'data_stereo_flow/training/colored_0')
 
-        OF, GTOF, DIF, MSEN, PEPN = {}, {}, {}, {}, {}
+        OF, GTOF, DIF, MSEN, PEPN, OF_occ = {}, {}, {}, {}, {}, {}
         for of_path in os.listdir(det_dir):
             if 'png' not in of_path:
                 continue
@@ -88,6 +88,10 @@ def main(argv):
 
             GTOF.update({seq: read_kitti_OF(join(gt_dir, seq + '.png'))})
             OF.update({seq: read_kitti_OF(join(det_dir, of_path))})
+            OF_occ.update({seq: read_kitti_OF(join(det_dir, of_path))})
+
+            occluded_idx = GTOF[seq][:, :, 2] == 0
+            OF_occ[seq][occluded_idx, :] = 0
 
             if task == 3:
                 # T3.1: MSEN & T3.2 PEPN
@@ -108,23 +112,25 @@ def main(argv):
 
                 OF_arr = OF[seq]
                 GTOF_arr = GTOF[seq]
+                OF_occ_arr = OF_occ[seq]
                 imgOF = cv2.imread(join(img_dir, seq + '.png'), 1)
 
-                if visualization == 'base':
-                    '''visual_of(imgOF, GTOF_arr[:,:,0], GTOF_arr[:,:,1], GTOF_arr[:,:,2], 'flow_gt' + seq + 'quiver.png')
-                    visual_of(imgOF, OF_arr[:, :, 0], OF_arr[:, :, 1], OF_arr[:, :, 2],
-                              'flow_gt' + seq + 'quiver.png')'''
 
-                    OF_quiver_visualize(imgOF, GTOF_arr, step=15, fname_output='flow_gt' + seq + 'quiver.png')
-                    OF_quiver_visualize(imgOF, OF_arr, step=8, fname_output='flow_det' + seq + 'quiver.png')
+                if visualization == 'base':
+                    dif = OF_arr - OF_occ_arr
+
+                    OF_quiver_visualize(imgOF, GTOF_arr, step=15, fname_output='flow_gt_' + seq + '_quiver.png')
+                    OF_quiver_visualize(imgOF, OF_arr, step=8, fname_output='flow_det_' + seq + '_quiver.png')
+                    OF_quiver_visualize(imgOF, OF_occ_arr, step=8, fname_output='flow_det_occ_' + seq + '_quiver.png')
+                    OF_quiver_visualize(imgOF, dif, step=8, fname_output='flow_dif_' + seq + '_quiver.png')
 
                 elif visualization == 'hsv':
-                    OF_hsv_visualize(GTOF_arr, fname_output='flow_gt' + seq + 'hsv.png', enhance=True)
-                    OF_hsv_visualize(OF_arr, fname_output='flow_det' + seq + 'hsv.png', enhance=True)
+                    OF_hsv_visualize(GTOF_arr, fname_output='flow_gt_' + seq + '_hsv.png', enhance=True)
+                    OF_hsv_visualize(OF_arr, fname_output='flow_det_' + seq + '_hsv.png', enhance=True)
 
                 elif visualization == 'color_wheel':
-                    OF_colorwheel_visualize(GTOF_arr, fname_output='flow_gt' + seq + 'color_wheel.png', enhance=True)
-                    OF_colorwheel_visualize(OF_arr, fname_output='flow_det' + seq + 'color_wheel.png', enhance=True)
+                    OF_colorwheel_visualize(GTOF_arr, fname_output='flow_gt_' + seq + '_color_wheel.png', enhance=True)
+                    OF_colorwheel_visualize(OF_arr, fname_output='flow_det_' + seq + '_color_wheel.png', enhance=True)
 
 
 if __name__ == "__main__":

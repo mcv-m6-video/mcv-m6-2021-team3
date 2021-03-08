@@ -38,6 +38,13 @@ def read_video_file(video_file):
     capture.release()
 
 def dict_to_list(frame_info, tlwh=True):
+    """
+    Transform a dictionary into a list
+    :param frame_info: dictionary with the information needed to create the list
+    :para tlwh: Boolean that determine if the format is top-left-width-height
+    :retur: return the list created
+    """
+
     if tlwh:
         return [[obj['bbox'][0],
                 obj['bbox'][1], 
@@ -50,6 +57,19 @@ def gen_noisy_bbox(list_bbox, x_size = 1920, y_size = 1080, bbox_generate = Fals
                    bbox_delete = False, random_noise = False, bbox_displacement = False,
                    max_random_px = 5,   max_displacement_px = 5,  max_perc_create_bbox = 0.5, 
                    max_prob_delete_bbox = 0.5): 
+
+    """
+    Generate the different type of noise added to the bounding boxes
+    :param list_bbox: list containing the coordinates of the bounding boxes
+    :param x_size, y_size: size of the image 
+    :param bbox_generate, bbox_delete, random_noise, bbox_displacement: 
+    boolean used to determine which kind of noise is applied
+    :param max_random_px: number of maximum pixels that increases the size of the bbox
+    :param max_displacement_px: number of the maximum pixels where the bbox is moved
+    :param max_perc_create_bbox: max probability of creating new bouding boxes
+    :param max_prob_delete_bbox: max probability of removing bouding boxes
+    :retur: return the list created with the new coordinates for the bboxes
+    """
    
     # assumes each bbox is a list ordered as [xmin, ymin, width, height]
     

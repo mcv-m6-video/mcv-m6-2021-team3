@@ -10,6 +10,14 @@ from tqdm import tqdm
 
 
 def plot_metrics_OF(seq, gt_of, det_of, dif):
+    """
+    Plot the Optical Flow from the GT, the Estimated, the 
+    difference between both and a histogram of the error
+    :param seq: name of the sequence used
+    :param gt_of: Optical Flow GT 
+    :param det_of: Optical Flow Estimated
+    :param dif: difference between the GT and the estimated OF
+    """
     plt.figure()
     plt.title(seq)
 
@@ -36,6 +44,13 @@ def plot_metrics_OF(seq, gt_of, det_of, dif):
 
 
 def OF_quiver_visualize(img, flow, step, fname_output='flow_quiver.png'):
+    """
+    Plot the OF through quiver function
+    :param img: the scene RGB image
+    :param flow: the Optical flow image (GT or Estimated)
+    :param step: Step controls the sampling to draw the arrows 
+    :param fname_output: name given to the output image to be saved
+    """
     u = flow[:, :, 0]
     v = flow[:, :, 1]
     occ = flow[:, :, 2]
@@ -58,6 +73,12 @@ def OF_quiver_visualize(img, flow, step, fname_output='flow_quiver.png'):
 
 
 def OF_hsv_visualize(flow, fname_output='flow_hsv.png', enhance=False):
+    """
+    Plot the Optical Flow using HSV color space
+    :param flow: Optical Flow image (GT or Estaimation)
+    :param fname_output: name given to the output image to be saved
+    :param enhance: A boolean parameter to control if the visualization is improved or not
+    """
     occ = flow[:, :, 2]
     u = flow[:, :, 0] * occ
     v = flow[:, :, 1] * occ
@@ -77,6 +98,17 @@ def OF_hsv_visualize(flow, fname_output='flow_hsv.png', enhance=False):
 
 
 def OF_colorwheel_visualize(flow, fname_output='flow_colorwheel.png', enhance=False):
+    """
+    Plot the Optical Flow using Wheel color
+    :param flow: Optical Flow image (GT or Estaimation)
+    :param fname_output: name given to the output image to be saved
+    :param enhance: A boolean parameter to control if the visualization is improved or not
+
+    https://github.com/tomrunia/OpticalFlow_Visualization
+    S. Baker, D. Scharstein, J. Lewis, S. Roth, M. J. Black, and R. Szeliski.
+    A database and evaluation methodology for optical flow.
+    In Proc. IEEE International Conference on Computer Vision (ICCV), 2007.
+    """
     flow_color = flow_vis.flow_to_color(flow[:, :, :2], convert_to_bgr=False)
 
     # To improve the visualization
@@ -92,54 +124,15 @@ def OF_colorwheel_visualize(flow, fname_output='flow_colorwheel.png', enhance=Fa
     plt.savefig(fname_output)
 
 
-'''def visual_of(im, gtx, gty, gtz, fname, overlap=0.9, wsize=300, mult=1, thickness=1):
-    def getCoords(i, j, w_size, h, w):
-        if i < 0:
-            ai = 0
-        else:
-            ai = i
-
-        if j < 0:
-            aj = 0
-        else:
-            aj = j
-
-        if i + w_size >= h:
-            bi = h - 1
-        else:
-            bi = i + w_size
-
-        if j + w_size >= h:
-            bj = w - 1
-        else:
-            bj = j + w_size
-
-        return int(ai), int(bi), int(aj), int(bj)
-
-    step = int(wsize * (1 - overlap))
-    mwsize = int(wsize / 2)
-    h,w = gtx.shape
-
-    for i in tqdm(np.arange(-mwsize,h+1-mwsize,step)):
-        for j in tqdm(np.arange(-mwsize,w+1-mwsize,step)):
-            ai,bi, aj, bj = getCoords(i, j, wsize, h, w)
-            mask = gtz[ai:bi, aj:bj]
-            mask = mask.astype(np.int8)
-            if np.count_nonzero(mask) == 0:
-                continue
-            winx = gtx[ai:bi, aj:bj]
-            winy = gty[ai:bi, aj:bj]
-            glob_x = (np.sum(winx[mask])*mwsize)/(np.count_nonzero(mask)*512)*mult
-            glob_y = (np.sum(winy[mask])*mwsize)/(np.count_nonzero(mask)*512)*mult
-            pt1 = (int(j + mwsize), int(i + wsize / 2))
-            pt2 = (int(j + mwsize + glob_x), int(i + mwsize + glob_y))
-            color = (0, 255, 0)
-            im = cv2.arrowedLine(im, pt1, pt2, color, thickness)
-
-    cv2.imwrite(fname, im)'''
-
-
 def draw_bboxes(img, bboxes, color):
+    """
+    Draw bounding boxes onto an image
+    :param img: Input RGB image of the scene
+    :param bboxes: list of coordinates of the bounding boxes to be drawn
+    :param color: color used to draw the bounding boxes
+    :return: image with the bounding boxes drawn
+    """
+
     for bbox in bboxes:
         bbox = bbox.astype(int)
         img = cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
@@ -147,6 +140,13 @@ def draw_bboxes(img, bboxes, color):
 
 
 def visualize_iou(gt, dets, frames, det_model):
+    """
+    Plot the graphic of the IOU metric
+    :param gt: list with the bounding boxes of the GT file
+    :param dets: list with the detected bounding boxes
+    :param frames: frames extracted from the video
+    :param det_model: model used (Mask RCNN, SSD512, YOLO3)  
+    """
     miou = np.empty(0, )
     os.makedirs(join('./task_2', det_model), exist_ok=True)
 
