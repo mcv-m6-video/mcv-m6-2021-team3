@@ -7,9 +7,8 @@ In this project the main goal was to get used to the different datasets and the 
 
 * main.py: Contains the pipeline to execute the different tasks.
 * datasets.py: Contains functions related to reading and organizing the information from the different datasets.
-* visualize.py: Gets functions to plot the different results.
-* noise.py: Has the function related to adding noise to the bounding boxes. 
-* utils.py: 
+* visualize.py: Gets functions to plot the different results. 
+* utils.py: Has other functions, such as one related to adding noise to the bounding boxes. 
 * metrics.py: Contains function to evaluate the performance of the method.
 
 ### How to execute
