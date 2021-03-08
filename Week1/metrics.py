@@ -6,7 +6,12 @@ from utils import dict_to_list, gen_noisy_bbox, update_data
 import voc_eval
 
 def vec_error(gt, det, nchannel=3):
-    
+    """
+    Computes vectorial distance  
+    :param gt: Ground truth values
+    :param det: Detection values
+    :return: Computed error
+    """
     dist = det[:,:,:nchannel]-gt[:,:,:nchannel]
     error = np.sqrt(np.sum(dist**2,axis=2))
 
@@ -16,6 +21,14 @@ def vec_error(gt, det, nchannel=3):
     return error[non_occluded_idx], error
 
 def compute_error(gt=None, det=None, error=None, nchannel=3, op='mse', th=3):
+    """
+    Computes the erroor using the vectorial distance between gt and det
+    :param gt: Ground truth values
+    :param det: Detection values
+    :param nchannel: Number of channels per frame
+    :param op: mse or pep error computation
+    :param th: threshold value to consider a distance as an error. 
+    """
     if error is None:
         assert gt is None, 'img1 is None'
         assert det is None, 'img2 is None'
@@ -52,13 +65,27 @@ def compute_iou(bb_gt, bb):
 
     return inters / uni
 
-def compute_miou(gt_frame, dets_frame, frame_id):
+def compute_miou(gt_frame, dets_frame):
+    """
+    Computes the mean iou by averaging the individual iou results.
+    :param gt_frame: Ground truth bboxes
+    :param dets_frame: list of detected bbox for each frame
+    :retur: Intersection Over Union value
+    """
     iou=[]
     for det in dets_frame:
         iou.append(np.max(compute_iou(gt_frame,det)))
     return np.sum(iou)/len(iou)
 
 def compute_total_moiu(gt, dets, frames):
+    """
+    Computes miou for every frame being evaluated.
+    :param gt: Ground truth bboxes   
+    :param dets: list of detected bbox 
+    :param frames: Frames names 
+    return: Return the total moiu for the given sequence by averaging the resutls
+    """
+
     miou = np.empty(0,)
 
     for frame in frames:
@@ -79,6 +106,19 @@ def single_noise_eval(imagenames, gt, x_size = 1920, y_size = 1080, bbox_generat
                       bbox_delete = False, random_noise = False, bbox_displacement = False, 
                       max_random_px = 5, max_displacement_px = 5,  max_perc_create_bbox = 0.5, 
                       max_prob_delete_bbox = 0.5): 
+    """
+    Computes map and miou for a given list of bboxes. Noise can be added to them. 
+    :param imagenames: list containing the name of the images to be tested
+    :param gt: ground truth for bbox detection on the images given by imagenames
+    :param x_size, y_size: size of the image 
+    :param bbox_generate, bbox_delete, random_noise, bbox_displacement: 
+    boolean used to determine which kind of noise is applied
+    :param max_random_px: number of maximum pixels that increases the size of the bbox
+    :param max_displacement_px: number of the maximum pixels where the bbox is moved
+    :param max_perc_create_bbox: max probability of creating new bouding boxes
+    :param max_prob_delete_bbox: max probability of removing bouding boxes
+    :retur: a list with two values corresponding ot the evaluation [ap, miou]
+    """
     dets = {}
     for frame, info in gt.items():
         gen_bbox = gen_noisy_bbox(dict_to_list(info), x_size, y_size, bbox_generate, bbox_delete,
@@ -95,6 +135,13 @@ def single_noise_eval(imagenames, gt, x_size = 1920, y_size = 1080, bbox_generat
     return [ap,miou]
 
 def gen_noise_eval(imagenames, gt):
+    """
+    Creates diferent scenarios for testing the effects of noise on bbox evaluation
+    :param imagenames: list containing the name of the images to be tested
+    :param gt: ground truth for bbox detection on the images given by imagenames
+    :return: return a dictionary containing miou and map values for each scenario
+    """   
+    
     # Displacement Evaluation 
     gen_eval = {}
     #Displacement of -+n pixels (random up to i) for each bbox
