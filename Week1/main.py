@@ -106,22 +106,23 @@ def main(argv):
                 OF_occ_arr = OF_occ[seq]
                 imgOF = cv2.imread(join(img_dir, seq + '.png'), 1)
 
+                os.makedirs('task4',exist_ok=True)
 
                 if visualization == 'base':
                     dif = OF_arr - OF_occ_arr
 
-                    OF_quiver_visualize(imgOF, GTOF_arr, step=15, fname_output='flow_gt_' + seq + '_quiver.png')
-                    OF_quiver_visualize(imgOF, OF_arr, step=8, fname_output='flow_det_' + seq + '_quiver.png')
-                    OF_quiver_visualize(imgOF, OF_occ_arr, step=8, fname_output='flow_det_occ_' + seq + '_quiver.png')
-                    OF_quiver_visualize(imgOF, dif, step=8, fname_output='flow_dif_' + seq + '_quiver.png')
+                    OF_quiver_visualize(imgOF, GTOF_arr, step=15, fname_output='task4/flow_gt_' + seq + '_quiver.png')
+                    OF_quiver_visualize(imgOF, OF_arr, step=8, fname_output='task4/flow_det_' + seq + '_quiver.png')
+                    OF_quiver_visualize(imgOF, OF_occ_arr, step=8, fname_output='task4/flow_det_occ_' + seq + '_quiver.png')
+                    OF_quiver_visualize(imgOF, dif, step=8, fname_output='task4/flow_dif_' + seq + '_quiver.png')
 
                 elif visualization == 'hsv':
-                    OF_hsv_visualize(GTOF_arr, fname_output='flow_gt_' + seq + '_hsv.png', enhance=True)
-                    OF_hsv_visualize(OF_arr, fname_output='flow_det_' + seq + '_hsv.png', enhance=True)
+                    OF_hsv_visualize(GTOF_arr, fname_output='task4/flow_gt_' + seq + '_hsv.png', enhance=True)
+                    OF_hsv_visualize(OF_arr, fname_output='task4/flow_det_' + seq + '_hsv.png', enhance=True)
 
                 elif visualization == 'color_wheel':
-                    OF_colorwheel_visualize(GTOF_arr, fname_output='flow_gt_' + seq + '_color_wheel.png', enhance=True)
-                    OF_colorwheel_visualize(OF_arr, fname_output='flow_det_' + seq + '_color_wheel.png', enhance=True)
+                    OF_colorwheel_visualize(GTOF_arr, fname_output='task4/flow_gt_' + seq + '_color_wheel.png', enhance=True)
+                    OF_colorwheel_visualize(OF_arr, fname_output='task4/flow_det_' + seq + '_color_wheel.png', enhance=True)
 
 
 if __name__ == "__main__":

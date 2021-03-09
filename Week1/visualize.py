@@ -122,10 +122,7 @@ def OF_colorwheel_visualize(flow, fname_output='flow_colorwheel.png', enhance=Fa
         flow_hsv[:,:,2] = flow_hsv[:,:,2]*5
         flow_color = cv2.cvtColor(flow_hsv, cv2.COLOR_HSV2RGB)
 
-    plt.figure()
-    plt.imshow(flow_color)
-    plt.axis('off')
-    plt.savefig(fname_output)
+    cv2.imwrite(fname_output,flow_color)
 
 
 def draw_bboxes(img, bboxes, color):
