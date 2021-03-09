@@ -1,12 +1,10 @@
 import os
 import cv2
 import matplotlib.pyplot as plt
-from metrics import compute_iou
 from utils import dict_to_list
 import numpy as np
 import flow_vis
 from os.path import join
-from tqdm import tqdm
 
 
 def plot_metrics_OF(seq, gt_of, det_of, dif):
@@ -67,7 +65,7 @@ def OF_quiver_visualize(img, flow, step, fname_output='flow_quiver.png'):
     plt.figure()
     plt.imshow(img, cmap='gray')
     plt.quiver(x[::step, ::step], y[::step, ::step], U[::step, ::step], V[::step, ::step],
-               scale_units='xy', angles='xy', scale=.05, color=(1,0,0,1))
+               M[::step, ::step], scale_units='xy', angles='xy', scale=.05, color=(1,0,0,1))
     plt.axis('off')
     plt.savefig(fname_output)
 

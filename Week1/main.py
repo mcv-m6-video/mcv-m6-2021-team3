@@ -1,22 +1,16 @@
-import os
 import sys
-from os.path import join
 from voc_eval import voc_eval
-from PIL import Image
-import numpy as np
-from datasets import *
 from metrics import *
 from visualize import *
 from utils import *
-import matplotlib.pyplot as plt
 
 display = True
 noise_evaluation = True
 
 path = 'C:/Aitor/CVC/M6/WEEK1/'
-path = '/Volumes/Transcend/M6/Project/Week1'
+path = '/Volumes/Transcend/M6/mcv-m6-2021-team3/Week1'
 # path = '.'
-visualization = 'hsv'
+visualization = 'base'
 
 
 def main(argv):
@@ -72,7 +66,6 @@ def main(argv):
                 if task == 2:
                     # T2: IoU vs time
                     print(visualize_iou(gt, dets[det_model], imagenames))
-
 
     elif task in [3, 4]:
 
