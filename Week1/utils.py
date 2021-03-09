@@ -1,13 +1,28 @@
 import cv2
 import glob
 from os import makedirs
-from os.path import join
+from os.path import join, exists
 import numpy as np
 import pathlib
 import tqdm
 import random
 from datasets import *
 import json
+from termcolor import colored
+
+
+def write_json_file(data_dict, json_file):
+    """
+    Write json file
+    :param data_dict: dict containing data to store
+    :param json_file: name of the json file
+    """
+
+    with(open(json_file, 'w')) as f:
+        data = json.dump(data_dict, f)
+
+    if exists(json_file):
+        print('Json file '+colored('\''+json_file+'\'', 'blue')+' written successfully!')
 
 
 def read_json_file(json_file):
@@ -19,6 +34,9 @@ def read_json_file(json_file):
 
     with(open(json_file, 'r+')) as f:
         data = json.load(f)
+    
+    if data is not None:
+        print('Json file '+colored('\''+json_file+'\'', 'blue')+' loaded successfully!')
 
     return data
 
