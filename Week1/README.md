@@ -14,7 +14,7 @@ In this project the main goal was to get used to the different datasets and the 
 ## Inference
 ### Available tasks
 * **Task 1.1**: IoU & mAP for (ground truth + noise).
-* **Task 1.2**: mAP for provided object detections (Mask RCNN, SDD-512, YOLO-v3).
+* **Task 1.2**: mAP for provided object detections (Mask RCNN, SDD-512, YOLOv3).
 * **Task 2**: Temporal analysis (IoU vs time).
 * **Task 3**: Optical flow evaluation metrics (MSEN & PEPN).
 * **Task 4**: Visual representation optical flow.
@@ -50,10 +50,23 @@ $ python main.py ${TASK_NUMBER}
 ```
 
 ## Results
-### Task 1.1 IoU & mAP for (ground truth + noise).
+### Task 1.1: IoU & mAP for (ground truth + noise)
+
+### Task 1.2: Mean Average Precision (mAP) for Mask RCNN, SDD-512 and YOLOv3
 
 
+| <center>**Model Detector**</center> | <center>**mAP**</center> | <center>**mAP(%)**</center> |
+| :---: | :---: | :---: |
+| Mask RCNN | <center>0.419</center> | <center>41.9</center> |
+| SDD-512 | <center>0.367</center> | <center>36.7</center> |
+| YOLOv3 | <center>0.416</center> | <center>41.6</center> |
 
+### Task 2: Temporal analysis (IoU vs time)
+
+In terms of temporal analysis we have used the IoU over time. Displayed below the results of each detector:
+
+| <center>**Mask RCNN**</center> | <center>**SDD-512**</center> | <center>**YOLOv3**</center> |
+| ![det_mask_rcnn]()
 
 ## Report
-The report for week 1 is available [here](https://docs.google.com/presentation/d/1fW_KEDz9zGoJzBtoJuXenhzcsG9WRU2GkyU0DSTTnB4/edit?usp=sharing)
+The report for week 1 is available [here](https://docs.google.com/presentation/d/1fW_KEDz9zGoJzBtoJuXenhzcsG9WRU2GkyU0DSTTnB4/edit?usp=sharing).
