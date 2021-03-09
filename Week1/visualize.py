@@ -203,7 +203,7 @@ def visualize_iou(gt, dets, frames, det_model, save_dir='./task2'):
                 writer.append_data(image)
     
     print('Gif saved at '+gif_dir)
-
+    
 def plot_metrics_noise(results):
     """
     Plot the graphic of different noise test for the bbox results

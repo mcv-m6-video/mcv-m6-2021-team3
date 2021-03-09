@@ -15,7 +15,6 @@ def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 1.2
 
     if int(task) in [1, 2]:
         data_dir = join(path, 'AICity_data/train/S03/c010')

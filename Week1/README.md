@@ -70,43 +70,29 @@ In terms of temporal analysis we have used the IoU over time. Displayed below th
 | ![det_mask_rcnn](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task2/det_mask_rcnn.gif) | ![det_ssd512](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task2/det_ssd512.gif) | ![det_yolo3](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task2/det_yolo3.gif) |
 
 ### Task 3: Optical flow evaluation metrics (MSEN & PEPN)
-
+<!DOCTYPE html>
 <table>
-    <thead>
-        <tr>
-            <th colspan=4>Metrics</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tc>
-            <td rowspan=2>MSEN</td>
-        <tc>
-        <tc>
-            <td rowspan=2>PEPN</td>
-        <tc>
-        <tr>
-            <tc><td>Seq 45</td></tc>
-            <tc><td>Seq 157</td></tc>
-            <tc><td>Seq 45</td></tc>
-            <tc><td>Seq 157</td></tc>
-        </tr>
-            <tr>
-              <td>10.627</td>
-              <td>2.75</td>
-            </tr>
-        </tc>
-        <tc>
-            <tr>
-              <td>Seq 45</td>
-              <td>Seq 157</td>
-            </tr>
-            <tr>
-              <td>0.786 (78.6%)</td>
-              <td>0.34 (34%)</td>
-            </tr>
-        </tc>
-    </tbody>
+<thead>
+  <tr>
+    <th>Sequence #</th>
+    <th>MSEN</th>
+    <th>PEPN</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Seq 45</td>
+    <td>10.627</td>
+    <td>0.786 (78.6%)</td>
+  </tr>
+  <tr>
+    <td>Seq 157</td>
+    <td>2.75</td>
+    <td>0.34 (34%)</td>
+  </tr>
+</tbody>
 </table>
+</html>
 
 ## Report
 The report for week 1 is available [here](https://docs.google.com/presentation/d/1fW_KEDz9zGoJzBtoJuXenhzcsG9WRU2GkyU0DSTTnB4/edit?usp=sharing).
