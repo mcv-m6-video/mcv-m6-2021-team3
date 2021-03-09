@@ -1,4 +1,4 @@
-### Week 1
+# Week 1
 
 ## Introduction
 In this project the main goal was to get used to the different datasets and the metrics that will be used in future weeks. The project contains several source code files that implement the required functionality.
@@ -10,7 +10,7 @@ In this project the main goal was to get used to the different datasets and the 
 * metrics.py: Contains function to evaluate the performance of the method.
 
 ## Inference
-# Available tasks
+### Available tasks
 * **Task 1.1**: IoU & mAP for (ground truth + noise).
 * **Task 1.2**: mAP for provided object detections (Mask RCNN, SDD-512, YOLO-v3).
 * **Task 2**: Temporal analysis (IoU vs time).
