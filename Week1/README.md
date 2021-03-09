@@ -71,8 +71,8 @@ In terms of temporal analysis we have used the IoU over time. Displayed below th
 
 ### Task 3: Optical flow evaluation metrics (MSEN & PEPN)
 
-| :-<center>**Model Detector**</center>-: | :-<center>**mAP**</center>-: |
-| :---: | :---: | :---: | :---: |
+| <center>**Model Detector**</center> ||  <center>**mAP**</center> ||
+| :--- | :--- | :--- | :--- |
 | Seq 45 | Seq 45 | Seq 45 | Seq 45 |
 
 ## Report
