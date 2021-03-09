@@ -80,25 +80,30 @@ In terms of temporal analysis we have used the IoU over time. Displayed below th
     <tbody>
         <tc>
             <td rowspan=2>MSEN</td>
-            <tc>
-              <td>Seq 45</td>
-              <td>Seq 157</td>
-            </tc>
-            <tc>
-              <td>10.627</td>
-              <td>2.75</td>
-            </tc>
-        </tc>
+        <tc>
         <tc>
             <td rowspan=2>PEPN</td>
-            <tc>
+        <tc>
+        <tr>
+            <tc><td>Seq 45</td></tc>
+            <tc><td>Seq 157</td></tc>
+            <tc><td>Seq 45</td></tc>
+            <tc><td>Seq 157</td></tc>
+        </tr>
+            <tr>
+              <td>10.627</td>
+              <td>2.75</td>
+            </tr>
+        </tc>
+        <tc>
+            <tr>
               <td>Seq 45</td>
               <td>Seq 157</td>
-            </tc>
-            <tc>
+            </tr>
+            <tr>
               <td>0.786 (78.6%)</td>
               <td>0.34 (34%)</td>
-            </tc>
+            </tr>
         </tc>
     </tbody>
 </table>
