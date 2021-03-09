@@ -24,8 +24,8 @@ python main 1.2
 ```
 
 #### Available tasks
-* 1.1
-* 1.2
-* 2
-* 3
-* 4
+* **Task 1.1**: IoU & mAP for (ground truth + noise).
+* **Task 1.2**: mAP for provided object detections (Mask RCNN, SDD-512, YOLO-v3). 
+* **Task 2**: Temporal analysis (IoU vs time).
+* **Task 3**: Optical flow evaluation metrics (MSEN & PEPN).
+* **Task 4**: Visual representation optical flow.
