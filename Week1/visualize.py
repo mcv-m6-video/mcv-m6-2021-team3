@@ -206,3 +206,26 @@ def visualize_iou(gt, dets, frames, det_model, save_dir='./task2'):
                 writer.append_data(image)
     
     print('Gif saved at '+gif_dir)
+    
+    
+def plot_metrics_noise(results):
+    """
+    Plot the graphic of different noise test for the bbox results
+    :param results: dictionaries with a key for every test scenario.
+    """
+    for (key, value) in results.items():
+
+        x = value[0]
+        m_iou = list(zip(*value[1]))[0]
+        m_ap = list(zip(*value[1]))[1]
+        
+        fig, ax = plt.subplots()    
+        ax.plot(x, m_iou, color=[163/256, 127/256, 225/256], label="miou")
+        ax.plot(x, m_ap, color=[3/256, 152/256, 147/256], label="map")
+        if key =='Displacement' or key =="Noise":
+            plt.xlabel('max # px')
+        else:
+            plt.xlabel('max % Prob')         
+            
+        ax.legend();
+        plt.title(key)   
