@@ -1,4 +1,8 @@
 .DS_Store
+Week1/results_opticalflow_kitti
+Week1/data_stereo_flow
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
