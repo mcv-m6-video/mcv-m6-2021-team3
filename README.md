@@ -25,6 +25,7 @@ python main 1.2
 
 #### Available tasks
 * 1.1
+* 1.2
 * 2
 * 3
 * 4
