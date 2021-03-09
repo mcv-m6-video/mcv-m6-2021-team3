@@ -71,9 +71,37 @@ In terms of temporal analysis we have used the IoU over time. Displayed below th
 
 ### Task 3: Optical flow evaluation metrics (MSEN & PEPN)
 
-| <center>**Model Detector**</center> ||  <center>**mAP**</center> ||
-| :--- | :--- | :--- | :--- |
-| Seq 45 | Seq 45 | Seq 45 | Seq 45 |
+<table>
+    <thead>
+        <tr>
+            <th colspan=4>Metrics</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tc>
+            <td rowspan=2>MSEN</td>
+            <tc>
+              <td>Seq 45</td>
+              <td>Seq 157</td>
+            </tc>
+            <tc>
+              <td>10.627</td>
+              <td>2.75</td>
+            </tc>
+        </tc>
+        <tc>
+            <td rowspan=2>PEPN</td>
+            <tc>
+              <td>Seq 45</td>
+              <td>Seq 157</td>
+            </tc>
+            <tc>
+              <td>0.786 (78.6%)</td>
+              <td>0.34 (34%)</td>
+            </tc>
+        </tc>
+    </tbody>
+</table>
 
 ## Report
 The report for week 1 is available [here](https://docs.google.com/presentation/d/1fW_KEDz9zGoJzBtoJuXenhzcsG9WRU2GkyU0DSTTnB4/edit?usp=sharing).
