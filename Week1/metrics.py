@@ -97,7 +97,7 @@ def compute_total_moiu(gt, dets, frames):
             gt_frame = np.array(dict_to_list(gt[frame_id],False))
             dets_frame = np.array(dict_to_list(dets[frame_id],False))
             
-            miou = np.hstack((miou,compute_miou(gt_frame,dets_frame,frame_id)))
+            miou = np.hstack((miou,compute_miou(gt_frame,dets_frame)))
     
     return (np.sum(miou)/len(miou))
 
