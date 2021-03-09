@@ -50,3 +50,6 @@ $ python main.py ${TASK_NUMBER}
 **Task 1.1**: IoU & mAP for (ground truth + noise).
 
 
+
+
+(https://docs.google.com/presentation/d/1fW_KEDz9zGoJzBtoJuXenhzcsG9WRU2GkyU0DSTTnB4/edit?usp=sharing)
