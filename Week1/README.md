@@ -69,6 +69,11 @@ In terms of temporal analysis we have used the IoU over time. Displayed below th
 | :---: | :---: | :---: |
 | ![det_mask_rcnn](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task2/det_mask_rcnn.gif) | ![det_ssd512](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task2/det_ssd512.gif) | ![det_yolo3](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task2/det_yolo3.gif) |
 
+### Task 3: Optical flow evaluation metrics (MSEN & PEPN)
+
+| :-<center>**Model Detector**</center>-: | :-<center>**mAP**</center>-: |
+| :---: | :---: | :---: | :---: |
+| Seq 45 | Seq 45 | Seq 45 | Seq 45 |
 
 ## Report
 The report for week 1 is available [here](https://docs.google.com/presentation/d/1fW_KEDz9zGoJzBtoJuXenhzcsG9WRU2GkyU0DSTTnB4/edit?usp=sharing).
