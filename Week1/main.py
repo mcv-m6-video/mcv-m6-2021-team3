@@ -1,5 +1,5 @@
 import sys
-from voc_eval import voc_eval
+import voc_eval
 from metrics import *
 from visualize import *
 from utils import *
@@ -7,9 +7,7 @@ from utils import *
 display = True
 noise_evaluation = True
 
-path = 'C:/Aitor/CVC/M6/WEEK1/'
-path = '/Volumes/Transcend/M6/mcv-m6-2021-team3/Week1'
-# path = '.'
+path = '../'
 visualization = 'base'
 
 
@@ -17,7 +15,7 @@ def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 4
+        task = 1.2
 
     if int(task) in [1, 2]:
         data_dir = join(path, 'AICity_data/train/S03/c010')
@@ -44,7 +42,7 @@ def main(argv):
                     for bbox in gen_bbox:
                         dets = update_data(dets, int(frame), bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3], 1.)
 
-                _, _, ap = voc_eval(gt, imagenames, dets)
+                _, _, ap = voc_eval.voc_eval(gt, imagenames, dets)
                 if display:
                     print('AP50:', ap)
 
@@ -59,13 +57,13 @@ def main(argv):
 
                 if task == 1.2:
                     # T1.2: mAP for provided object detections
-                    _, _, ap = voc_eval(gt, imagenames, dets[det_model])
+                    _, _, ap = voc_eval.voc_eval(gt, imagenames, dets[det_model])
                     if display:
                         print(det_model.split('.')[0], '--> AP50:', ap)
 
                 if task == 2:
                     # T2: IoU vs time
-                    print(visualize_iou(gt, dets[det_model], imagenames))
+                    visualize_iou(gt,dets[det_model],imagenames,det_model)
 
     elif task in [3, 4]:
 

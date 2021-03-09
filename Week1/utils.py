@@ -19,7 +19,7 @@ def write_json_file(data_dict, json_file):
     """
 
     with(open(json_file, 'w')) as f:
-        data = json.dump(data_dict, f)
+        json.dump(data_dict, f)
 
     if exists(json_file):
         print('Json file '+colored('\''+json_file+'\'', 'blue')+' written successfully!')

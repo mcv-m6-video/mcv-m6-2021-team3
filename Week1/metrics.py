@@ -70,14 +70,15 @@ def compute_miou(gt_frame, dets_frame):
     Computes the mean iou by averaging the individual iou results.
     :param gt_frame: Ground truth bboxes
     :param dets_frame: list of detected bbox for each frame
-    :retur: Intersection Over Union value
+    :retur: Mean Intersection Over Union value, Standard Deviation of the IoU
     """
     iou=[]
     for det in dets_frame:
         iou.append(np.max(compute_iou(gt_frame,det)))
-    return np.sum(iou)/len(iou)
 
-def compute_total_moiu(gt, dets, frames):
+    return np.mean(iou), np.std(iou)
+
+def compute_total_miou(gt, dets, frames):
     """
     Computes miou for every frame being evaluated.
     :param gt: Ground truth bboxes   
@@ -97,7 +98,7 @@ def compute_total_moiu(gt, dets, frames):
             gt_frame = np.array(dict_to_list(gt[frame_id],False))
             dets_frame = np.array(dict_to_list(dets[frame_id],False))
             
-            miou = np.hstack((miou,compute_miou(gt_frame,dets_frame)))
+            miou = np.hstack((miou,compute_miou(gt_frame,dets_frame)[0]))
     
     return (np.sum(miou)/len(miou))
 
@@ -130,7 +131,7 @@ def single_noise_eval(imagenames, gt, x_size = 1920, y_size = 1080, bbox_generat
     
     _, _, ap = voc_eval.voc_eval(gt,imagenames,dets)
 
-    miou = compute_total_moiu(gt, dets, imagenames)
+    miou = compute_total_miou(gt, dets, imagenames)
 
     return [ap,miou]
 
