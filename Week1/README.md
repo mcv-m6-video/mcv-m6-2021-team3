@@ -20,9 +20,5 @@ In this project the main goal was to get used to the different datasets and the 
 Run the command below to obtain the desired task results.
 
 ```bash
-$ python main.py 1.1
-                 1.2
-                 2
-                 3
-                 4
+$ python main.py ${TASK_NUMBER}
 ```
