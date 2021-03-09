@@ -113,10 +113,26 @@ Following table display results to non-occluded pixels for sequences 45 and 157.
 
 Optical Flow and be visualized in several different ways.
 
-|Quiver Mod| <center>**Ground Truth**</center> | <center>**Predicted**</center> |
+#### Quiver
+
+|Sequence| <center>**Ground Truth**</center> | <center>**Predicted**</center> |
 | :---: | :---: | :---: |
 | **Seq 45** | ![gt_quiver_45](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000045_10_quiver.png) | ![resize](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000045_10_quiver.png) |
 | **Seq 157** | ![gt_quiver_157](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000157_10_quiver.png) | ![add](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000157_10_quiver.png) |
+
+#### HSV
+
+|Sequence| <center>**Ground Truth**</center> | <center>**Predicted**</center> |
+| :---: | :---: | :---: |
+| **Seq 45** | ![gt_quiver_45](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000045_10_hsv.png) | ![resize](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000045_10_hsv.png) |
+| **Seq 157** | ![gt_quiver_157](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000157_10_hsv.png) | ![add](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000157_10_hsv.png) |
+
+#### Color Wheel
+
+|Sequence| <center>**Ground Truth**</center> | <center>**Predicted**</center> |
+| :---: | :---: | :---: |
+| **Seq 45** | ![gt_quiver_45](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000045_10_color_wheel.png) | ![resize](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000045_10_color_wheel.png) |
+| **Seq 157** | ![gt_quiver_157](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000157_10_color_wheel.png) | ![add](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000157_10_color_wheel.png) |
 
 
 
