@@ -8,6 +8,8 @@ In this project the main goal was to get used to the different datasets and the 
 * [visualize.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/visualize.py): Gets functions to plot the different results. 
 * [utils.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/utils.py): Has other functions, such as one related to adding noise to the bounding boxes. 
 * [metrics.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/metrics.py): Contains function to evaluate the performance of the method.
+* [voc_eval.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/voc_eval.py): Contains the funcions to compute de mAP.
+
 
 ## Inference
 ### Available tasks
@@ -44,12 +46,14 @@ $ python main.py ${TASK_NUMBER}
 │   ├── visualize.py
 │   ├── utils.py
 │   ├── metrics.py
+│   ├── voc_eval.py
 ```
 
 ## Results
-**Task 1.1**: IoU & mAP for (ground truth + noise).
+### Task 1.1 IoU & mAP for (ground truth + noise).
 
 
 
 
-(https://docs.google.com/presentation/d/1fW_KEDz9zGoJzBtoJuXenhzcsG9WRU2GkyU0DSTTnB4/edit?usp=sharing)
+## Report
+The report for week 1 is available [here](https://docs.google.com/presentation/d/1fW_KEDz9zGoJzBtoJuXenhzcsG9WRU2GkyU0DSTTnB4/edit?usp=sharing)
