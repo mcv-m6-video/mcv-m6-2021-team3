@@ -54,6 +54,12 @@ $ python main.py ${TASK_NUMBER}
 
 The addition of the different types of noise result as the mAP and IoU displayed below.
 
+| <center>**Displacement**</center> | <center>**Resize**</center> |
+| :---: | :---: |
+| ![disp](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/noise/displacement.png) | ![resize](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/noise/noise.png) |
+| <center>**Deletion**</center> | <center>**Addition**</center> |
+| ![del](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/noise/delete.png) | ![add](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/noise/generate.png) |
+
 
 
 
@@ -77,7 +83,7 @@ In terms of temporal analysis we have used the IoU over time. Displayed below th
 
 ### Task 3: Optical flow evaluation metrics (MSEN & PEPN)
 
-Following table display results to non-occluded pixels for sequences 45 and 
+Following table display results to non-occluded pixels for sequences 45 and 157.
 
 <!DOCTYPE html>
 <table>
@@ -104,6 +110,13 @@ Following table display results to non-occluded pixels for sequences 45 and
 </html>
 
 ### Task 4: Visual representation optical flow
+
+Optical Flow and be visualized in several different ways.
+
+|Quiver Mod| <center>**Ground Truth**</center> | <center>**Predicted**</center> |
+| :---: | :---: | :---: |
+| **Seq 45** | ![gt_quiver_45](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000045_10_quiver.png) | ![resize](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000045_10_quiver.png) |
+| **Seq 157** | ![gt_quiver_157](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000157_10_quiver.png) | ![add](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000157_10_quiver.png) |
 
 
 
