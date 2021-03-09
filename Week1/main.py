@@ -32,6 +32,7 @@ def main(argv):
             # Report on noise effects
             if noise_evaluation:
                 gen_eval = gen_noise_eval(imagenames, gt)
+                plot_metrics_noise(gen_eval)
             # Single evaluation
             else:
                 dets = {}
