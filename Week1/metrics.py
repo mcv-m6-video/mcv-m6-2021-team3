@@ -41,14 +41,14 @@ def compute_error(gt=None, det=None, error=None, nchannel=3, op='mse', th=3):
 
 
 def compute_iou(bb_gt, bb):
-    '''
+    """
     iou = compute_iou(bb_gt, bb)
     Compute IoU between bboxes from ground truth and a single bbox.
     bb_gt: Ground truth bboxes
         Array of (num, bbox), num:number of boxes, bbox:(xmin,ymin,xmax,ymax)
     bb: Detected bbox
         Array of (bbox,), bbox:(xmin,ymin,xmax,ymax)
-    '''
+    """
 
     # intersection
     ixmin = np.maximum(bb_gt[:, 0], bb[0])

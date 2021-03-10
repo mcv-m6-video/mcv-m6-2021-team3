@@ -4,9 +4,8 @@
 # Written by Bharath Hariharan adapted by Group 3 MCV
 # --------------------------------------------------------
 
-import os
-import numpy as np
-from metrics import compute_iou
+
+from metrics import *
 
 
 def voc_ap(rec, prec, use_07_metric=False):

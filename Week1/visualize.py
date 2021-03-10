@@ -9,9 +9,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from metrics import compute_miou
 from utils import dict_to_list
 import imageio
-import scipy.stats as stats
-from scipy.stats import norm
-from scipy.optimize import curve_fit
 
 
 def plot_metrics_OF(seq, gt_of, det_of, dif, mu, sigma):
@@ -178,7 +175,7 @@ def visualize_iou(gt, dets, frames, det_model, save_dir='./task2'):
                 gt_frame = np.array(dict_to_list(gt[frame_id], False))
                 dets_frame = np.array(dict_to_list(dets[frame_id], False))
 
-                mean, std = compute_miou(gt_frame, dets_frame, frame_id)
+                mean, std = compute_miou(gt_frame, dets_frame)
                 miou = np.hstack((miou, mean))
                 std_iou = np.hstack((std_iou, std))
 
