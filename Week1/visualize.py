@@ -10,9 +10,11 @@ import matplotlib.gridspec as gridspec
 from metrics import compute_miou
 from utils import dict_to_list
 import imageio
+import scipy.stats as stats
+from scipy.stats import norm
+from scipy.optimize import curve_fit
 
-
-def plot_metrics_OF(seq, gt_of, det_of, dif):
+def plot_metrics_OF(seq, gt_of, det_of, dif, mu, sigma):
     """
     Plot the Optical Flow from the GT, the Estimated, the 
     difference between both and a histogram of the error
@@ -20,6 +22,8 @@ def plot_metrics_OF(seq, gt_of, det_of, dif):
     :param gt_of: Optical Flow GT 
     :param det_of: Optical Flow Estimated
     :param dif: difference between the GT and the estimated OF
+    :param mu: mean error
+    :param sigma: std error
     """
     fig = plt.figure(figsize=(16,8))
     plt.subplot(2,2,1)
@@ -38,11 +42,19 @@ def plot_metrics_OF(seq, gt_of, det_of, dif):
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(im, cax=cax)
 
+    
     plt.subplot(2,2,4)
-    plt.hist(dif[seq][0],bins=100, color='cadetblue')
+    plt.hist(dif[seq][0], bins=100)
+    xmin, xmax = plt.xlim()
+    _, ymax = plt.ylim()
+    x = np.linspace(xmin, xmax, 100)
+    y = ymax * np.exp( - (x - mu)**2 / (2*sigma ** 2))
+    plt.plot(x, y, 'c', linewidth=2, alpha = 0.5)
     plt.xlabel('Optical Flow Error')
     plt.ylabel('Num of pixels')
     plt.title('Optical Flow Histogram Error')
+    
+    plt.show()
 
     plt.savefig(seq+'.png')
 

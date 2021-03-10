@@ -15,7 +15,7 @@ def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 1.2
+        task = 3
 
     if int(task) in [1, 2]:
         data_dir = join(path, 'AICity_data/train/S03/c010')
@@ -96,8 +96,11 @@ def main(argv):
                 MSEN.update({seq: compute_error(gt=GTOF[seq], error=DIF[seq][0])})
                 PEPN.update({seq: compute_error(gt=GTOF[seq], error=DIF[seq][0], op='pep')})
 
+                mean_error = np.mean(DIF[seq][1])
+                std_error = np.std(DIF[seq][1])
+
                 if display:
-                    plot_metrics_OF(seq, GTOF, OF, DIF)
+                    plot_metrics_OF(seq, GTOF, OF, DIF, mean_error, std_error)
 
             if task == 4:
                 # T4: Optical flow plot
