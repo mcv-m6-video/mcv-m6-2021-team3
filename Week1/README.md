@@ -111,7 +111,7 @@ Following table display results to non-occluded pixels for sequences 45 and 157.
 
 ### Task 4: Visual representation optical flow
 
-Optical Flow and be visualized in several different ways.
+Optical Flow can be visualized in several different ways.
 
 #### Quiver
 
