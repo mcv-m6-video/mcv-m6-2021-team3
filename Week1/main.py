@@ -42,7 +42,7 @@ def main(argv):
                     for bbox in gen_bbox:
                         dets = update_data(dets, int(frame), bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3], 1.)
 
-                _, _, ap = voc_eval.voc_eval(gt, imagenames, dets)
+                _, _, ap = voc_eval(gt, imagenames, dets)
                 if display:
                     print('AP50:', ap)
 
@@ -57,7 +57,7 @@ def main(argv):
 
                 if task == 1.2:
                     # T1.2: mAP for provided object detections
-                    _, _, ap = voc_eval.voc_eval(gt, imagenames, dets[det_model])
+                    _, _, ap = voc_eval(gt, imagenames, dets[det_model])
                     if display:
                         print(det_model.split('.')[0], '--> AP50:', ap)
 
