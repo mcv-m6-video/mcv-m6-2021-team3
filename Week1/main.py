@@ -1,5 +1,4 @@
 import sys
-import voc_eval
 from metrics import *
 from visualize import *
 from utils import *

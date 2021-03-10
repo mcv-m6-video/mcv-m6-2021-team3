@@ -1,7 +1,9 @@
 .DS_Store
+.idea/
+.vscode/
 Week1/results_opticalflow_kitti
 Week1/data_stereo_flow
-
+Week1/AICity_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -8,6 +8,7 @@ import os
 import numpy as np
 from metrics import compute_iou
 
+
 def voc_ap(rec, prec, use_07_metric=False):
     """ ap = voc_ap(rec, prec, [use_07_metric])
     Compute VOC AP given precision and recall.
@@ -40,6 +41,7 @@ def voc_ap(rec, prec, use_07_metric=False):
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
+
 
 def voc_eval(recs,
              imagenames,
@@ -74,7 +76,7 @@ def voc_eval(recs,
     for imagename in imagenames:
         if os.name == 'nt':
             imagename = imagename.replace(os.sep, '/')
-        
+
         imgname = (imagename.split('/')[-1]).split('.')[0]
         try:
             R = [obj for obj in recs[imgname] if obj['name'] == classname]
@@ -84,10 +86,11 @@ def voc_eval(recs,
         det = [False] * len(R)
         npos += len(R)
         class_recs[imgname] = {'bbox': bbox,
-                                 'det': det}
+                               'det': det}
 
     image_ids = [frame for frame, objs in dets.items() for _ in objs if frame in class_recs.keys()]
-    confidence = np.array([obj['confidence'] for frame, objs in dets.items() for obj in objs if frame in class_recs.keys()])
+    confidence = np.array(
+        [obj['confidence'] for frame, objs in dets.items() for obj in objs if frame in class_recs.keys()])
     BB = np.array([obj['bbox'] for frame, objs in dets.items() for obj in objs if frame in class_recs.keys()])
 
     # sort by confidence
@@ -108,7 +111,7 @@ def voc_eval(recs,
 
         if BBGT.size > 0:
             # compute overlaps
-            overlaps = compute_iou(BBGT,bb)
+            overlaps = compute_iou(BBGT, bb)
 
             ovmax = np.max(overlaps)
             jmax = np.argmax(overlaps)

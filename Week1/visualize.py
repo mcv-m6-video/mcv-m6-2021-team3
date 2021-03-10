@@ -6,13 +6,13 @@ import flow_vis
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib.gridspec as gridspec
 from metrics import compute_miou
 from utils import dict_to_list
 import imageio
 import scipy.stats as stats
 from scipy.stats import norm
 from scipy.optimize import curve_fit
+
 
 def plot_metrics_OF(seq, gt_of, det_of, dif, mu, sigma):
     """
@@ -25,16 +25,16 @@ def plot_metrics_OF(seq, gt_of, det_of, dif, mu, sigma):
     :param mu: mean error
     :param sigma: std error
     """
-    fig = plt.figure(figsize=(16,8))
-    plt.subplot(2,2,1)
+    fig = plt.figure(figsize=(16, 8))
+    plt.subplot(2, 2, 1)
     plt.imshow(gt_of[seq])
     plt.title('Ground Truth Optical Flow')
 
-    plt.subplot(2,2,3)
+    plt.subplot(2, 2, 3)
     plt.imshow(det_of[seq])
     plt.title('Estimated Optical Flow')
 
-    plt.subplot(2,2,2)
+    plt.subplot(2, 2, 2)
     ax = plt.gca()
     im = ax.imshow(dif[seq][1])
     plt.title('Optical Flow Error')
@@ -42,21 +42,17 @@ def plot_metrics_OF(seq, gt_of, det_of, dif, mu, sigma):
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(im, cax=cax)
 
-    
-    plt.subplot(2,2,4)
+    plt.subplot(2, 2, 4)
     plt.hist(dif[seq][0], bins=100)
     xmin, xmax = plt.xlim()
     _, ymax = plt.ylim()
     x = np.linspace(xmin, xmax, 100)
-    y = ymax * np.exp( - (x - mu)**2 / (2*sigma ** 2))
-    plt.plot(x, y, 'c', linewidth=2, alpha = 0.5)
+    y = ymax * np.exp(- (x - mu) ** 2 / (2 * sigma ** 2))
+    plt.plot(x, y, 'c', linewidth=2, alpha=0.5)
     plt.xlabel('Optical Flow Error')
     plt.ylabel('Num of pixels')
     plt.title('Optical Flow Histogram Error')
-    
-    plt.show()
-
-    plt.savefig(seq+'.png')
+    plt.savefig(seq + '.png')
 
 
 def OF_quiver_visualize(img, flow, step, fname_output='flow_quiver.png'):
@@ -83,7 +79,7 @@ def OF_quiver_visualize(img, flow, step, fname_output='flow_quiver.png'):
     plt.figure()
     plt.imshow(img, cmap='gray')
     plt.quiver(x[::step, ::step], y[::step, ::step], U[::step, ::step], V[::step, ::step],
-               M[::step, ::step], scale_units='xy', angles='xy', scale=.05, color=(1,0,0,1))
+               M[::step, ::step], scale_units='xy', angles='xy', scale=.05, color=(1, 0, 0, 1))
     plt.axis('off')
     plt.savefig(fname_output)
 
@@ -130,11 +126,11 @@ def OF_colorwheel_visualize(flow, fname_output='flow_colorwheel.png', enhance=Fa
     # To improve the visualization
     if enhance:
         flow_hsv = cv2.cvtColor(flow_color, cv2.COLOR_RGB2HSV)
-        flow_hsv[:,:,1] = flow_hsv[:,:,1]*2
-        flow_hsv[:,:,2] = flow_hsv[:,:,2]*5
+        flow_hsv[:, :, 1] = flow_hsv[:, :, 1] * 2
+        flow_hsv[:, :, 2] = flow_hsv[:, :, 2] * 5
         flow_color = cv2.cvtColor(flow_hsv, cv2.COLOR_HSV2RGB)
 
-    cv2.imwrite(fname_output,flow_color)
+    cv2.imwrite(fname_output, flow_color)
 
 
 def draw_bboxes(img, bboxes, color):
@@ -161,61 +157,62 @@ def visualize_iou(gt, dets, frames, det_model, save_dir='./task2'):
     :param det_model: model used (Mask RCNN, SSD512, YOLO3)
     :param save_dir: path to where gif will be saved
     """
-    os.makedirs(join(save_dir,det_model),exist_ok=True)
+    os.makedirs(join(save_dir, det_model), exist_ok=True)
 
-    gif_dir = join(save_dir,det_model+'.gif')
+    gif_dir = join(save_dir, det_model + '.gif')
 
     if os.path.exists(gif_dir):
-        print('Gif saved at '+gif_dir)
+        print('Gif saved at ' + gif_dir)
         return
 
-
-    miou, std_iou = np.empty(0,), np.empty(0,)
+    miou, std_iou = np.empty(0, ), np.empty(0, )
 
     with imageio.get_writer(gif_dir, mode='I') as writer:
 
-        for frame in tqdm(frames[499:800],'Evaluating detections from {} at each frame'.format(det_model)):
+        for frame in tqdm(frames[499:800], 'Evaluating detections from {} at each frame'.format(det_model)):
             if os.name == 'nt':
                 frame = frame.replace(os.sep, '/')
             frame_id = (frame.split('/')[-1]).split('.')[0]
 
             if frame_id in gt.keys():
-                gt_frame = np.array(dict_to_list(gt[frame_id],False))
-                dets_frame = np.array(dict_to_list(dets[frame_id],False))
-                
-                mean, std = compute_miou(gt_frame,dets_frame,frame_id)
-                miou = np.hstack((miou,mean))
-                std_iou = np.hstack((std_iou,std))
+                gt_frame = np.array(dict_to_list(gt[frame_id], False))
+                dets_frame = np.array(dict_to_list(dets[frame_id], False))
 
-                plt.figure(figsize=(5,6))
+                mean, std = compute_miou(gt_frame, dets_frame, frame_id)
+                miou = np.hstack((miou, mean))
+                std_iou = np.hstack((std_iou, std))
 
-                plt.subplot(2,1,1)
-                img = cv2.cvtColor(cv2.imread(frame),cv2.COLOR_BGR2RGB)
-                img = draw_bboxes(img,gt_frame,(0,255,0))
-                img = draw_bboxes(img,dets_frame,(0,0,255))
+                plt.figure(figsize=(5, 6))
+
+                plt.subplot(2, 1, 1)
+                img = cv2.cvtColor(cv2.imread(frame), cv2.COLOR_BGR2RGB)
+                img = draw_bboxes(img, gt_frame, (0, 255, 0))
+                img = draw_bboxes(img, dets_frame, (0, 0, 255))
                 plt.imshow(img)
-                plt.plot(0, 0, "-", c=(0,1,0), label='Ground Truth')
-                plt.plot(0, 0, "-", c=(0,0,1), label='Detection')
-                plt.legend(prop={'size': 8},loc='lower right')
-                
-                xaxis = np.arange(500,500+len(miou),1)
-                
-                plt.subplot(2,1,2)
-                plt.plot(xaxis,miou,'cadetblue',label='Mean IoU')
-                plt.fill(np.append(xaxis, xaxis[::-1]), np.append(miou+std_iou,(miou-std_iou)[::-1]), 'powderblue', label='STD IoU')
-                plt.axis([500,800,0,1])
-                plt.xlabel('Frame id',fontsize=10)
-                plt.ylabel('IoU',fontsize=10)
-                plt.legend(prop={'size': 8},loc='lower right')
+                plt.plot(0, 0, "-", c=(0, 1, 0), label='Ground Truth')
+                plt.plot(0, 0, "-", c=(0, 0, 1), label='Detection')
+                plt.legend(prop={'size': 8}, loc='lower right')
 
-                plt.savefig(join(save_dir,det_model,frame_id+'.png'))
+                xaxis = np.arange(500, 500 + len(miou), 1)
+
+                plt.subplot(2, 1, 2)
+                plt.plot(xaxis, miou, 'cadetblue', label='Mean IoU')
+                plt.fill(np.append(xaxis, xaxis[::-1]), np.append(miou + std_iou, (miou - std_iou)[::-1]), 'powderblue',
+                         label='STD IoU')
+                plt.axis([500, 800, 0, 1])
+                plt.xlabel('Frame id', fontsize=10)
+                plt.ylabel('IoU', fontsize=10)
+                plt.legend(prop={'size': 8}, loc='lower right')
+
+                plt.savefig(join(save_dir, det_model, frame_id + '.png'))
                 plt.close()
 
-                image = imageio.imread(join(save_dir,det_model,frame_id+'.png'))
+                image = imageio.imread(join(save_dir, det_model, frame_id + '.png'))
                 writer.append_data(image)
-    
-    print('Gif saved at '+gif_dir)
-    
+
+    print('Gif saved at ' + gif_dir)
+
+
 def plot_metrics_noise(results):
     """
     Plot the graphic of different noise test for the bbox results
@@ -226,14 +223,14 @@ def plot_metrics_noise(results):
         x = value[0]
         m_iou = list(zip(*value[1]))[0]
         m_ap = list(zip(*value[1]))[1]
-        
-        fig, ax = plt.subplots()    
-        ax.plot(x, m_iou, color=[163/256, 127/256, 225/256], label="miou")
-        ax.plot(x, m_ap, color=[3/256, 152/256, 147/256], label="map")
-        if key =='Displacement' or key =="Noise":
+
+        fig, ax = plt.subplots()
+        ax.plot(x, m_iou, color=[163 / 256, 127 / 256, 225 / 256], label="miou")
+        ax.plot(x, m_ap, color=[3 / 256, 152 / 256, 147 / 256], label="map")
+        if key == 'Displacement' or key == "Noise":
             plt.xlabel('max # px')
         else:
-            plt.xlabel('max % Prob')         
-            
+            plt.xlabel('max % Prob')
+
         ax.legend()
-        plt.title(key)   
+        plt.title(key)
