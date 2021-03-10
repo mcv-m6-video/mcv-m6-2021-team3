@@ -19,7 +19,7 @@ In this project the main goal was to get used to the different datasets and the 
 * **Task 3**: Optical flow evaluation metrics (MSEN & PEPN).
 * **Task 4**: Visual representation optical flow.
 
-Run the command below to obtain the desired task results.
+Run the command below, from Week1 folder, to obtain the desired task results.
 
 ```bash
 $ python main.py ${TASK_NUMBER}
@@ -52,8 +52,20 @@ $ python main.py ${TASK_NUMBER}
 ## Results
 ### Task 1.1: IoU & mAP for (ground truth + noise)
 
+The addition of the different types of noise result as the mAP and IoU displayed below.
+
+| <center>**Displacement**</center> | <center>**Resize**</center> |
+| :---: | :---: |
+| ![disp](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/noise/displacement.png) | ![resize](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/noise/noise.png) |
+| <center>**Deletion**</center> | <center>**Addition**</center> |
+| ![del](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/noise/delete.png) | ![add](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/noise/generate.png) |
+
+
+
+
 ### Task 1.2: Mean Average Precision (mAP) for Mask RCNN, SDD-512 and YOLOv3
 
+The results obtained in terms of mAP, by the provided detectors, are shown in the following table:
 
 | <center>**Model Detector**</center> | <center>**mAP**</center> | <center>**mAP(%)**</center> |
 | :---: | :---: | :---: |
@@ -70,6 +82,9 @@ In terms of temporal analysis we have used the IoU over time. Displayed below th
 | ![det_mask_rcnn](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task2/det_mask_rcnn.gif) | ![det_ssd512](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task2/det_ssd512.gif) | ![det_yolo3](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task2/det_yolo3.gif) |
 
 ### Task 3: Optical flow evaluation metrics (MSEN & PEPN)
+
+Following table display results to non-occluded pixels for sequences 45 and 157.
+
 <!DOCTYPE html>
 <table>
 <thead>
@@ -93,6 +108,17 @@ In terms of temporal analysis we have used the IoU over time. Displayed below th
 </tbody>
 </table>
 </html>
+
+### Task 4: Visual representation optical flow
+
+Optical Flow and be visualized in several different ways.
+
+|Quiver Mod| <center>**Ground Truth**</center> | <center>**Predicted**</center> |
+| :---: | :---: | :---: |
+| **Seq 45** | ![gt_quiver_45](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000045_10_quiver.png) | ![resize](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000045_10_quiver.png) |
+| **Seq 157** | ![gt_quiver_157](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_gt_000157_10_quiver.png) | ![add](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week1/task4/flow_det_000157_10_quiver.png) |
+
+
 
 ## Report
 The report for week 1 is available [here](https://docs.google.com/presentation/d/1fW_KEDz9zGoJzBtoJuXenhzcsG9WRU2GkyU0DSTTnB4/edit?usp=sharing).
