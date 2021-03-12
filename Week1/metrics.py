@@ -53,8 +53,8 @@ def compute_iou(bb_gt, bb):
     # intersection
     ixmin = np.maximum(bb_gt[:, 0], bb[0])
     iymin = np.maximum(bb_gt[:, 1], bb[1])
-    ixmax = np.maximum(bb_gt[:, 2], bb[2])
-    iymax = np.maximum(bb_gt[:, 3], bb[3])
+    ixmax = np.minimum(bb_gt[:, 2], bb[2])
+    iymax = np.minimum(bb_gt[:, 3], bb[3])
     iw = np.maximum(ixmax - ixmin + 1., 0.)
     ih = np.maximum(iymax - iymin + 1., 0.)
     inters = iw * ih
