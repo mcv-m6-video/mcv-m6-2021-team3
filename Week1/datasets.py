@@ -67,7 +67,7 @@ def load_xml(xml_dir, xml_name):
                 continue
             for bbox in child.getchildren():
                 frame_id, xmin, ymin, xmax, ymax, _, _, _ = list(map(float, ([v for k, v in bbox.attrib.items()])))
-                update_data(annot, int(frame_id) - 1, xmin, ymin, xmax, ymax, 1.)
+                update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1.)
 
     return annot
 
