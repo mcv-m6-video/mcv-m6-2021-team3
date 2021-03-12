@@ -15,7 +15,7 @@ def model_background(frames, grayscale=True):
     return gaussian
 
 
-def get_frame_background(frame, model, grayscale=True):
+def get_frame_background(frame, model, alpha=3, grayscale=True):
     """
     :param frame:
     :param model:
@@ -26,18 +26,16 @@ def get_frame_background(frame, model, grayscale=True):
     bg = np.zeros_like(frame)
 
     diff = frame - model[:, :, 0]
-    foreground_idx = np.where(abs(diff) > 2.5*model[:, :, 1])
+    foreground_idx = np.where(abs(diff) > alpha*(2 + model[:, :, 1]))
 
     bg[foreground_idx[0], foreground_idx[1]] = 255
-    kernel = np.ones((5, 5), np.uint8)
-    bg = cv2.erode(bg, kernel, iterations=1)
 
     return bg
 
 
 def read_frames(paths, grayscale=True):
     """
-    :param path:
+    :param paths:
     :param grayscale:
     :return:
     """
