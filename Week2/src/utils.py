@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+from tqdm.auto import tqdm
 
 def model_background(frames, grayscale=True):
     """
@@ -14,12 +14,13 @@ def model_background(frames, grayscale=True):
 
     return gaussian
 
-
-def get_frame_background(frame, model, alpha=3, grayscale=True):
+def get_frame_background(frame, model, alpha=3, grayscale=True, rm_noise=False, fill=False):
     """
     :param frame:
     :param model:
     :param grayscale:
+    :param rm_noise:
+    :param fill:
     :return:
     """
 
@@ -29,6 +30,11 @@ def get_frame_background(frame, model, alpha=3, grayscale=True):
     foreground_idx = np.where(abs(diff) > alpha*(2 + model[:, :, 1]))
 
     bg[foreground_idx[0], foreground_idx[1]] = 255
+
+    if rm_noise:
+        bg = filter_noise(bg)
+    if fill:
+        bg = fill_gaps(bg)
 
     return bg
 
@@ -41,10 +47,21 @@ def read_frames(paths, grayscale=True):
     """
 
     images = []
-    for file in paths:
+    for file_name in tqdm(paths, 'Reading frames'):
         if grayscale:
-            images.append(cv2.imread(file, cv2.IMREAD_GRAYSCALE))
+            image = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
+            images.append(cv2.Laplacian(image,cv2.CV_64F))
         else:
-            images.append(cv2.imread(file, cv2.IMREAD_COLOR))
+            images.append(cv2.imread(file_name, cv2.IMREAD_COLOR))
 
     return np.asarray(images)
+
+def filter_noise(bg):
+    num_lab, labels = cv2.connectedComponents(bg)
+    rm_labels = [u for u in np.unique(labels) if np.sum(labels==u)<10]
+    for label in rm_labels:
+        bg[np.where(bg==label)] = 0
+    return bg
+
+def fill_gaps(bg):
+    return

@@ -14,7 +14,7 @@ def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 3
+        task = 1.1
 
     if int(task) == 1:
         frames_paths = glob.glob(join(join(data_path, 'AICity/train/S03/c010/vdo'), '*.png'))
@@ -28,14 +28,22 @@ def main(argv):
 
         bg_modeling_frames = read_frames(bg_modeling_frames_paths)
         gaussian_model = model_background(bg_modeling_frames)
+        bg_modeling_frames = None
         bg_frames = read_frames(bg_frames_paths)
-
+        
         for idx, frame in enumerate(bg_frames):
             print(idx)
-            bg = get_frame_background(frame, gaussian_model)
+            if task == 1.1:
+                bg = get_frame_background(frame, gaussian_model)
+            elif task == 1.2:
+                bg = get_frame_background(frame, gaussian_model, rm_noise=True)
+
             cv2.imshow("Background of frame", cv2.resize(bg, (int(1920*0.5), int(1080*0.5))))
             cv2.imshow("Real", cv2.resize(frame, (int(1920 * 0.5), int(1080 * 0.5))))
             cv2.waitKey(100)
+
+
+
 
 
     elif int(task) == 2:
