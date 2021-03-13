@@ -1,10 +1,10 @@
 import numpy as np
 import cv2
-from utils import *
 from os.path import join
 import glob
 import matplotlib.pyplot as plt
 import time
+from tqdm import tqdm
 
 
 class AICity:
@@ -12,8 +12,8 @@ class AICity:
 
     """
 
-    def __init__(self, data_path, resize_factor=0.5, denoise=False, split_factor=0.25, grayscale=True, extension="png",
-                 laplacian=True, pre_denoise=True, task=1.1, alpha=3, rm_noise=False, fill=False, noise_opening=False, noise_cc=False):
+    def __init__(self, data_path, test_mode = False, resize_factor=0.5, denoise=False, split_factor=0.25, grayscale=True, extension="png",
+                 laplacian=False, pre_denoise=False, task=1.1, alpha=3, rm_noise=False, fill=False, noise_opening=False, noise_cc=False):
         """
 
         """
@@ -34,7 +34,7 @@ class AICity:
         self.fill = fill
         self.noise_opening = noise_opening
         self.noise_cc = noise_cc
-
+        self.test_mode = test_mode
         # FUNCTIONS
         self.split_data()
 
@@ -42,6 +42,9 @@ class AICity:
         """
 
         """
+        if self.test_mode:
+            self.frames_paths = self.frames_paths[0:int(len(self.frames_paths)/10)]
+            
         self.bg_modeling_frames_paths = self.frames_paths[
                                         :int(len(self.frames_paths) * self.split_factor)]  # 535 frames
         self.bg_frames_paths = self.frames_paths[int(len(self.frames_paths) * self.split_factor):]
@@ -107,7 +110,7 @@ class AICity:
         images = []
         for file_name in tqdm(self.bg_modeling_frames_paths, 'Reading frames'):
             images.append(self.read_frame(file_name, laplacian=self.laplacian, pre_denoise=self.pre_denoise))
-
+        
         return np.asarray(images)
 
     def read_frame(self, path, laplacian=False, pre_denoise=False):
@@ -121,11 +124,11 @@ class AICity:
                 image = cv2.resize(image,
                                    (int(image.shape[1] * self.resize_factor), int(image.shape[0] * self.resize_factor)),
                                    cv2.INTER_CUBIC)
-                if pre_denoise:   
-                    image = cv2.fastNlMeansDenoising(image)
-                if laplacian:
-                    image = cv2.Laplacian(image, cv2.CV_8U)
-                return image
+            if pre_denoise:   
+                image = cv2.fastNlMeansDenoising(image, templateWindowSize = 5)
+            if laplacian:
+                image = cv2.Laplacian(image, cv2.CV_8U)
+            return image
         else:
             # TODO
             pass
