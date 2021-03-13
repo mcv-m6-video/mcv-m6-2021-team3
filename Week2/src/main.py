@@ -9,28 +9,36 @@ data_path = '../../data'
 output_path = '../outputs'
 debug = True
 test_mode = False
+resize_factor = 0.5
 
 def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 1.2
+        task = 2.1
 
     if int(task) == 1:
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
 
         if task == 1.1:
-            aicity = AICity(frames_paths, resize_factor=0.5, task=task, test_mode = test_mode)
+            aicity = AICity(frames_paths, resize_factor=resize_factor, task=task, test_mode = test_mode)
             aicity.create_background_model()
             aicity.get_frames_background()
         elif task == 1.2:
-            aicity = AICity(frames_paths, resize_factor=0.5, task=task, test_mode = test_mode,  
+            aicity = AICity(frames_paths, resize_factor=resize_factor, task=task, test_mode = test_mode,  
                             rm_noise=True, fill=True, noise_opening=True, pre_denoise=True, laplacian = True, alpha=5)
             aicity.create_background_model()
             aicity.get_frames_background()
 
     elif int(task) == 2:
-        pass
+        frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
+
+        if task == 2.1:
+            aicity = AICity(frames_paths, resize_factor=resize_factor, task=task, test_mode = test_mode, adaptative_model = True, alpha=2, rho = 0.01)
+            aicity.create_background_model()
+            aicity.get_frames_background()
+        elif task == 1.2:
+            pass
 
     elif int(task) == 3:
         pass

@@ -12,8 +12,8 @@ class AICity:
 
     """
 
-    def __init__(self, data_path, test_mode = False, resize_factor=0.5, denoise=False, split_factor=0.25, grayscale=True, extension="png",
-                 laplacian=False, pre_denoise=False, task=1.1, alpha=3, rm_noise=False, fill=False, noise_opening=False, noise_cc=False):
+    def __init__(self, data_path, test_mode = False, resize_factor=0.5, denoise=False, split_factor=0.15, grayscale=True, extension="png",
+                 laplacian=False, pre_denoise=False, task=1.1, alpha=3, rho = 0.5, rm_noise=False, fill=False, noise_opening=False, noise_cc=False, adaptative_model=False):
         """
 
         """
@@ -30,11 +30,13 @@ class AICity:
         self.pre_denoise = pre_denoise
         self.task = task
         self.alpha = alpha
+        self.rho = rho
         self.rm_noise = rm_noise
         self.fill = fill
         self.noise_opening = noise_opening
         self.noise_cc = noise_cc
         self.test_mode = test_mode
+        self.adaptative_model = adaptative_model
         # FUNCTIONS
         self.split_data()
 
@@ -94,11 +96,15 @@ class AICity:
     def get_frames_background(self):
         for frame_path in self.bg_frames_paths:
             frame = self.read_frame(frame_path, laplacian=self.laplacian, pre_denoise=self.pre_denoise)
-            bg = self.get_frame_background(frame)
+                        
+            bg = self.get_frame_background(frame)                              
             img = self.read_frame(frame_path)
             img = cv2.hconcat((bg, img))
             cv2.imshow("Background", img)
             cv2.waitKey(100)
+
+            if self.adaptative_model:
+                self.update_gaussian(frame, bg)
 
     def read_frames(self):
         """
@@ -125,7 +131,7 @@ class AICity:
                                    (int(image.shape[1] * self.resize_factor), int(image.shape[0] * self.resize_factor)),
                                    cv2.INTER_CUBIC)
             if pre_denoise:   
-                image = cv2.fastNlMeansDenoising(image, templateWindowSize = 5)
+                image = cv2.fastNlMeansDenoising(image, templateWindowSize = 7)
             if laplacian:
                 image = cv2.Laplacian(image, cv2.CV_8U)
             return image
@@ -153,3 +159,17 @@ class AICity:
 
         """
         return bg
+    
+    
+    def update_gaussian(self, frame, bg):
+        """
+
+        """
+        [x,y] = np.where(bg==0)
+        #update mean
+        self.background_model[x, y, 0] = self.rho*frame[x,y] + (1-self.rho)*self.background_model[x, y, 0]
+        #update std
+        self.background_model[x, y, 1] = self.rho*np.square(frame[x,y] - self.background_model[x, y, 0]) + (1-self.rho)*self.background_model[x, y, 1]
+    
+        
+        
