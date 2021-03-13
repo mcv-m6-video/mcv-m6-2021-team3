@@ -4,6 +4,7 @@ import glob
 import numpy as np
 import cv2
 from utils import *
+from ai_city import AICity
 
 data_path = '../../data'
 output_path = '../outputs'
@@ -17,34 +18,16 @@ def main(argv):
         task = 1.1
 
     if int(task) == 1:
-        frames_paths = glob.glob(join(join(data_path, 'AICity/train/S03/c010/vdo'), '*.png'))
-        frames_paths.sort()
+        frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
 
-        bg_modeling_frames_paths = frames_paths[:int(len(frames_paths)*0.25)]  # 535 frames
-        bg_frames_paths = frames_paths[int(len(frames_paths)*0.25):]  # 1606 frames
-
-        if debug:
-            print(len(bg_modeling_frames_paths), len(bg_frames_paths))
-
-        bg_modeling_frames = read_frames(bg_modeling_frames_paths)
-        gaussian_model = model_background(bg_modeling_frames)
-        bg_modeling_frames = None
-        bg_frames = read_frames(bg_frames_paths)
-        
-        for idx, frame in enumerate(bg_frames):
-            print(idx)
-            if task == 1.1:
-                bg = get_frame_background(frame, gaussian_model)
-            elif task == 1.2:
-                bg = get_frame_background(frame, gaussian_model, rm_noise=True)
-
-            cv2.imshow("Background of frame", cv2.resize(bg, (int(1920*0.5), int(1080*0.5))))
-            cv2.imshow("Real", cv2.resize(frame, (int(1920 * 0.5), int(1080 * 0.5))))
-            cv2.waitKey(100)
-
-
-
-
+        if task == 1.1:
+            aicity = AICity(frames_paths, resize_factor=0.5, task=1.1)
+            aicity.create_background_model()
+            aicity.get_frames_background()
+        elif task == 1.2:
+            aicity = AICity(frames_paths, resize_factor=0.5, task=1.2, rm_noise=True, fill=True)
+            aicity.create_background_model()
+            aicity.get_frames_background()
 
     elif int(task) == 2:
         pass
