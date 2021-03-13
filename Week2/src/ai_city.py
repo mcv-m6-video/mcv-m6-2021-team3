@@ -13,7 +13,7 @@ class AICity:
     """
 
     def __init__(self, data_path, resize_factor=0.5, denoise=False, split_factor=0.25, grayscale=True, extension="png",
-                 laplacian=True, task=1.1, alpha=3, rm_noise=False, fill=False):
+                 laplacian=True, pre_denoise=True, task=1.1, alpha=3, rm_noise=False, fill=False, noise_opening=False, noise_cc=False):
         """
 
         """
@@ -27,10 +27,13 @@ class AICity:
         self.split_factor = split_factor
         self.grayscale = grayscale
         self.laplacian = laplacian
+        self.pre_denoise = pre_denoise
         self.task = task
         self.alpha = alpha
         self.rm_noise = rm_noise
         self.fill = fill
+        self.noise_opening = noise_opening
+        self.noise_cc = noise_cc
 
         # FUNCTIONS
         self.split_data()
@@ -87,9 +90,9 @@ class AICity:
 
     def get_frames_background(self):
         for frame_path in self.bg_frames_paths:
-            frame = self.read_frame(frame_path, laplacian=self.laplacian)
+            frame = self.read_frame(frame_path, laplacian=self.laplacian, pre_denoise=self.pre_denoise)
             bg = self.get_frame_background(frame)
-            img = self.read_frame(frame_path, laplacian=False)
+            img = self.read_frame(frame_path)
             img = cv2.hconcat((bg, img))
             cv2.imshow("Background", img)
             cv2.waitKey(100)
@@ -103,11 +106,11 @@ class AICity:
 
         images = []
         for file_name in tqdm(self.bg_modeling_frames_paths, 'Reading frames'):
-            images.append(self.read_frame(file_name, laplacian=self.laplacian))
+            images.append(self.read_frame(file_name, laplacian=self.laplacian, pre_denoise=self.pre_denoise))
 
         return np.asarray(images)
 
-    def read_frame(self, path, laplacian=False):
+    def read_frame(self, path, laplacian=False, pre_denoise=False):
         """
 
         """
@@ -118,11 +121,11 @@ class AICity:
                 image = cv2.resize(image,
                                    (int(image.shape[1] * self.resize_factor), int(image.shape[0] * self.resize_factor)),
                                    cv2.INTER_CUBIC)
-
+                if pre_denoise:   
+                    image = cv2.fastNlMeansDenoising(image)
                 if laplacian:
-                    return cv2.Laplacian(image, cv2.CV_8U)
-                else:
-                    return image
+                    image = cv2.Laplacian(image, cv2.CV_8U)
+                return image
         else:
             # TODO
             pass
@@ -131,15 +134,19 @@ class AICity:
         """
 
         """
+        if self.noise_opening == True:
+            bg = cv2.morphologyEx(bg, cv2.MORPH_OPEN, (5,5))
 
-        num_lab, labels = cv2.connectedComponents(bg)
-        rm_labels = [u for u in np.unique(labels) if np.sum(labels == u) < 10]
-        for label in rm_labels:
-            bg[np.where(bg == label)] = 0
+        elif self.noise_cc == True:
+            num_lab, labels = cv2.connectedComponents(bg)
+            rm_labels = [u for u in np.unique(labels) if np.sum(labels == u) < 10]
+            for label in rm_labels:
+                bg[np.where(bg == label)] = 0
+
         return bg
 
     def fill_gaps(self, bg):
         """
 
         """
-        return
+        return bg

@@ -15,17 +15,17 @@ def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 1.1
+        task = 1.2
 
     if int(task) == 1:
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
 
         if task == 1.1:
-            aicity = AICity(frames_paths, resize_factor=0.5, task=1.1)
+            aicity = AICity(frames_paths, resize_factor=0.5, task=task)
             aicity.create_background_model()
             aicity.get_frames_background()
         elif task == 1.2:
-            aicity = AICity(frames_paths, resize_factor=0.5, task=1.2, rm_noise=True, fill=True)
+            aicity = AICity(frames_paths, resize_factor=0.2, task=task, rm_noise=True, fill=False, noise_opening=True,alpha=5)
             aicity.create_background_model()
             aicity.get_frames_background()
 
