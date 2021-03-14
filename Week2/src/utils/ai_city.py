@@ -124,7 +124,7 @@ class AICity:
         self.bg_modeling_frames_paths = self.frames_paths[
                                         :int(len(self.frames_paths) * self.options['split_factor'])]  # 535 frames
         self.bg_frames_paths = self.frames_paths[int(len(self.frames_paths) * self.options['split_factor']):]
-        self.bg_frames_paths = self.bg_frames_paths[:300]
+        self.bg_frames_paths = self.bg_frames_paths[:100]
         # 1606 frames
 
     def create_background_model(self):
@@ -237,8 +237,8 @@ class AICity:
 
             if self.options['save_img']:
                 cv2.imwrite('outputs/task_{}/{}/{}.jpg'.format(self.options['task'], self.options['colorspace'], frame_id),img)
-            #cv2.imshow("Background", img)
-            #cv2.waitKey(100)
+            cv2.imshow("Background", img)
+            cv2.waitKey(100)
             
             # Free memory
             del img, frame, bg
@@ -263,6 +263,7 @@ class AICity:
 
         """
         img0 = cv2.imread(path)
+        img = img0
 
         if self.options['resize_factor'] < 1.0:
             img = cv2.resize(img0,
@@ -308,7 +309,7 @@ class AICity:
         """
 
         if self.options['colorspace'] == 'gray':
-            [x, y] = np.where(bg == 0)
+            [x, y] = np.where(bg[:,:,0] == 0)
             # update mean
             self.background_model[x, y, 0] = self.options['rho'] * frame[x, y] + (1 - self.options['rho']) * self.background_model[x, y, 0]
             # update std
@@ -318,7 +319,7 @@ class AICity:
             pass
     
     def get_mAP(self):
-        return voc_eval(self.gt_bboxes, self.bg_frames_paths, self.det_bboxes)[2]
+        return voc_eval(self.gt_bboxes, self.bg_frames_paths, self.det_bboxes, resize_factor = self.options['resize_factor'])[2]
 
     def save_results(self, name_json):
         write_json_file(self.det_bboxes, name_json)
