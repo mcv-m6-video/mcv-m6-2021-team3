@@ -16,7 +16,7 @@ def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 1.2
+        task = 4
 
 
     if int(task) == 1:
@@ -42,7 +42,7 @@ def main(argv):
                 'task': task
             }
 
-            aicity = AICity(frames_paths, options)
+            aicity = AICity(frames_paths, data_path, options)
             aicity.create_background_model()
             aicity.get_frames_background()
         elif task == 1.2:
@@ -66,7 +66,7 @@ def main(argv):
                 'task': task
             }
 
-            aicity = AICity(frames_paths, options)
+            aicity = AICity(frames_paths, data_path, options)
             aicity.create_background_model()
             aicity.get_frames_background()
 
@@ -93,7 +93,7 @@ def main(argv):
                 'task': task
             }
 
-            aicity = AICity(frames_paths, options)
+            aicity = AICity(frames_paths, data_path, options)
             aicity.create_background_model()
             aicity.get_frames_background()
 
@@ -118,13 +118,13 @@ def main(argv):
         }
 
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
-        aicity = AICity(frames_paths, options)
+        aicity = AICity(frames_paths, data_path, options)
         frames = aicity.read_frames()
 
         if method == 'MOG2':
             backSub = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
             # bg_MOG2 = backSub.getBackgroundImage()
-            s
+            
         elif method == 'KNN':
             backSub = cv2.createBackgroundSubtractorKNN(detectShadows=False)
 
@@ -147,24 +147,27 @@ def main(argv):
             'resize_factor': 0.5,
             'denoise': False,
             'split_factor': 0.25,
-            'test_mode': True,
-            'colorspace': 'gray',
+            'test_mode': False,
+            'colorspace': 'LAB',
             'extension': 'png',
             'laplacian': False,
-            'median_filter': False,
+            'median_filter': True,
             'bilateral_filter': False,
             'pre_denoise': False,
             'alpha': 3,
-            'rho': 0.5,
-            'noise_filter': None,
+            'rho': 0.05,
+            'noise_filter': ['base',False],#'morph_filter',
             'fill': False,
             'adaptive_model': False,
+            'return_bboxes': True,
             'task': task
         }
 
-        aicity = AICity(frames_paths, options)
+        aicity = AICity(frames_paths, data_path, options)
         aicity.create_background_model()
         aicity.get_frames_background()
+
+        print('mAP: ',aicity.get_mAP())
 
     else:
         raise NameError

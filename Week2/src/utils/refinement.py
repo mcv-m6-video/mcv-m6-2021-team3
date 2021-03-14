@@ -2,11 +2,11 @@ import numpy as np
 import cv2
 from scipy.ndimage.morphology import binary_fill_holes
 
-def filter_noise(bg, noise_filter='base', min_area=0.0003):
+def filter_noise(bg, noise_filter=['base',False], min_area=0.0003):
     """
 
     """
-    if noise_filter in 'morph_filter':
+    if noise_filter[0] in 'morph_filter':
         # Opening
         bg = cv2.morphologyEx(bg, cv2.MORPH_OPEN,  np.ones((1,1)))  
         # Closing
@@ -14,13 +14,14 @@ def filter_noise(bg, noise_filter='base', min_area=0.0003):
 
     # Connected components
     num_lab, labels = cv2.connectedComponents(bg)
-
-    # Filter by area
-    rm_labels = [u for u in np.unique(labels) if np.sum(labels == u) < min_area*bg.size]
-    for label in rm_labels:
-        bg[np.where(labels == label)] = 0
-        labels[np.where(labels == label)] = 0    
     
+    if noise_filter[1]:
+        # Filter by area
+        rm_labels = [u for u in np.unique(labels) if np.sum(labels == u) < min_area*bg.size]
+        for label in rm_labels:
+            bg[np.where(labels == label)] = 0
+            labels[np.where(labels == label)] = 0    
+        
     return bg, labels
 
 def generate_bbox(label_mask):

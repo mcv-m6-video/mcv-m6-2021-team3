@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from utils import dict_to_list, gen_noisy_bbox, update_data
+from utils.utils import dict_to_list
 
 
 def compute_iou(bb_gt, bb):

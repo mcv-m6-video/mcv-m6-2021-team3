@@ -3,14 +3,102 @@ import cv2
 from os.path import join
 import glob
 from tqdm import tqdm
+import xml.etree.ElementTree as ET
 from utils.refinement import get_single_objs, filter_noise
+from utils.metrics import voc_eval
+
+
+def load_text(text_dir, text_name):
+    """
+    Parses an annotations TXT file
+    :param xml_dir: dir where the file is stored
+    :param xml_name: name of the file to parse
+    :return: a dictionary with the data parsed
+    """
+    with open(join(text_dir, text_name), 'r') as f:
+        txt = f.readlines()
+
+    annot = {}
+    for frame in txt:
+        frame_id, _, xmin, ymin, width, height, conf, _, _, _ = list(map(float, (frame.split('\n')[0]).split(',')))
+        update_data(annot, frame_id, xmin, ymin, xmin + width, ymin + height, conf)
+    return annot
+
+
+def load_xml(xml_dir, xml_name, ignore_parked=True):
+    """
+    Parses an annotations XML file
+    :param xml_dir: dir where the file is stored
+    :param xml_name: name of the file to parse
+    :return: a dictionary with the data parsed
+    """
+    tree = ET.parse(join(xml_dir, xml_name))
+    root = tree.getroot()
+    annot = {}
+
+    for child in root:
+        if child.tag in 'track':
+            if child.attrib['label'] not in 'car':
+                continue
+            for bbox in child.getchildren():
+                if bbox.getchildren()[0].text in 'true':
+                    continue
+                frame_id, xmin, ymin, xmax, ymax, _, _, _ = list(map(float, ([v for k, v in bbox.attrib.items()])))
+                update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1.)
+
+    return annot
+
+def load_annot(annot_dir, name, ignore_parked=True):
+    """
+    Loads annotations in XML format or TXT
+    :param annot_dir: dir containing the annotations
+    :param name: name of the file to load
+    :return: the loaded annotations
+    """
+    if name.endswith('txt'):
+        annot = load_text(annot_dir, name)
+    elif name.endswith('xml'):
+        annot = load_xml(annot_dir, name, ignore_parked)
+    else:
+        assert 'Not supported annotation format ' + name.split('.')[-1]
+
+    return annot
+
+def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
+    """
+    Updates the annotations dict with by adding the desired data to it
+    :param annot: annotation dict
+    :param frame_id: id of the framed added
+    :param xmin: min position on the x axis of the bbox
+    :param ymin: min position on the y axis of the bbox
+    :param xmax: max position on the x axis of the bbox
+    :param ymax: max position on the y axis of the bbox
+    :param conf: confidence
+    :return: the updated dictionary
+    """
+
+    frame_name = '%04d' % int(frame_id)
+    obj_info = dict(
+        name='car',
+        bbox=[xmin, ymin, xmax, ymax],
+        confidence=conf
+    )
+
+    if frame_name not in annot.keys():
+        annot.update({frame_name: [obj_info]})
+    else:
+        annot[frame_name].append(obj_info)
+
+    return annot
+
+
 
 class AICity:
     """
 
     """
 
-    def __init__(self, data_path, options):
+    def __init__(self, data_path, gt_path, options):
         """
 
         """
@@ -20,6 +108,8 @@ class AICity:
         self.frames_paths = glob.glob(join(self.data_path, "*." + options['extension']))
         self.frames_paths.sort()
         self.options = options
+        self.gt_bboxes = load_annot(gt_path,'ai_challenge_s03_c010-full_annotation.xml')
+        self.det_bboxes = {}
 
         # FUNCTIONS
         self.split_data()
@@ -34,6 +124,7 @@ class AICity:
         self.bg_modeling_frames_paths = self.frames_paths[
                                         :int(len(self.frames_paths) * self.options['split_factor'])]  # 535 frames
         self.bg_frames_paths = self.frames_paths[int(len(self.frames_paths) * self.options['split_factor']):]
+        self.bg_frames_paths = self.bg_frames_paths[:300]
         # 1606 frames
 
     def create_background_model(self):
@@ -113,6 +204,8 @@ class AICity:
 
             bg[foreground_idx[0], foreground_idx[1]] = 255
 
+        bg = bg.astype(np.uint8)
+
         if self.options['return_bboxes']:
             bg, bboxes = get_single_objs(bg, self.options['noise_filter'], self.options['fill'])
             return bg, bboxes
@@ -121,10 +214,10 @@ class AICity:
             # Filter noise
             bg, _ = filter_noise(bg, self.options['noise_filter'])
         
-        return bg.astype(np.uint8), None
+        return bg, None
 
     def get_frames_background(self):
-        for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths[150:]), 'Predicting background'):
+        for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
             img, frame = self.read_frame(frame_path, colorspace=self.options['colorspace'],
                                     laplacian=self.options['laplacian'], pre_denoise=self.options['pre_denoise'])
 
@@ -134,18 +227,21 @@ class AICity:
             if self.options['adaptive_model']:
                 self.update_gaussian(frame, bg)
             
-            if self.options['return_bboxes']:
+            if self.options['return_bboxes']:                
                 for x,y,w,h in bboxes:
+                    self.det_bboxes = update_data(self.det_bboxes, frame_path[-8:-4], x, y, x+w, y+h, 1.)
                     bg = cv2.rectangle(bg,(x,y),(x+w,y+h),(255,0,0),2)
                     img = cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
 
             img = cv2.hconcat((bg, img))
-            cv2.imwrite('result/{}.jpg'.format(frame_id),img)
+            #cv2.imwrite('result/{}.jpg'.format(frame_id),img)
             #cv2.imshow("Background", img)
             #cv2.waitKey(100)
             
             # Free memory
             del img, frame, bg
+        
+        print('DONE!')
 
     def read_frames(self):
         """
@@ -213,3 +309,6 @@ class AICity:
                         1 - self.options['rho']) * self.background_model[x, y, 1]
         else:
             pass
+    
+    def get_mAP(self):
+        return voc_eval(self.gt_bboxes, self.bg_frames_paths, self.det_bboxes)[2]
