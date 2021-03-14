@@ -165,8 +165,8 @@ class AICity:
             self.background_model = gaussian
 
         else:
-            n_frames, height, width, n_channels = bg_modeling_frames.shape
             if self.colorspace == "LAB":
+                n_frames, height, width, n_channels = bg_modeling_frames.shape
                 gaussian = np.zeros((height, width, 4))
 
                 # Channel A
@@ -179,6 +179,16 @@ class AICity:
 
                 self.background_model = gaussian
 
+            elif self.colorspace == "HSV":
+                n_frames, height, width = bg_modeling_frames.shape
+
+                gaussian = np.zeros((height, width, 2))
+
+                # Channel H
+                gaussian[:, :, 0] = np.mean(bg_modeling_frames, axis=0)
+                gaussian[:, :, 1] = np.std(bg_modeling_frames, axis=0)
+
+                self.background_model = gaussian
 
     def get_frame_background(self, frame):
         """
@@ -205,19 +215,28 @@ class AICity:
             if self.fill:
                 bg = fill_gaps(bg)'''
         else:
-            if self.colorspace == "LAB":
+            if self.colorspace == "LAB" or self.colorspace == "YCbCr":
                 bg = np.zeros((frame.shape[0], frame.shape[1]))
 
-                diff_a = frame[:, :, 0] - self.background_model[:, :, 0]
-                diff_b = frame[:, :, 1] - self.background_model[:, :, 2]
+                diff_ch1 = frame[:, :, 0] - self.background_model[:, :, 0]
+                diff_ch2 = frame[:, :, 1] - self.background_model[:, :, 2]
 
-                foreground_a_idx = np.where(abs(diff_a) > self.alpha * (2 + self.background_model[:, :, 1]))
-                foreground_b_idx = np.where(abs(diff_b) > self.alpha * (2 + self.background_model[:, :, 3]))
+                foreground_ch1_idx = np.where(abs(diff_ch1) > self.alpha * (2 + self.background_model[:, :, 1]))
+                foreground_ch2_idx = np.where(abs(diff_ch2) > self.alpha * (2 + self.background_model[:, :, 3]))
 
-                bg[foreground_a_idx[0], foreground_a_idx[1]] = 255
-                bg[foreground_b_idx[0], foreground_b_idx[1]] = 255
+                bg[foreground_ch1_idx[0], foreground_ch1_idx[1]] = 255
+                bg[foreground_ch2_idx[0], foreground_ch2_idx[1]] = 255
 
-        return bg
+            elif self.colorspace == "HSV":
+                bg = np.zeros_like(frame)
+
+                diff = frame - self.background_model[:, :, 0]
+
+                foreground_idx = np.where(abs(diff) > self.alpha * (2 + self.background_model[:, :, 1]))
+
+                bg[foreground_idx[0], foreground_idx[1]] = 255
+
+        return bg.astype(np.uint8)
 
     def get_frames_background(self):
         for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
@@ -225,7 +244,7 @@ class AICity:
                         
             bg = self.get_frame_background(frame)                              
             img = self.read_frame(frame_path, grayscale=True)
-            img = cv2.hconcat((bg.astype(np.uint8), img.astype(np.uint8)))
+            img = cv2.hconcat((bg, img.astype(np.uint8)))
             #cv2.imwrite('laplacian/{}.jpg'.format(frame_id),img)
             cv2.imshow("Background", img)
             cv2.waitKey(100)
@@ -278,6 +297,9 @@ class AICity:
 
             if self.colorspace == "LAB":
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)[:, :, 1:]
+
+            if self.colorspace == "YCbCr":
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)[:, :, 1:]
 
             if self.colorspace == "HSV":
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)[:, :, 0]

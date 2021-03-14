@@ -1,7 +1,7 @@
 import sys
 from os.path import join
 import cv2
-from ai_city import AICity
+from utils.ai_city import AICity
 
 data_path = '../../data'
 output_path = '../outputs'
@@ -9,7 +9,7 @@ debug = True
 test_mode = False
 resize_factor = 0.5
 method = 'GMG'
-
+colorspace = "HSV"
 
 def main(argv):
     if len(argv) > 1:
@@ -80,7 +80,7 @@ def main(argv):
         adaptative = False
 
         aicity = AICity(frames_paths, resize_factor=0.5, test_mode=test_mode, grayscale=False, alpha=2,
-                        adaptative_model=adaptative, colorspace="LAB", pre_denoise=False, laplacian=False)
+                        adaptative_model=adaptative, colorspace=colorspace, pre_denoise=False, laplacian=False)
         aicity.create_background_model()
         aicity.get_frames_background()
 
