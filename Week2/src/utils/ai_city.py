@@ -269,22 +269,23 @@ class AICity:
                                 (int(img0.shape[1] * self.options['resize_factor']),
                                 int(img0.shape[0] * self.options['resize_factor'])),
                                 cv2.INTER_CUBIC)
+
         if pre_denoise:
             img = cv2.fastNlMeansDenoising(img, templateWindowSize=7)
         if laplacian:
             img = cv2.Laplacian(img, cv2.CV_8U)
 
         if self.options['colorspace'] == 'gray':
-            img = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         elif self.options['colorspace'] == "LAB":
-            img = cv2.cvtColor(img0, cv2.COLOR_BGR2LAB)[:, :, 1:]
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)[:, :, 1:]
 
         elif self.options['colorspace'] == "YCbCr":
-            img = cv2.cvtColor(img0, cv2.COLOR_BGR2YCrCb)[:, :, 1:]
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)[:, :, 1:]
 
         elif self.options['colorspace'] == "HSV":
-            img = cv2.cvtColor(img0, cv2.COLOR_BGR2HSV)[:, :, 0]
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)[:, :, 0]
 
         if self.options['bilateral_filter']:            
             img[:, :, 0] = cv2.bilateralFilter(img[:, :, 0], 9, 75, 75)
