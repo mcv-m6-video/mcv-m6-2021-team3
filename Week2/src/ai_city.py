@@ -6,11 +6,15 @@ import matplotlib.pyplot as plt
 import time
 from tqdm import tqdm
 
+# Deep Learning Background substraction
+import tensorflow as tf
+
 
 def filter_noise(bg, post_processing=True, min_area=0.15):
     """
 
     """
+
     if post_processing:
         # Opening
         bg = cv2.morphologyEx(bg, cv2.MORPH_OPEN,  np.ones((1,1)))  
@@ -40,6 +44,7 @@ def generate_bbox(mask):
     w = np.max(pos[1]) - np.min(pos[1])
 
     return x,y,w,h
+
 
 def fill_gaps(labels):
     """
@@ -97,14 +102,14 @@ def get_single_objs(bg):
     return bg
 
 
-
 class AICity:
     """
 
     """
 
-    def __init__(self, data_path, test_mode = False, resize_factor=0.5, denoise=False, split_factor=0.15, grayscale=True, extension="png",
-                 laplacian=False, pre_denoise=False, task=1.1, alpha=3, rho = 0.5, rm_noise=None, fill=False, adaptative_model=False):
+    def __init__(self, data_path, test_mode=False, resize_factor=0.5, denoise=False, split_factor=0.15,
+                 grayscale=True, colorspace="LAB", extension="png", laplacian=False, pre_denoise=False, task=1.1,
+                 alpha=3, rho=0.5, rm_noise=None, fill=False, adaptative_model=False):
         """
 
         """
@@ -117,6 +122,7 @@ class AICity:
         self.denoise = denoise
         self.split_factor = split_factor
         self.grayscale = grayscale
+        self.colorspace = colorspace
         self.laplacian = laplacian
         self.pre_denoise = pre_denoise
         self.task = task
@@ -126,6 +132,7 @@ class AICity:
         self.fill = fill
         self.test_mode = test_mode
         self.adaptative_model = adaptative_model
+
         # FUNCTIONS
         self.split_data()
 
@@ -146,14 +153,32 @@ class AICity:
 
         """
         bg_modeling_frames = self.read_frames()
-        n_frames, height, width = bg_modeling_frames.shape
-        gaussian = np.zeros((height, width, 2))
-        gaussian[:, :, 0] = np.mean(bg_modeling_frames, axis=0)
-        gaussian[:, :, 1] = np.std(bg_modeling_frames, axis=0)
 
-        del bg_modeling_frames
+        if self.grayscale:
+            n_frames, height, width = bg_modeling_frames.shape
+            gaussian = np.zeros((height, width, 2))
+            gaussian[:, :, 0] = np.mean(bg_modeling_frames, axis=0)
+            gaussian[:, :, 1] = np.std(bg_modeling_frames, axis=0)
 
-        self.background_model = gaussian
+            del bg_modeling_frames
+
+            self.background_model = gaussian
+
+        else:
+            n_frames, height, width, n_channels = bg_modeling_frames.shape
+            if self.colorspace == "LAB":
+                gaussian = np.zeros((height, width, 4))
+
+                # Channel A
+                gaussian[:, :, 0] = np.mean(bg_modeling_frames[:, :, :, 0], axis=0)
+                gaussian[:, :, 1] = np.std(bg_modeling_frames[:, :, :, 0], axis=0)
+
+                # Channel B
+                gaussian[:, :, 2] = np.mean(bg_modeling_frames[:, :, :, 1], axis=0)
+                gaussian[:, :, 3] = np.std(bg_modeling_frames[:, :, :, 1], axis=0)
+
+                self.background_model = gaussian
+
 
     def get_frame_background(self, frame):
         """
@@ -180,20 +205,30 @@ class AICity:
             if self.fill:
                 bg = fill_gaps(bg)'''
         else:
-            pass
+            if self.colorspace == "LAB":
+                bg = np.zeros((frame.shape[0], frame.shape[1]))
+
+                diff_a = frame[:, :, 0] - self.background_model[:, :, 0]
+                diff_b = frame[:, :, 1] - self.background_model[:, :, 2]
+
+                foreground_a_idx = np.where(abs(diff_a) > self.alpha * (2 + self.background_model[:, :, 1]))
+                foreground_b_idx = np.where(abs(diff_b) > self.alpha * (2 + self.background_model[:, :, 3]))
+
+                bg[foreground_a_idx[0], foreground_a_idx[1]] = 255
+                bg[foreground_b_idx[0], foreground_b_idx[1]] = 255
 
         return bg
 
     def get_frames_background(self):
         for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
-            frame = self.read_frame(frame_path, laplacian=self.laplacian, pre_denoise=self.pre_denoise)
+            frame = self.read_frame(frame_path, grayscale=self.grayscale, laplacian=self.laplacian, pre_denoise=self.pre_denoise)
                         
             bg = self.get_frame_background(frame)                              
-            img = self.read_frame(frame_path)
-            img = cv2.hconcat((bg, img))
-            cv2.imwrite('laplacian/{}.jpg'.format(frame_id),img)
-            #cv2.imshow("Background", img)
-            #cv2.waitKey(100)
+            img = self.read_frame(frame_path, grayscale=True)
+            img = cv2.hconcat((bg.astype(np.uint8), img.astype(np.uint8)))
+            #cv2.imwrite('laplacian/{}.jpg'.format(frame_id),img)
+            cv2.imshow("Background", img)
+            cv2.waitKey(100)
 
             if self.adaptative_model:
                 self.update_gaussian(frame, bg)
@@ -209,16 +244,17 @@ class AICity:
 
         images = []
         for file_name in tqdm(self.bg_modeling_frames_paths, 'Reading frames'):
-            images.append(self.read_frame(file_name, laplacian=self.laplacian, pre_denoise=self.pre_denoise))
+            images.append(self.read_frame(file_name, grayscale=self.grayscale, laplacian=self.laplacian,
+                                          pre_denoise=self.pre_denoise))
         
         return np.asarray(images)
 
-    def read_frame(self, path, laplacian=False, pre_denoise=False):
+    def read_frame(self, path, grayscale=True, laplacian=False, pre_denoise=False):
         """
 
         """
 
-        if self.grayscale:
+        if grayscale:
             image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
             if self.resize_factor < 1.0:
                 image = cv2.resize(image,
@@ -228,20 +264,37 @@ class AICity:
                 image = cv2.fastNlMeansDenoising(image, templateWindowSize = 7)
             if laplacian:
                 image = cv2.Laplacian(image, cv2.CV_8U)
-            return image
         else:
-            # TODO
-            pass    
+            image = cv2.imread(path)
+
+            if self.resize_factor < 1.0:
+                image = cv2.resize(image,
+                                   (int(image.shape[1] * self.resize_factor), int(image.shape[0] * self.resize_factor)),
+                                   cv2.INTER_CUBIC)
+            if pre_denoise:
+                image = cv2.fastNlMeansDenoising(image, templateWindowSize=7)
+            if laplacian:
+                image = cv2.Laplacian(image, cv2.CV_8U)
+
+            if self.colorspace == "LAB":
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)[:, :, 1:]
+
+            if self.colorspace == "HSV":
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)[:, :, 0]
+
+        return image
+
     
     def update_gaussian(self, frame, bg):
         """
 
         """
-        [x,y] = np.where(bg==0)
-        #update mean
-        self.background_model[x, y, 0] = self.rho*frame[x,y] + (1-self.rho)*self.background_model[x, y, 0]
-        #update std
-        self.background_model[x, y, 1] = self.rho*np.square(frame[x,y] - self.background_model[x, y, 0]) + (1-self.rho)*self.background_model[x, y, 1]
-    
-        
-        
+
+        if self.grayscale:
+            [x,y] = np.where(bg==0)
+            #update mean
+            self.background_model[x, y, 0] = self.rho*frame[x,y] + (1-self.rho)*self.background_model[x, y, 0]
+            #update std
+            self.background_model[x, y, 1] = self.rho*np.square(frame[x,y] - self.background_model[x, y, 0]) + (1-self.rho)*self.background_model[x, y, 1]
+        else:
+            pass
