@@ -1,4 +1,5 @@
 import sys
+import os
 from os.path import join
 import cv2
 from utils.ai_city import AICity
@@ -18,6 +19,7 @@ def main(argv):
     else:
         task = 4
 
+    os.makedirs('outputs',exist_ok=True)
 
     if int(task) == 1:
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
@@ -141,6 +143,7 @@ def main(argv):
             cv2.waitKey(100)
 
     elif int(task) == 4:
+        os.makedirs('outputs/task_4',exist_ok=True)
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
 
         options = {
@@ -166,6 +169,8 @@ def main(argv):
         aicity = AICity(frames_paths, data_path, options)
         aicity.create_background_model()
         aicity.get_frames_background()
+
+        aicity.save_results('outputs/task4/LAB.json')
 
         print('mAP: ',aicity.get_mAP())
 

@@ -6,7 +6,7 @@ from tqdm import tqdm
 import xml.etree.ElementTree as ET
 from utils.refinement import get_single_objs, filter_noise
 from utils.metrics import voc_eval
-
+from utils.utils import write_json_file
 
 def load_text(text_dir, text_name):
     """
@@ -312,3 +312,6 @@ class AICity:
     
     def get_mAP(self):
         return voc_eval(self.gt_bboxes, self.bg_frames_paths, self.det_bboxes)[2]
+
+    def save_results(self, name_json):
+        write_json_file(self.det_bboxes, name_json)
