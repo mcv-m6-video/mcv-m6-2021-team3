@@ -5,13 +5,14 @@ import glob
 import matplotlib.pyplot as plt
 import time
 from tqdm import tqdm
+from scipy.ndimage.morphology import binary_fill_holes
 
 
-def filter_noise(bg, post_processing=True, min_area=0.15):
+def filter_noise(bg, noise_filter='base', min_area=0.0003):
     """
 
     """
-    if post_processing:
+    if noise_filter in 'morph filter':
         # Opening
         bg = cv2.morphologyEx(bg, cv2.MORPH_OPEN,  np.ones((1,1)))  
         # Closing
@@ -21,18 +22,21 @@ def filter_noise(bg, post_processing=True, min_area=0.15):
     num_lab, labels = cv2.connectedComponents(bg)
 
     # Filter by area
-    rm_labels = [u for u in np.unique(labels) if np.sum(labels == u) < min_area*len(bg)]
+    rm_labels = [u for u in np.unique(labels) if np.sum(labels == u) < min_area*bg.size]
     for label in rm_labels:
         bg[np.where(labels == label)] = 0
         labels[np.where(labels == label)] = 0    
     
     return bg, labels
 
-def generate_bbox(mask):
+def generate_bbox(label_mask):
     """
     
     """
-    pos = np.where(mask==255)
+    pos = np.where(label_mask==255)
+
+    if sum(pos).size < 1:
+        return 0,0,0,0
 
     y = np.min(pos[0])
     x = np.min(pos[1])
@@ -41,7 +45,7 @@ def generate_bbox(mask):
 
     return x,y,w,h
 
-def fill_gaps(labels):
+def fill_and_get_bbox(labels, fill=True, mask=None):
     """
 
     """
@@ -50,51 +54,47 @@ def fill_gaps(labels):
     
     bg = np.zeros(labels.shape, dtype=np.uint8)
 
+    bboxes = []
+
     for label in fg_idx:
         aux = np.zeros(labels.shape, dtype=np.uint8)
         aux[labels==label]=255
 
-        contours,_ = cv2.findContours(aux, 1, 2)
+        # Closing
+        aux = cv2.morphologyEx(aux, cv2.MORPH_CLOSE, np.ones((5,5)))
 
-        # create hull array for convex hull points
-        hull = []
-        # calculate points for each contour
-        for i in range(len(contours)):
-            # creating convex hull object for each contour
-            #hull = cv2.convexHull(contours[i], False)
-            epsilon = 0.1*cv2.arcLength(contours[i],True)
-            approx = cv2.approxPolyDP(contours[i],epsilon,True)
-            aux = cv2.fillPoly(aux, pts=[approx],color=(255))
+        # Opening -> rm shadows
+        aux = cv2.morphologyEx(aux, cv2.MORPH_OPEN, np.ones((5,5)))
 
         x,y,w,h = generate_bbox(aux)
-        if np.sum(aux>0)/(w*h) > .35:
-            aux = cv2.rectangle(aux,(x,y),(x+w,y+h),(50),2)
+
+        # Filter by overlap
+        if np.sum(aux>0)/(w*h) >= .55:
+            
+            if fill:
+                # Fill holes
+                aux = binary_fill_holes(aux).astype(np.uint8)*255
+                
             bg = bg+aux
-
-        '''drawing = np.zeros((aux.shape[0], aux.shape[1], 3), np.uint8)
-        # draw contours and hull points
-        for i in range(len(contours)):
-            color_contours = (0, 255, 0) # green - color for contours
-            color = (255, 0, 0) # blue - color for convex hull
-            # draw ith contour
-            cv2.drawContours(drawing, contours, i, color_contours, 1, 8, hierarchy)
-            # draw ith convex hull object
-            cv2.drawContours(drawing, hull, i, color, 1, 8)'''
+            # Add new bbox
+            bboxes.append([x,y,w,h])
     
-    return bg
+    return bg, bboxes
 
-def get_single_objs(bg):
+def get_single_objs(bg, noise_filter='base', fill=True, mask=None):
     """
 
     """
-    # Filter noise
-    bg, labels = filter_noise(bg)
+    if noise_filter:
+        # Filter noise
+        bg, labels = filter_noise(bg, noise_filter)
+    else:
+        _, labels = cv2.connectedComponents(bg)
 
-    # Generate bboxes    
-    bg = fill_gaps(labels)
-    
-    # Filter by aspect ratio
-    return bg
+    # Generate bboxes and (optional) fill holes
+    bg, bboxes = fill_and_get_bbox(labels, fill, mask)
+
+    return bg, bboxes
 
 
 
@@ -104,7 +104,7 @@ class AICity:
     """
 
     def __init__(self, data_path, test_mode = False, resize_factor=0.5, denoise=False, split_factor=0.15, grayscale=True, extension="png",
-                 laplacian=False, pre_denoise=False, task=1.1, alpha=3, rho = 0.5, rm_noise=None, fill=False, adaptative_model=False):
+                 laplacian=False, pre_denoise=False, task=1.1, alpha=3, rho = 0.5, noise_filter=None, fill=False, adaptative_model=False, mask=None):
         """
 
         """
@@ -122,10 +122,12 @@ class AICity:
         self.task = task
         self.alpha = alpha
         self.rho = rho
-        self.rm_noise = rm_noise
+        self.noise_filter = noise_filter
         self.fill = fill
         self.test_mode = test_mode
         self.adaptative_model = adaptative_model
+        self.mask = mask
+
         # FUNCTIONS
         self.split_data()
 
@@ -155,13 +157,11 @@ class AICity:
 
         self.background_model = gaussian
 
-    def get_frame_background(self, frame):
+    def get_frame_background(self, frame, return_bboxes=False):
         """
         :param frame:
         :param model:
         :param grayscale:
-        :param rm_noise:
-        :param fill:
         :return:
         """
 
@@ -173,32 +173,42 @@ class AICity:
 
             bg[foreground_idx[0], foreground_idx[1]] = 255
             
-            bg = get_single_objs(bg)
-
-            '''if self.rm_noise is not None:
-                bg = filter_noise(bg, self.rm_noise)
-            if self.fill:
-                bg = fill_gaps(bg)'''
         else:
             pass
+        
+        if return_bboxes:
+            bg, bboxes = get_single_objs(bg, self.noise_filter, self.fill, self.mask)
+            return bg, bboxes
 
-        return bg
+        elif not return_bboxes and self.noise_filter:
+            # Filter noise
+            bg, _ = filter_noise(bg, self.noise_filter)
+        
+        return bg, None
 
-    def get_frames_background(self):
-        for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
-            frame = self.read_frame(frame_path, laplacian=self.laplacian, pre_denoise=self.pre_denoise)
-                        
-            bg = self.get_frame_background(frame)                              
-            img = self.read_frame(frame_path)
-            img = cv2.hconcat((bg, img))
-            cv2.imwrite('laplacian/{}.jpg'.format(frame_id),img)
-            #cv2.imshow("Background", img)
-            #cv2.waitKey(100)
+        
+
+    def get_frames_background(self, return_bboxes=False):
+        for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths[450:]), 'Predicting background'):
+            img, frame = self.read_frame(frame_path, laplacian=self.laplacian, pre_denoise=self.pre_denoise)
+            bg, bboxes  = self.get_frame_background(frame, return_bboxes)
+            bg = np.repeat(np.expand_dims(bg,axis=2),3,axis=2)
 
             if self.adaptative_model:
                 self.update_gaussian(frame, bg)
             
-            frame, img, bg = None, None, None
+            if return_bboxes:
+                for x,y,w,h in bboxes:
+                    bg = cv2.rectangle(bg,(x,y),(x+w,y+h),(255,0,0),2)
+                    img = cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
+
+            img = cv2.hconcat((bg, img))
+            cv2.imwrite('laplacian/{}.jpg'.format(frame_id),img)
+            #cv2.imshow("Background", img)
+            #cv2.waitKey(100)
+            
+            # Free memory
+            del img, frame, bg
 
     def read_frames(self):
         """
@@ -209,7 +219,7 @@ class AICity:
 
         images = []
         for file_name in tqdm(self.bg_modeling_frames_paths, 'Reading frames'):
-            images.append(self.read_frame(file_name, laplacian=self.laplacian, pre_denoise=self.pre_denoise))
+            images.append(self.read_frame(file_name, laplacian=self.laplacian, pre_denoise=self.pre_denoise)[1])
         
         return np.asarray(images)
 
@@ -219,16 +229,18 @@ class AICity:
         """
 
         if self.grayscale:
-            image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+            img0 = cv2.imread(path)
             if self.resize_factor < 1.0:
-                image = cv2.resize(image,
-                                   (int(image.shape[1] * self.resize_factor), int(image.shape[0] * self.resize_factor)),
+                img0 = cv2.resize(img0,
+                                   (int(img0.shape[1] * self.resize_factor), int(img0.shape[0] * self.resize_factor)),
                                    cv2.INTER_CUBIC)
+            
+            img = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY) 
             if pre_denoise:   
-                image = cv2.fastNlMeansDenoising(image, templateWindowSize = 7)
+                img = cv2.fastNlMeansDenoising(img, templateWindowSize = 7)
             if laplacian:
-                image = cv2.Laplacian(image, cv2.CV_8U)
-            return image
+                img = cv2.Laplacian(img, cv2.CV_8U)
+            return img0, img
         else:
             # TODO
             pass    
