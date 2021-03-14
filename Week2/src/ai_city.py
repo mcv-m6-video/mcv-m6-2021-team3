@@ -7,13 +7,104 @@ import time
 from tqdm import tqdm
 
 
+def filter_noise(bg, post_processing=True, min_area=0.15):
+    """
+
+    """
+    if post_processing:
+        # Opening
+        bg = cv2.morphologyEx(bg, cv2.MORPH_OPEN,  np.ones((1,1)))  
+        # Closing
+        bg = cv2.morphologyEx(bg, cv2.MORPH_CLOSE, np.ones((3,3)))
+
+    # Connected components
+    num_lab, labels = cv2.connectedComponents(bg)
+
+    # Filter by area
+    rm_labels = [u for u in np.unique(labels) if np.sum(labels == u) < min_area*len(bg)]
+    for label in rm_labels:
+        bg[np.where(labels == label)] = 0
+        labels[np.where(labels == label)] = 0    
+    
+    return bg, labels
+
+def generate_bbox(mask):
+    """
+    
+    """
+    pos = np.where(mask==255)
+
+    y = np.min(pos[0])
+    x = np.min(pos[1])
+    h = np.max(pos[0]) - np.min(pos[0])
+    w = np.max(pos[1]) - np.min(pos[1])
+
+    return x,y,w,h
+
+def fill_gaps(labels):
+    """
+
+    """
+    bg_idx = np.argmax([np.sum(labels == u) for u in np.unique(labels)])
+    fg_idx = np.delete(np.unique(labels),bg_idx)
+    
+    bg = np.zeros(labels.shape, dtype=np.uint8)
+
+    for label in fg_idx:
+        aux = np.zeros(labels.shape, dtype=np.uint8)
+        aux[labels==label]=255
+
+        contours,_ = cv2.findContours(aux, 1, 2)
+
+        # create hull array for convex hull points
+        hull = []
+        # calculate points for each contour
+        for i in range(len(contours)):
+            # creating convex hull object for each contour
+            #hull = cv2.convexHull(contours[i], False)
+            epsilon = 0.1*cv2.arcLength(contours[i],True)
+            approx = cv2.approxPolyDP(contours[i],epsilon,True)
+            aux = cv2.fillPoly(aux, pts=[approx],color=(255))
+
+        x,y,w,h = generate_bbox(aux)
+        if np.sum(aux>0)/(w*h) > .35:
+            aux = cv2.rectangle(aux,(x,y),(x+w,y+h),(50),2)
+            bg = bg+aux
+
+        '''drawing = np.zeros((aux.shape[0], aux.shape[1], 3), np.uint8)
+        # draw contours and hull points
+        for i in range(len(contours)):
+            color_contours = (0, 255, 0) # green - color for contours
+            color = (255, 0, 0) # blue - color for convex hull
+            # draw ith contour
+            cv2.drawContours(drawing, contours, i, color_contours, 1, 8, hierarchy)
+            # draw ith convex hull object
+            cv2.drawContours(drawing, hull, i, color, 1, 8)'''
+    
+    return bg
+
+def get_single_objs(bg):
+    """
+
+    """
+    # Filter noise
+    bg, labels = filter_noise(bg)
+
+    # Generate bboxes    
+    bg = fill_gaps(labels)
+    
+    # Filter by aspect ratio
+    return bg
+
+
+
 class AICity:
     """
 
     """
 
     def __init__(self, data_path, test_mode = False, resize_factor=0.5, denoise=False, split_factor=0.15, grayscale=True, extension="png",
-                 laplacian=False, pre_denoise=False, task=1.1, alpha=3, rho = 0.5, rm_noise=False, fill=False, noise_opening=False, noise_cc=False, adaptative_model=False):
+                 laplacian=False, pre_denoise=False, task=1.1, alpha=3, rho = 0.5, rm_noise=None, fill=False, adaptative_model=False):
         """
 
         """
@@ -33,8 +124,6 @@ class AICity:
         self.rho = rho
         self.rm_noise = rm_noise
         self.fill = fill
-        self.noise_opening = noise_opening
-        self.noise_cc = noise_cc
         self.test_mode = test_mode
         self.adaptative_model = adaptative_model
         # FUNCTIONS
@@ -83,28 +172,33 @@ class AICity:
             foreground_idx = np.where(abs(diff) > self.alpha * (2 + self.background_model[:, :, 1]))
 
             bg[foreground_idx[0], foreground_idx[1]] = 255
+            
+            bg = get_single_objs(bg)
 
-            if self.rm_noise:
-                bg = self.filter_noise(bg)
+            '''if self.rm_noise is not None:
+                bg = filter_noise(bg, self.rm_noise)
             if self.fill:
-                bg = self.fill_gaps(bg)
+                bg = fill_gaps(bg)'''
         else:
             pass
 
         return bg
 
     def get_frames_background(self):
-        for frame_path in self.bg_frames_paths:
+        for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
             frame = self.read_frame(frame_path, laplacian=self.laplacian, pre_denoise=self.pre_denoise)
                         
             bg = self.get_frame_background(frame)                              
             img = self.read_frame(frame_path)
             img = cv2.hconcat((bg, img))
-            cv2.imshow("Background", img)
-            cv2.waitKey(100)
+            cv2.imwrite('laplacian/{}.jpg'.format(frame_id),img)
+            #cv2.imshow("Background", img)
+            #cv2.waitKey(100)
 
             if self.adaptative_model:
                 self.update_gaussian(frame, bg)
+            
+            frame, img, bg = None, None, None
 
     def read_frames(self):
         """
@@ -137,29 +231,7 @@ class AICity:
             return image
         else:
             # TODO
-            pass
-
-    def filter_noise(self, bg):
-        """
-
-        """
-        if self.noise_opening == True:
-            bg = cv2.morphologyEx(bg, cv2.MORPH_OPEN, (5,5))
-
-        elif self.noise_cc == True:
-            num_lab, labels = cv2.connectedComponents(bg)
-            rm_labels = [u for u in np.unique(labels) if np.sum(labels == u) < 10]
-            for label in rm_labels:
-                bg[np.where(bg == label)] = 0
-
-        return bg
-
-    def fill_gaps(self, bg):
-        """
-
-        """
-        return bg
-    
+            pass    
     
     def update_gaussian(self, frame, bg):
         """

@@ -6,7 +6,7 @@ from utils import *
 display = True
 noise_evaluation = True
 
-path = '../'
+path = '/media/gemma/GAGUSB2TB/Master/M6/mcv-m6-2021-team3/'
 visualization = 'base'
 
 
@@ -14,7 +14,7 @@ def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 3
+        task = 1.2
 
     if int(task) in [1, 2]:
         data_dir = join(path, 'AICity_data/train/S03/c010')
@@ -57,7 +57,7 @@ def main(argv):
 
                 if task == 1.2:
                     # T1.2: mAP for provided object detections
-                    _, _, ap = voc_eval(gt, imagenames, dets[det_model])
+                    _, _, ap = voc_eval(gt, imagenames, dets[det_model],use_07_metric=False)
                     if display:
                         print(det_model.split('.')[0], '--> AP50:', ap)
 
