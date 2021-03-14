@@ -41,6 +41,7 @@ def main(argv):
                 'noise_filter': None,
                 'fill': False,
                 'adaptive_model': False,
+                'save_img': False,
                 'task': task
             }
 
@@ -65,6 +66,7 @@ def main(argv):
                 'fill': True,
                 'adaptive_model': False,
                 'return_bboxes': True,
+                'save_img': False,
                 'task': task
             }
 
@@ -92,6 +94,7 @@ def main(argv):
                 'noise_filter': None,
                 'fill': False,
                 'adaptive_model': False,
+                'save_img': False,
                 'task': task
             }
 
@@ -116,6 +119,7 @@ def main(argv):
             'noise_filter': None,
             'fill': False,
             'adaptive_model': False,
+            'save_img': False,
             'task': task
         }
 
@@ -163,6 +167,7 @@ def main(argv):
             'fill': False,
             'adaptive_model': False,
             'return_bboxes': True,
+            'save_img': False,
             'task': task
         }
 

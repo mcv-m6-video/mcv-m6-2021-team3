@@ -234,7 +234,9 @@ class AICity:
                     img = cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
 
             img = cv2.hconcat((bg, img))
-            #cv2.imwrite('result/{}.jpg'.format(frame_id),img)
+
+            if self.options['save_img']:
+                cv2.imwrite('outputs/task_{}/{}/{}.jpg'.format(self.options['task'], self.options['colorspace'], frame_id),img)
             #cv2.imshow("Background", img)
             #cv2.waitKey(100)
             
