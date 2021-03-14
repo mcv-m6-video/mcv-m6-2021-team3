@@ -269,6 +269,10 @@ class AICity:
                                 (int(img0.shape[1] * self.options['resize_factor']),
                                 int(img0.shape[0] * self.options['resize_factor'])),
                                 cv2.INTER_CUBIC)
+            img0 = cv2.resize(img0,
+                             (int(img0.shape[1] * self.options['resize_factor']),
+                              int(img0.shape[0] * self.options['resize_factor'])),
+                             cv2.INTER_CUBIC)
 
         if pre_denoise:
             img = cv2.fastNlMeansDenoising(img, templateWindowSize=7)
@@ -296,7 +300,7 @@ class AICity:
             kernel = np.ones((filter_size, filter_size)) / filter_size ** 2
             img = cv2.filter2D(img, -1, kernel)
 
-        return img0, img
+        return img0.astype(np.uint8), img.astype(np.uint8)
 
     def update_gaussian(self, frame, bg):
         """
