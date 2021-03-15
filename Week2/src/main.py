@@ -130,25 +130,25 @@ def main(argv):
             'pre_denoise': False,
             'alpha': 3,
             'rho': 0.5,
-            'noise_filter': ['base',True],
+            'noise_filter': ['morph_filter', True],
             'fill': False,
             'apply_road_mask': True,
             'adaptive_model': False,
             'return_bboxes': True,
             'save_img': False,
-            'apply_rout_mask'
             'task': task
         }
 
-        frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
-        aicity = AICity(frames_paths, data_path, options,bg_model=method)
-        aicity.create_background_model()
-        aicity.get_frames_background()
+        methods = ['MOG2', 'KNN', 'GMG', 'LSBP']
+        maps = []
 
-        mAP = aicity.get_mAP()
+        for method in methods:
+            frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
+            aicity = AICity(frames_paths, data_path, options, bg_model=method)
+            aicity.create_background_model()
+            aicity.get_frames_background()
 
-        print('mAP: ', mAP)
-            
+            maps.append(aicity.get_mAP())
 
     elif int(task) == 4:
         os.makedirs('outputs/task_4',exist_ok=True)
@@ -191,8 +191,6 @@ def main(argv):
         plot_map_alphas(mAP,alphas)
 
         #aicity.save_results('LAB.json')
-
-
 
     else:
         raise NameError

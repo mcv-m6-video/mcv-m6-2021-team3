@@ -133,8 +133,6 @@ class AICity:
         self.bg_modeling_frames_paths = self.frames_paths[
                                         :int(len(self.frames_paths) * self.options['split_factor'])]  # 535 frames
         self.bg_frames_paths = self.frames_paths[int(len(self.frames_paths) * self.options['split_factor']):]
-        self.bg_frames_paths = self.bg_frames_paths
-        # 1606 frames
 
     def create_background_model(self):
         """
@@ -149,8 +147,6 @@ class AICity:
                 gaussian = np.zeros((height, width, 2))
                 gaussian[:, :, 0] = np.mean(bg_modeling_frames, axis=0)
                 gaussian[:, :, 1] = np.std(bg_modeling_frames, axis=0)
-
-                del bg_modeling_frames
 
                 self.background_model = gaussian
 
@@ -180,20 +176,18 @@ class AICity:
 
                     self.background_model = gaussian
 
-        elif self.bg_model == 'MOG2':
+            del bg_modeling_frames
 
+        elif self.bg_model == 'MOG2':
             self.background_model = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
 
         elif self.bg_model == 'KNN':
-
             self.background_model = cv2.createBackgroundSubtractorKNN(detectShadows=False)
         
         elif self.bg_model == 'GMG':
-
             self.background_model = cv2.bgsegm.createBackgroundSubtractorGMG()
 
         elif self.bg_model == 'LSBP':
-
             self.background_model = cv2.bgsegm.createBackgroundSubtractorLSBP()
 
     def get_frame_background(self, frame):
@@ -201,6 +195,7 @@ class AICity:
         :param frame:
         :return:
         """
+
         if self.bg_model == 'base':
             if self.options['colorspace'] == 'gray':
                 bg = np.zeros_like(frame)
@@ -236,7 +231,7 @@ class AICity:
             bg = self.background_model.apply(frame)
 
         bg = bg.astype(np.uint8)
-        
+
         if self.options['apply_road_mask']:
             bg = cv2.bitwise_and(bg, self.road_mask)
 
@@ -252,7 +247,6 @@ class AICity:
         return bg, None
 
     def get_frames_background(self):
-
 
         for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
             img, frame = self.read_frame(frame_path, colorspace=self.options['colorspace'],
@@ -274,8 +268,8 @@ class AICity:
 
             if self.options['save_img']:
                 cv2.imwrite('outputs/task_{}/{}/{}.jpg'.format(self.options['task'], self.options['colorspace'], frame_id),img)
-            cv2.imshow("Background", img)
-            cv2.waitKey(100)
+            # cv2.imshow("Background", img)
+            # cv2.waitKey(100)
             
             # Free memory
             del img, frame, bg
