@@ -111,6 +111,14 @@ class AICity:
         self.gt_bboxes = load_annot(gt_path,'ai_challenge_s03_c010-full_annotation.xml')
         self.det_bboxes = {}
 
+        if self.options['apply_road_mask']:
+            self.road_mask = cv2.imread(self.frames_paths[-1], cv2.IMREAD_GRAYSCALE).astype(np.uint8)
+            self.road_mask = cv2.resize(self.road_mask,
+                                        (int(self.road_mask.shape[1] * options['resize_factor']),
+                                         int(self.road_mask.shape[0] * options['resize_factor'])),
+                                        cv2.INTER_CUBIC)
+        del self.frames_paths[-1]
+
         # FUNCTIONS
         self.split_data()
 
@@ -205,6 +213,9 @@ class AICity:
             bg[foreground_idx[0], foreground_idx[1]] = 255
 
         bg = bg.astype(np.uint8)
+
+        if self.options['apply_road_mask']:
+            bg = cv2.bitwise_and(bg, self.road_mask)
 
         if self.options['return_bboxes']:
             bg, bboxes = get_single_objs(bg, self.options['resize_factor'], self.options['noise_filter'], self.options['fill'])
@@ -317,21 +328,33 @@ class AICity:
                         1 - self.options['rho']) * self.background_model[x, y, 1]
         else:
             if self.options['colorspace'] == 'LAB' or self.options['colorspace'] == 'YCbCr':
-                [x, y] = np.where(bg[:,:,0] == 0)
-                self.background_model[x, y, 0] = self.options['rho'] * frame[x, y] + (1 - self.options['rho']) * self.background_model[x, y, 0]
+                [x, y] = np.where(bg[:, :, 0] == 0)
+
+                # ============== CHANNEL A ===============
+                # update mean
+                self.background_model[x, y, 0] = self.options['rho'] * frame[x, y, 0] + (1 - self.options['rho']) * \
+                                                 self.background_model[x, y, 0]
                 # update std
-                self.background_model[x, y, 1] = self.options['rho'] * np.square(frame[x, y] - self.background_model[x, y, 0]) + (
-                            1 - self.options['rho']) * self.background_model[x, y, 1]
-                self.background_model[x, y, 2] = self.options['rho'] * frame[x, y] + (1 - self.options['rho']) * self.background_model[x, y, 2]
+                self.background_model[x, y, 1] = self.options['rho'] * np.square(
+                    frame[x, y, 0] - self.background_model[x, y, 0]) + (
+                                                         1 - self.options['rho']) * self.background_model[x, y, 1]
+
+                # ============== CHANNEL B ===============
+                self.background_model[x, y, 2] = self.options['rho'] * frame[x, y, 1] + (1 - self.options['rho']) * \
+                                                 self.background_model[x, y, 2]
                 # update std
-                self.background_model[x, y, 3] = self.options['rho'] * np.square(frame[x, y] - self.background_model[x, y, 2]) + (
-                            1 - self.options['rho']) * self.background_model[x, y, 3]
+                self.background_model[x, y, 3] = self.options['rho'] * np.square(
+                    frame[x, y, 1] - self.background_model[x, y, 2]) + (
+                                                         1 - self.options['rho']) * self.background_model[x, y, 3]
+
             elif self.options['colorspace'] == 'HSV':
-                [x, y] = np.where(bg[:,:,0] == 0)
-                self.background_model[x, y, 0] = self.options['rho'] * frame[x, y] + (1 - self.options['rho']) * self.background_model[x, y, 0]
+                [x, y] = np.where(bg[:, :, 0] == 0)
+                self.background_model[x, y, 0] = self.options['rho'] * frame[x, y] + (1 - self.options['rho']) * \
+                                                 self.background_model[x, y, 0]
                 # update std
-                self.background_model[x, y, 1] = self.options['rho'] * np.square(frame[x, y] - self.background_model[x, y, 0]) + (
-                            1 - self.options['rho']) * self.background_model[x, y, 1]
+                self.background_model[x, y, 1] = self.options['rho'] * np.square(
+                    frame[x, y] - self.background_model[x, y, 0]) + (
+                                                         1 - self.options['rho']) * self.background_model[x, y, 1]
     
     def get_mAP(self):
         return voc_eval(self.gt_bboxes, self.bg_frames_paths, self.det_bboxes, resize_factor = self.options['resize_factor'])[2]

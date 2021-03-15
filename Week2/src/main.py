@@ -7,27 +7,24 @@ import matplotlib.pyplot as plt
 
 data_path = '../../data'
 output_path = '../outputs'
-debug = True
-test_mode = False
-resize_factor = 0.5
-method = 'GMG'
-colorspace = "LAB"
+method = 'GAUSSIAN-MASK-RCNN'
 
-def plot_map_alphas(map,alpha):
 
-        plt.plot(alpha,map)
-        plt.xlabel('Alpha')
-        plt.ylabel('mAP')
-        plt.title('Alpha vs mAP')
-        plt.show()
+def plot_map_alphas(map, alpha):
+    plt.plot(alpha, map)
+    plt.xlabel('Alpha')
+    plt.ylabel('mAP')
+    plt.title('Alpha vs mAP')
+    plt.show()
+
 
 def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 4
+        task = 3
 
-    os.makedirs('outputs',exist_ok=True)
+    os.makedirs('outputs', exist_ok=True)
 
     if int(task) == 1:
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
@@ -103,6 +100,7 @@ def main(argv):
                 'fill': False,
                 'adaptive_model': False,
                 'save_img': False,
+                'return_bboxes': True,
                 'task': task
             }
 
@@ -112,22 +110,23 @@ def main(argv):
 
     elif int(task) == 3:
         options = {
-            'resize_factor': 0.5,
+            'resize_factor': 1,
             'denoise': False,
             'split_factor': 0.25,
-            'test_mode': True,
+            'test_mode': False,
             'colorspace': 'gray',
             'extension': 'png',
             'laplacian': False,
             'median_filter': False,
             'bilateral_filter': False,
             'pre_denoise': False,
-            'alpha': 3,
-            'rho': 0.5,
+            'alpha': 5,
+            'rho': 0.1,
             'noise_filter': None,
             'fill': False,
-            'adaptive_model': False,
+            'adaptive_model': True,
             'save_img': False,
+            'return_bboxes': True,
             'task': task
         }
 
@@ -138,7 +137,7 @@ def main(argv):
         if method == 'MOG2':
             backSub = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
             # bg_MOG2 = backSub.getBackgroundImage()
-            
+
         elif method == 'KNN':
             backSub = cv2.createBackgroundSubtractorKNN(detectShadows=False)
 
@@ -148,23 +147,30 @@ def main(argv):
         elif method == 'LSBP':
             backSub = cv2.bgsegm.createBackgroundSubtractorLSBP()
 
-        for frame in frames:
-            bg_fg_KNN = backSub.apply(frame)
-            bg_fg_KNN[bg_fg_KNN != 255] = 0
-            cv2.imshow('Background', bg_fg_KNN)
-            cv2.waitKey(100)
+        if method in ['MOG2', 'KNN', 'GMG', 'LSBP']:
+            for frame in frames:
+                bg = backSub.apply(frame)
+                bg[bg != 255] = 0
+                cv2.imshow('Background', bg)
+                cv2.waitKey(100)
+
+        # if method == "GAUSSIAN-MASK-RCNN":
+        #     frames_paths = join(data_path, 'AICity/train/S03/c010/rcnn-masks')
+        #     aicity = AICity(frames_paths, data_path, options)
+        #     aicity.create_background_model()
+        #     aicity.get_frames_background()
+        #     print(aicity.get_mAP())
 
     elif int(task) == 4:
-        os.makedirs('outputs/task_4',exist_ok=True)
+        os.makedirs('outputs/task_4', exist_ok=True)
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
-        alphas = [1,1.5,2,2.5,3,3.5,4,5,6]
+        alphas = [1.5]
         mAP = []
 
         for alpha in alphas:
-
             options = {
                 'resize_factor': 0.5,
-                'denoise': False,
+                'denoise': True,
                 'split_factor': 0.25,
                 'test_mode': False,
                 'colorspace': 'LAB',
@@ -175,11 +181,11 @@ def main(argv):
                 'pre_denoise': False,
                 'alpha': alpha,
                 'rho': 0.05,
-                'noise_filter': ['base',False],#'morph_filter',
-                'fill': False,
-                'adaptive_model': False,
+                'noise_filter': ['base', True],  # 'morph_filter',
+                'fill': True,
+                'adaptive_model': True,
                 'return_bboxes': True,
-                'save_img': False,
+                'save_img': True,
                 'task': task
             }
 
@@ -191,11 +197,9 @@ def main(argv):
 
             print('mAP: ', mAP)
 
-        plot_map_alphas(mAP,alphas)
+        plot_map_alphas(mAP, alphas)
 
-        #aicity.save_results('LAB.json')
-
-
+        aicity.save_results('LAB.json')
 
     else:
         raise NameError
