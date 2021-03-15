@@ -217,7 +217,7 @@ class AICity:
         return bg, None
 
     def get_frames_background(self):
-        for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths[:2]), 'Predicting background'):
+        for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
             img, frame = self.read_frame(frame_path, colorspace=self.options['colorspace'],
                                     laplacian=self.options['laplacian'], pre_denoise=self.options['pre_denoise'])
 
