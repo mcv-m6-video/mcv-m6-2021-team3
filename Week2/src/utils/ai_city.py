@@ -207,12 +207,12 @@ class AICity:
         bg = bg.astype(np.uint8)
 
         if self.options['return_bboxes']:
-            bg, bboxes = get_single_objs(bg, self.options['noise_filter'], self.options['fill'])
+            bg, bboxes = get_single_objs(bg, self.options['resize_factor'], self.options['noise_filter'], self.options['fill'])
             return bg, bboxes
 
         elif not self.options['return_bboxes'] and self.options['noise_filter']:
             # Filter noise
-            bg, _ = filter_noise(bg, self.options['noise_filter'])
+            bg, _ = filter_noise(bg, self.options['resize_factor'], self.options['noise_filter'])
         
         return bg, None
 

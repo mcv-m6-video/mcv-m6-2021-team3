@@ -1,5 +1,6 @@
 from os import makedirs
 from os.path import exists
+import numpy as np
 import pathlib
 import tqdm
 import random
@@ -145,3 +146,10 @@ def gen_noisy_bbox(list_bbox, x_size=1920, y_size=1080, bbox_generate=False,
             noisy_list_bbox.append([xmin, ymin, width, height])
 
     return noisy_list_bbox
+
+def close_odd_kernel(num):
+    num = int(np.ceil(num))
+    if num % 2 == 0:
+        return np.ones((num+1,num+1))
+    else:
+        return np.ones((num, num))

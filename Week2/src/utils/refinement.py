@@ -1,16 +1,18 @@
 import numpy as np
 import cv2
 from scipy.ndimage.morphology import binary_fill_holes
+from utils.utils import close_odd_kernel
 
-def filter_noise(bg, noise_filter=['base',False], min_area=0.0003):
+def filter_noise(bg, resize_factor, noise_filter=['base',False], min_area=0.0003):
     """
 
     """
     if noise_filter[0] in 'morph_filter':
+
         # Opening
-        bg = cv2.morphologyEx(bg, cv2.MORPH_OPEN,  np.ones((1,1)))  
+        bg = cv2.morphologyEx(bg, cv2.MORPH_OPEN, close_odd_kernel(resize_factor * 2))
         # Closing
-        bg = cv2.morphologyEx(bg, cv2.MORPH_CLOSE, np.ones((3,3)))
+        bg = cv2.morphologyEx(bg, cv2.MORPH_CLOSE, close_odd_kernel(resize_factor * 6))
 
     # Connected components
     num_lab, labels = cv2.connectedComponents(bg)
@@ -40,7 +42,7 @@ def generate_bbox(label_mask):
 
     return x,y,w,h
 
-def fill_and_get_bbox(labels, fill=True, mask=None):
+def fill_and_get_bbox(labels, resize_factor, fill=True, mask=None):
     """
 
     """
@@ -56,10 +58,10 @@ def fill_and_get_bbox(labels, fill=True, mask=None):
         aux[labels==label]=255
 
         # Closing
-        aux = cv2.morphologyEx(aux, cv2.MORPH_CLOSE, np.ones((5,5)))
+        aux = cv2.morphologyEx(aux, cv2.MORPH_CLOSE, close_odd_kernel(resize_factor * 9))
 
         # Opening -> rm shadows
-        aux = cv2.morphologyEx(aux, cv2.MORPH_OPEN, np.ones((5,5)))
+        aux = cv2.morphologyEx(aux, cv2.MORPH_OPEN, close_odd_kernel(resize_factor * 9))
 
         x,y,w,h = generate_bbox(aux)
 
@@ -76,18 +78,18 @@ def fill_and_get_bbox(labels, fill=True, mask=None):
     
     return bg, bboxes
 
-def get_single_objs(bg, noise_filter='base', fill=True, mask=None):
+def get_single_objs(bg, resize_factor, noise_filter='base', fill=True, mask=None):
     """
 
     """
     if noise_filter:
         # Filter noise
-        bg, labels = filter_noise(bg, noise_filter)
+        bg, labels = filter_noise(bg, resize_factor, noise_filter)
     else:
         _, labels = cv2.connectedComponents(bg)
 
     # Generate bboxes and (optional) fill holes
-    bg, bboxes = fill_and_get_bbox(labels, fill, mask)
+    bg, bboxes = fill_and_get_bbox(labels, resize_factor, fill, mask)
 
     return bg, bboxes
 
