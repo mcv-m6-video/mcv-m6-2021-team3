@@ -316,10 +316,26 @@ class AICity:
             self.background_model[x, y, 1] = self.options['rho'] * np.square(frame[x, y] - self.background_model[x, y, 0]) + (
                         1 - self.options['rho']) * self.background_model[x, y, 1]
         else:
-            pass
+            if self.options['colorspace'] == 'LAB' or self.options['colorspace'] == 'YCbCr':
+                [x, y] = np.where(bg[:,:,0] == 0)
+                self.background_model[x, y, 0] = self.options['rho'] * frame[x, y] + (1 - self.options['rho']) * self.background_model[x, y, 0]
+                # update std
+                self.background_model[x, y, 1] = self.options['rho'] * np.square(frame[x, y] - self.background_model[x, y, 0]) + (
+                            1 - self.options['rho']) * self.background_model[x, y, 1]
+                self.background_model[x, y, 2] = self.options['rho'] * frame[x, y] + (1 - self.options['rho']) * self.background_model[x, y, 2]
+                # update std
+                self.background_model[x, y, 3] = self.options['rho'] * np.square(frame[x, y] - self.background_model[x, y, 2]) + (
+                            1 - self.options['rho']) * self.background_model[x, y, 3]
+            elif self.options['colorspace'] == 'HSV':
+                [x, y] = np.where(bg[:,:,0] == 0)
+                self.background_model[x, y, 0] = self.options['rho'] * frame[x, y] + (1 - self.options['rho']) * self.background_model[x, y, 0]
+                # update std
+                self.background_model[x, y, 1] = self.options['rho'] * np.square(frame[x, y] - self.background_model[x, y, 0]) + (
+                            1 - self.options['rho']) * self.background_model[x, y, 1]
     
     def get_mAP(self):
         return voc_eval(self.gt_bboxes, self.bg_frames_paths, self.det_bboxes, resize_factor = self.options['resize_factor'])[2]
 
     def save_results(self, name_json):
         write_json_file(self.det_bboxes, name_json)
+

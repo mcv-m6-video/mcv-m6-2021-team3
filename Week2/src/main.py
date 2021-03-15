@@ -3,6 +3,7 @@ import os
 from os.path import join
 import cv2
 from utils.ai_city import AICity
+import matplotlib.pyplot as plt
 
 data_path = '../../data'
 output_path = '../outputs'
@@ -12,6 +13,13 @@ resize_factor = 0.5
 method = 'GMG'
 colorspace = "LAB"
 
+def plot_map_alphas(map,alpha):
+
+        plt.plot(alpha,map)
+        plt.xlabel('Alpha')
+        plt.ylabel('mAP')
+        plt.title('Alpha vs mAP')
+        plt.show()
 
 def main(argv):
     if len(argv) > 1:
@@ -149,35 +157,45 @@ def main(argv):
     elif int(task) == 4:
         os.makedirs('outputs/task_4',exist_ok=True)
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
+        alphas = [1,1.5,2,2.5,3,3.5,4,5,6]
+        mAP = []
 
-        options = {
-            'resize_factor': 0.5,
-            'denoise': False,
-            'split_factor': 0.25,
-            'test_mode': False,
-            'colorspace': 'LAB',
-            'extension': 'png',
-            'laplacian': False,
-            'median_filter': True,
-            'bilateral_filter': False,
-            'pre_denoise': False,
-            'alpha': 3,
-            'rho': 0.05,
-            'noise_filter': ['base',False],#'morph_filter',
-            'fill': False,
-            'adaptive_model': False,
-            'return_bboxes': True,
-            'save_img': False,
-            'task': task
-        }
+        for alpha in alphas:
 
-        aicity = AICity(frames_paths, data_path, options)
-        aicity.create_background_model()
-        aicity.get_frames_background()
+            options = {
+                'resize_factor': 0.5,
+                'denoise': False,
+                'split_factor': 0.25,
+                'test_mode': False,
+                'colorspace': 'LAB',
+                'extension': 'png',
+                'laplacian': False,
+                'median_filter': True,
+                'bilateral_filter': False,
+                'pre_denoise': False,
+                'alpha': alpha,
+                'rho': 0.05,
+                'noise_filter': ['base',False],#'morph_filter',
+                'fill': False,
+                'adaptive_model': False,
+                'return_bboxes': True,
+                'save_img': False,
+                'task': task
+            }
 
-        aicity.save_results('outputs/task4/LAB.json')
+            aicity = AICity(frames_paths, data_path, options)
+            aicity.create_background_model()
+            aicity.get_frames_background()
 
-        print('mAP: ',aicity.get_mAP())
+            mAP.append(aicity.get_mAP())
+
+            print('mAP: ', mAP)
+
+        plot_map_alphas(mAP,alphas)
+
+        #aicity.save_results('LAB.json')
+
+
 
     else:
         raise NameError

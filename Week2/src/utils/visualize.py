@@ -88,3 +88,12 @@ def visualize_iou(gt, dets, frames, det_model, save_dir='./task2'):
                 writer.append_data(image)
 
     print('Gif saved at ' + gif_dir)
+
+
+    '''def plot_map_alphas(map,alpha):
+
+        plt.plot(alpha,map)
+        plt.xlabel('Alpha')
+        plt.ylabel(mAP)
+        plt.title('Alpha vs mAP')
+        plt.show()'''
