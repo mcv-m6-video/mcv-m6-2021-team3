@@ -80,7 +80,7 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
     frame_name = '%04d' % int(frame_id)
     obj_info = dict(
         name='car',
-        bbox=[xmin, ymin, xmax, ymax],
+        bbox=list(map(float,[xmin, ymin, xmax, ymax])),
         confidence=conf
     )
 
@@ -217,7 +217,7 @@ class AICity:
         return bg, None
 
     def get_frames_background(self):
-        for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
+        for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths[:2]), 'Predicting background'):
             img, frame = self.read_frame(frame_path, colorspace=self.options['colorspace'],
                                     laplacian=self.options['laplacian'], pre_denoise=self.options['pre_denoise'])
 
