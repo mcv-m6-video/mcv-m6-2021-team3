@@ -4,19 +4,26 @@ from os.path import join
 import cv2
 from utils.ai_city import AICity
 import matplotlib.pyplot as plt
+from utils.refinement import get_single_objs, filter_noise
+from tqdm.auto import tqdm
+from utils.metrics import voc_eval
+import numpy as np
 
 data_path = '../../data'
 output_path = '../outputs'
-method = 'GAUSSIAN-MASK-RCNN'
+debug = True
+test_mode = False
+resize_factor = 0.5
+method = 'MOG2'
+colorspace = "LAB"
 
+def plot_map_alphas(map,alpha):
 
-def plot_map_alphas(map, alpha):
-    plt.plot(alpha, map)
-    plt.xlabel('Alpha')
-    plt.ylabel('mAP')
-    plt.title('Alpha vs mAP')
-    plt.show()
-
+        plt.plot(alpha,map)
+        plt.xlabel('Alpha')
+        plt.ylabel('mAP')
+        plt.title('Alpha vs mAP')
+        plt.show()
 
 def main(argv):
     if len(argv) > 1:
@@ -24,7 +31,7 @@ def main(argv):
     else:
         task = 3
 
-    os.makedirs('outputs', exist_ok=True)
+    os.makedirs('outputs',exist_ok=True)
 
     if int(task) == 1:
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
@@ -45,6 +52,7 @@ def main(argv):
                 'rho': 0.5,
                 'noise_filter': None,
                 'fill': False,
+                'apply_road_mask': True,
                 'adaptive_model': False,
                 'save_img': False,
                 'task': task
@@ -69,6 +77,7 @@ def main(argv):
                 'rho': 0.5,
                 'noise_filter': 'morph_filter',
                 'fill': True,
+                'apply_road_mask': True,
                 'adaptive_model': False,
                 'return_bboxes': True,
                 'save_img': False,
@@ -100,7 +109,6 @@ def main(argv):
                 'fill': False,
                 'adaptive_model': False,
                 'save_img': False,
-                'return_bboxes': True,
                 'task': task
             }
 
@@ -110,67 +118,49 @@ def main(argv):
 
     elif int(task) == 3:
         options = {
-            'resize_factor': 1,
+            'resize_factor': 0.5,
             'denoise': False,
             'split_factor': 0.25,
             'test_mode': False,
             'colorspace': 'gray',
             'extension': 'png',
-            'laplacian': False,
-            'median_filter': False,
+            'laplacian': True,
+            'median_filter': True,
             'bilateral_filter': False,
             'pre_denoise': False,
-            'alpha': 5,
-            'rho': 0.1,
-            'noise_filter': None,
+            'alpha': 3,
+            'rho': 0.5,
+            'noise_filter': ['base',True],
             'fill': False,
-            'adaptive_model': True,
-            'save_img': False,
+            'apply_road_mask': True,
+            'adaptive_model': False,
             'return_bboxes': True,
+            'save_img': False,
+            'apply_rout_mask'
             'task': task
         }
 
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
-        aicity = AICity(frames_paths, data_path, options)
-        frames = aicity.read_frames()
+        aicity = AICity(frames_paths, data_path, options,bg_model=method)
+        aicity.create_background_model()
+        aicity.get_frames_background()
 
-        if method == 'MOG2':
-            backSub = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
-            # bg_MOG2 = backSub.getBackgroundImage()
+        mAP = aicity.get_mAP()
 
-        elif method == 'KNN':
-            backSub = cv2.createBackgroundSubtractorKNN(detectShadows=False)
-
-        elif method == 'GMG':
-            backSub = cv2.bgsegm.createBackgroundSubtractorGMG()
-
-        elif method == 'LSBP':
-            backSub = cv2.bgsegm.createBackgroundSubtractorLSBP()
-
-        if method in ['MOG2', 'KNN', 'GMG', 'LSBP']:
-            for frame in frames:
-                bg = backSub.apply(frame)
-                bg[bg != 255] = 0
-                cv2.imshow('Background', bg)
-                cv2.waitKey(100)
-
-        # if method == "GAUSSIAN-MASK-RCNN":
-        #     frames_paths = join(data_path, 'AICity/train/S03/c010/rcnn-masks')
-        #     aicity = AICity(frames_paths, data_path, options)
-        #     aicity.create_background_model()
-        #     aicity.get_frames_background()
-        #     print(aicity.get_mAP())
+        print('mAP: ', mAP)
+            
 
     elif int(task) == 4:
-        os.makedirs('outputs/task_4', exist_ok=True)
+        os.makedirs('outputs/task_4',exist_ok=True)
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
-        alphas = [1.5]
+        alphas = [1.5,2]
         mAP = []
 
         for alpha in alphas:
+
             options = {
                 'resize_factor': 0.5,
-                'denoise': True,
+                'denoise': False,
                 'split_factor': 0.25,
                 'test_mode': False,
                 'colorspace': 'LAB',
@@ -181,11 +171,12 @@ def main(argv):
                 'pre_denoise': False,
                 'alpha': alpha,
                 'rho': 0.05,
-                'noise_filter': ['base', True],  # 'morph_filter',
-                'fill': True,
-                'adaptive_model': True,
+                'noise_filter': ['base',True],#'morph_filter',
+                'fill': False,
+                'apply_road_mask': True,
+                'adaptive_model': False,
                 'return_bboxes': True,
-                'save_img': True,
+                'save_img': False,
                 'task': task
             }
 
@@ -197,9 +188,11 @@ def main(argv):
 
             print('mAP: ', mAP)
 
-        plot_map_alphas(mAP, alphas)
+        plot_map_alphas(mAP,alphas)
 
-        aicity.save_results('LAB.json')
+        #aicity.save_results('LAB.json')
+
+
 
     else:
         raise NameError

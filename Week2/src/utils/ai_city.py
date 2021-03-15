@@ -24,7 +24,6 @@ def load_text(text_dir, text_name):
         update_data(annot, frame_id, xmin, ymin, xmin + width, ymin + height, conf)
     return annot
 
-
 def load_xml(xml_dir, xml_name, ignore_parked=True):
     """
     Parses an annotations XML file
@@ -92,13 +91,12 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
     return annot
 
 
-
 class AICity:
     """
 
     """
 
-    def __init__(self, data_path, gt_path, options):
+    def __init__(self, data_path, gt_path, options, bg_model='base'):
         """
 
         """
@@ -110,6 +108,7 @@ class AICity:
         self.options = options
         self.gt_bboxes = load_annot(gt_path,'ai_challenge_s03_c010-full_annotation.xml')
         self.det_bboxes = {}
+        self.bg_model = bg_model
 
         if self.options['apply_road_mask']:
             self.road_mask = cv2.imread(self.frames_paths[-1], cv2.IMREAD_GRAYSCALE).astype(np.uint8)
@@ -117,7 +116,9 @@ class AICity:
                                         (int(self.road_mask.shape[1] * options['resize_factor']),
                                          int(self.road_mask.shape[0] * options['resize_factor'])),
                                         cv2.INTER_CUBIC)
+
         del self.frames_paths[-1]
+    
 
         # FUNCTIONS
         self.split_data()
@@ -132,90 +133,113 @@ class AICity:
         self.bg_modeling_frames_paths = self.frames_paths[
                                         :int(len(self.frames_paths) * self.options['split_factor'])]  # 535 frames
         self.bg_frames_paths = self.frames_paths[int(len(self.frames_paths) * self.options['split_factor']):]
-        self.bg_frames_paths = self.bg_frames_paths[:100]
+        self.bg_frames_paths = self.bg_frames_paths
         # 1606 frames
 
     def create_background_model(self):
         """
 
         """
-        bg_modeling_frames = self.read_frames()
+        if self.bg_model == 'base':
+            
+            bg_modeling_frames = self.read_frames()
 
-        if self.options['colorspace'] == 'gray':
-            n_frames, height, width = bg_modeling_frames.shape
-            gaussian = np.zeros((height, width, 2))
-            gaussian[:, :, 0] = np.mean(bg_modeling_frames, axis=0)
-            gaussian[:, :, 1] = np.std(bg_modeling_frames, axis=0)
-
-            del bg_modeling_frames
-
-            self.background_model = gaussian
-
-        else:
-            if self.options['colorspace'] == "LAB":
-                n_frames, height, width, n_channels = bg_modeling_frames.shape
-                gaussian = np.zeros((height, width, 4))
-
-                # Channel A
-                gaussian[:, :, 0] = np.mean(bg_modeling_frames[:, :, :, 0], axis=0)
-                gaussian[:, :, 1] = np.std(bg_modeling_frames[:, :, :, 0], axis=0)
-
-                # Channel B
-                gaussian[:, :, 2] = np.mean(bg_modeling_frames[:, :, :, 1], axis=0)
-                gaussian[:, :, 3] = np.std(bg_modeling_frames[:, :, :, 1], axis=0)
-
-                self.background_model = gaussian
-
-            elif self.options['colorspace'] == "HSV":
+            if self.options['colorspace'] == 'gray':
                 n_frames, height, width = bg_modeling_frames.shape
-
                 gaussian = np.zeros((height, width, 2))
-
-                # Channel H
                 gaussian[:, :, 0] = np.mean(bg_modeling_frames, axis=0)
                 gaussian[:, :, 1] = np.std(bg_modeling_frames, axis=0)
 
+                del bg_modeling_frames
+
                 self.background_model = gaussian
+
+            else:
+                if self.options['colorspace'] == "LAB":
+                    n_frames, height, width, n_channels = bg_modeling_frames.shape
+                    gaussian = np.zeros((height, width, 4))
+
+                    # Channel A
+                    gaussian[:, :, 0] = np.mean(bg_modeling_frames[:, :, :, 0], axis=0)
+                    gaussian[:, :, 1] = np.std(bg_modeling_frames[:, :, :, 0], axis=0)
+
+                    # Channel B
+                    gaussian[:, :, 2] = np.mean(bg_modeling_frames[:, :, :, 1], axis=0)
+                    gaussian[:, :, 3] = np.std(bg_modeling_frames[:, :, :, 1], axis=0)
+
+                    self.background_model = gaussian
+
+                elif self.options['colorspace'] == "HSV":
+                    n_frames, height, width = bg_modeling_frames.shape
+
+                    gaussian = np.zeros((height, width, 2))
+
+                    # Channel H
+                    gaussian[:, :, 0] = np.mean(bg_modeling_frames, axis=0)
+                    gaussian[:, :, 1] = np.std(bg_modeling_frames, axis=0)
+
+                    self.background_model = gaussian
+
+        elif self.bg_model == 'MOG2':
+
+            self.background_model = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
+
+        elif self.bg_model == 'KNN':
+
+            self.background_model = cv2.createBackgroundSubtractorKNN(detectShadows=False)
+        
+        elif self.bg_model == 'GMG':
+
+            self.background_model = cv2.bgsegm.createBackgroundSubtractorGMG()
+
+        elif self.bg_model == 'LSBP':
+
+            self.background_model = cv2.bgsegm.createBackgroundSubtractorLSBP()
 
     def get_frame_background(self, frame):
         """
         :param frame:
         :return:
         """
+        if self.bg_model == 'base':
+            if self.options['colorspace'] == 'gray':
+                bg = np.zeros_like(frame)
 
-        if self.options['colorspace'] == 'gray':
-            bg = np.zeros_like(frame)
+                diff = frame - self.background_model[:, :, 0]
+                foreground_idx = np.where(abs(diff) > self.options['alpha'] * (2 + self.background_model[:, :, 1]))
 
-            diff = frame - self.background_model[:, :, 0]
-            foreground_idx = np.where(abs(diff) > self.options['alpha'] * (2 + self.background_model[:, :, 1]))
+                bg[foreground_idx[0], foreground_idx[1]] = 255
 
-            bg[foreground_idx[0], foreground_idx[1]] = 255
+            elif self.options['colorspace'] == "LAB" or self.options['colorspace'] == "YCbCr":
+                bg = np.zeros((frame.shape[0], frame.shape[1]))
 
-        elif self.options['colorspace'] == "LAB" or self.options['colorspace'] == "YCbCr":
-            bg = np.zeros((frame.shape[0], frame.shape[1]))
+                diff_ch1 = frame[:, :, 0] - self.background_model[:, :, 0]
+                diff_ch2 = frame[:, :, 1] - self.background_model[:, :, 2]
 
-            diff_ch1 = frame[:, :, 0] - self.background_model[:, :, 0]
-            diff_ch2 = frame[:, :, 1] - self.background_model[:, :, 2]
+                foreground_ch1_idx = np.where(abs(diff_ch1) > self.options['alpha'] * (2 + self.background_model[:, :, 1]))
+                foreground_ch2_idx = np.where(abs(diff_ch2) > self.options['alpha'] * (2 + self.background_model[:, :, 3]))
 
-            foreground_ch1_idx = np.where(abs(diff_ch1) > self.options['alpha'] * (2 + self.background_model[:, :, 1]))
-            foreground_ch2_idx = np.where(abs(diff_ch2) > self.options['alpha'] * (2 + self.background_model[:, :, 3]))
+                bg[foreground_ch1_idx[0], foreground_ch1_idx[1]] = 255
+                bg[foreground_ch2_idx[0], foreground_ch2_idx[1]] = 255
 
-            bg[foreground_ch1_idx[0], foreground_ch1_idx[1]] = 255
-            bg[foreground_ch2_idx[0], foreground_ch2_idx[1]] = 255
+            elif self.options['colorspace'] == "HSV":
+                bg = np.zeros_like(frame)
 
-        elif self.options['colorspace'] == "HSV":
-            bg = np.zeros_like(frame)
+                diff = frame - self.background_model[:, :, 0]
 
-            diff = frame - self.background_model[:, :, 0]
+                foreground_idx = np.where(abs(diff) > self.options['alpha'] * (2 + self.background_model[:, :, 1]))
 
-            foreground_idx = np.where(abs(diff) > self.options['alpha'] * (2 + self.background_model[:, :, 1]))
+                bg[foreground_idx[0], foreground_idx[1]] = 255
 
-            bg[foreground_idx[0], foreground_idx[1]] = 255
+        else:
+            #Estimating bg when the model is precreated
+            bg = self.background_model.apply(frame)
 
         bg = bg.astype(np.uint8)
-
+        
         if self.options['apply_road_mask']:
             bg = cv2.bitwise_and(bg, self.road_mask)
+
 
         if self.options['return_bboxes']:
             bg, bboxes = get_single_objs(bg, self.options['resize_factor'], self.options['noise_filter'], self.options['fill'])
@@ -228,6 +252,8 @@ class AICity:
         return bg, None
 
     def get_frames_background(self):
+
+
         for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
             img, frame = self.read_frame(frame_path, colorspace=self.options['colorspace'],
                                     laplacian=self.options['laplacian'], pre_denoise=self.options['pre_denoise'])
