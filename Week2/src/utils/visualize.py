@@ -84,11 +84,11 @@ def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets
         gt_frame = np.array(dict_to_list(gt[frame_id], False))
 
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = draw_bboxes(img, gt_frame*opt['resize_factor'], (0, 255, 0))
+        img = draw_bboxes(img, gt_frame*opt.resize_factor, (0, 255, 0))
 
         if frame_id in dets.keys():
             dets_frame = np.array(dict_to_list(dets[frame_id], False))
-            mean, std = compute_miou(gt_frame, dets_frame, opt['resize_factor'])
+            mean, std = compute_miou(gt_frame, dets_frame, opt.resize_factor)
 
             img = draw_bboxes(img, dets_frame, (0, 0, 255))
         else:
@@ -115,17 +115,17 @@ def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets
         plt.ylabel('IoU', fontsize=10)
         plt.legend(prop={'size': 8}, loc='lower right')
 
-        filters_name = list(compress(['laplacian','median','bilateral','denoise'], [opt['laplacian'],
-                                                                                    opt['median_filter'],
-                                                                                    opt['bilateral_filter'],
-                                                                                    opt['pre_denoise']]))
+        filters_name = list(compress(['laplacian','median','bilateral','denoise'], [opt.laplacian,
+                                                                                    opt.median_filter,
+                                                                                    opt.bilateral_filter,
+                                                                                    opt.pre_denoise]))
         save_path = 'outputs'
-        if opt['task'] == 1.1:
-            save_path = join('outputs', 'task_11', str(opt['resize_factor']), str(opt['alpha'])+'_'.join(filters_name))
-        elif opt['task'] == 1.2:
-            save_path = join('outputs', 'task_12', str(opt['resize_factor']), str(opt['alpha'])+'_'+str(opt['rho'])+'_'.join(filters_name))
+        if opt.task == 1.1:
+            save_path = join('outputs', 'task_11', str(opt.resize_factor), str(opt.alpha)+'_'.join(filters_name))
+        elif opt.task == 1.2:
+            save_path = join('outputs', 'task_12', str(opt.resize_factor), str(opt.alpha)+'_'+str(opt.rho)+'_'.join(filters_name))
         
-        os.makedirs(save_path,exist_ok=True)
+        os.makedirs(save_path, exist_ok=True)
 
         plt.savefig(join(save_path, frame_id + '.png'))
         plt.close()
