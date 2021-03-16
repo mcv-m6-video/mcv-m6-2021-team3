@@ -276,8 +276,9 @@ class AICity:
                     img = cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
                 img = cv2.hconcat((bg, img))
-                cv2.imwrite(
-                    'outputs/task_{}/{}/{}.jpg'.format(self.options.task, self.options.colorspace, frame_id), img)
+                cv2.imwrite('/' + str(self.options.task) + '_{}/{}/{}.jpg'.format(self.options.task,
+                                                                                 self.options.colorspace,
+                                                                                 frame_id), img)
 
             elif self.options.visualize:
                 # cv2.imshow("Background", img)
@@ -338,8 +339,12 @@ class AICity:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)[:, :, 0]
 
         if self.options.bilateral_filter:
-            img[:, :, 0] = cv2.bilateralFilter(img[:, :, 0], 9, 75, 75)
-            img[:, :, 1] = cv2.bilateralFilter(img[:, :, 1], 9, 75, 75)
+
+            if self.options.colorspace in ['gray', 'HSV']:
+                img = cv2.bilateralFilter(img, 9, 75, 75)
+            if self.options.colorspace in ['LAB', 'YCbCr']:
+                img[:, :, 0] = cv2.bilateralFilter(img[:, :, 0], 9, 75, 75)
+                img[:, :, 1] = cv2.bilateralFilter(img[:, :, 1], 9, 75, 75)
 
         if self.options.median_filter:
             filter_size = 5
