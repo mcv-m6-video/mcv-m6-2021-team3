@@ -41,10 +41,12 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 ├── Week2
 │   ├── src
 │   │   ├── main.py
-│   │   │   ├── utils
-│   │   │   │   ├── ai_city.py
-│   │   │   │   ├── metrics.py
-│   │   │   │   ├── refinement.py
+│   │   ├── utils
+│   │   │   ├── ai_city.py
+│   │   │   ├── metrics.py
+│   │   │   ├── refinement.py
+│   │   ├── config
+│   │   │   ├── config.py
 ```
 
 ## Results
