@@ -10,9 +10,55 @@ from utils.metrics import compute_miou
 from utils.utils import dict_to_list
 import imageio
 import random
+from itertools import compress
 
-def visualize_background_variance(bg_var):
-    return
+def visualize_background_model(gaussian, colorspace, scale, filters):
+    if gaussian.shape[2] == 2:
+        plt.figure(figsize=(10, 3))
+        
+        plt.subplot(1, 2, 1)
+        plt.imshow(gaussian[:,:,0],'gray')
+        plt.title('Mean')
+
+        plt.subplot(1, 2, 2)
+        ax = plt.gca()
+        im = ax.imshow(gaussian[:,:,1])
+        plt.title('Variance')
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        plt.colorbar(im, cax=cax)
+
+    elif gaussian.shape[2] == 4:
+
+        plt.figure(figsize=(10, 6))
+        
+        plt.subplot(2, 2, 1)
+        plt.imshow(gaussian[:,:,0],'gray')
+        plt.title('Mean')
+
+        plt.subplot(2, 2, 2)
+        ax = plt.gca()
+        im = ax.imshow(gaussian[:,:,1])
+        plt.title('Variance')
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        plt.colorbar(im, cax=cax)
+
+        plt.subplot(2, 2, 3)
+        plt.imshow(gaussian[:,:,2],'gray')
+        plt.title('Mean')
+
+        plt.subplot(2, 2, 4)
+        ax = plt.gca()
+        im = ax.imshow(gaussian[:,:,3])
+        plt.title('Variance')
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        plt.colorbar(im, cax=cax)
+
+    filters_name = list(compress(['laplacian','median','bilateral','denoise'], filters))
+    
+    plt.savefig(join('outputs',colorspace+'_'+str(scale)+'_'.join(filters_name)+'.jpg'))
 
 def draw_bboxes(img, bboxes, color):
     """

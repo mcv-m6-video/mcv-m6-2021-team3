@@ -18,7 +18,7 @@ def main(argv):
     if len(argv) > 1:
         task = float(argv[1])
     else:
-        task = 4
+        task = 1.1
 
     os.makedirs('outputs',exist_ok=True)
 
@@ -27,13 +27,13 @@ def main(argv):
 
         if task == 1.1:
             options = {
-                'resize_factor': 0.5,
+                'resize_factor': 1,
                 'denoise': False,
                 'split_factor': 0.25,
                 'test_mode': True,
                 'colorspace': 'gray',
                 'extension': 'png',
-                'laplacian': True,
+                'laplacian': False,
                 'median_filter': False,
                 'bilateral_filter': False,
                 'pre_denoise': False,
@@ -44,6 +44,7 @@ def main(argv):
                 'apply_road_mask': True,
                 'adaptive_model': False,
                 'save_img': False,
+                'visualize': True,
                 'task': task
             }
 

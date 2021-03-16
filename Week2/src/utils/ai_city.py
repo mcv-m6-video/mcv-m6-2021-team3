@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 from utils.refinement import get_single_objs, filter_noise
 from utils.metrics import voc_eval
 from utils.utils import write_json_file
-from utils.visualize import visualize_background_iou
+from utils.visualize import visualize_background_iou, visualize_background_model
 
 def load_text(text_dir, text_name):
     """
@@ -180,6 +180,13 @@ class AICity:
                     gaussian[:, :, 1] = np.std(bg_modeling_frames, axis=0)
 
             self.background_model = gaussian
+            if self.options['visualize']:
+                visualize_background_model(gaussian, self.options['colorspace'], self.options['resize_factor'],
+                                             [self.options['laplacian'], 
+                                             self.options['median_filter'], 
+                                             self.options['bilateral_filter'],
+                                             self.options['pre_denoise']])
+
         
         elif self.bg_model == 'MOG2':
             self.background_model = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
