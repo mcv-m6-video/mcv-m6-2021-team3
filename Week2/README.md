@@ -100,16 +100,16 @@ The results obtained from the different OpenCV background estimation methods in 
             <td>250 frames</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.3577</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.3937</td>
-            <td>0.1554</td>
-            <td>0.0013</td>
+            <td>&nbsp;0.1554</td>
+            <td>&nbsp;0.0013</td>
             <td></td>
         </tr>
         <tr>
             <td>&nbsp;All frames</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2025</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.1544</td>
-            <td>0.0008</td>
-            <td>0.021</td>
+            <td>&nbsp;0.0008</td>
+            <td>&nbsp;0.0210</td>
             <td></td>
         </tr>
         <tr>
@@ -142,15 +142,15 @@ The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-ad
             <td rowspan=6>AP50</td>
             <td rowspan=2>&nbsp;&nbsp;&nbsp;&nbsp;Adaptive</td>
             <td>150 frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2910</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0145</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.3343</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.291</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.015</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.334</td>
         </tr>
         <tr>
             <td>&nbsp;All frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.012</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0139</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.012</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.014</td>
         </tr>
         <tr>
             <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameters</td>
@@ -161,15 +161,15 @@ The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-ad
         <tr>
             <td rowspan=2>Non-adaptive</td>
             <td>150 frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.488</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.027</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.40</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.488</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.027</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.400</td>
         </tr>
         <tr>
             <td>&nbsp;All frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.023</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.023</td>
         </tr>
         <tr>
             <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameters</td>
