@@ -59,7 +59,7 @@ The results obtained from the non-adaptive grayscale method using different alph
 
 | alpha | 1 | 1.5 | 2 | 3 | 4 | 5 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| AP50 250 frames | 0.12 | 0.16 | 0.21 | 0.40 | 0.17 | 0.10 |
+| AP50 250 frames | 0.119 | 0.168 | 0.240 | 0.409 | 0.171 | 0.100 |
 | AP50 all frames | 0.0146 | 0.0424 | 0.0426 | 0.0201 | 0.0066 | 0.0032 |
 
 
