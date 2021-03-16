@@ -126,6 +126,60 @@ The results obtained from the different OpenCV background estimation methods in 
 
 ### Task 4: Color sequences
 
+The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-adaptive and the adaptive methods.
+
+<table>
+    <thead>
+        <tr>
+            <th colspan=3></th>
+            <th>LAB</th>
+            <th>HSV</th>
+            <th>YCbCr</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan=6>AP50</td>
+            <td rowspan=2>Adaptive</td>
+            <td>150 frames</td>
+            <td>0.2910</td>
+            <td>0.0145</td>
+            <td>0.3343</td>
+        </tr>
+        <tr>
+            <td>All frames</td>
+            <td>0.012</td>
+            <td></td>
+            <td>0.0139</td>
+        </tr>
+        <tr>
+            <td colspan=2>Parameters</td>
+            <td>alpha = 1.43 <br> rho = 0.001</td>
+            <td>alpha = 1.71 <br> rho = 0.001</td>
+            <td>alpha = 1.75 <br> rho = 0.03</td>
+        </tr>
+        <tr>
+            <td rowspan=2>Non-adaptive</td>
+            <td>150 frames</td>
+            <td>0.488</td>
+            <td>0.027</td>
+            <td>0.40</td>
+        </tr>
+        <tr>
+            <td>All frames</td>
+            <td></td>
+            <td></td>
+            <td>0.023</td>
+        </tr>
+        <tr>
+            <td colspan=2>Parameters</td>
+            <td>alpha = 1.43</td>
+            <td>alpha = 1.71</td>
+            <td>alpha = 1.75</td>
+        </tr>
+    </tbody>
+</table>
+
 
 ## Report
 The report for week 2 is available [here](https://docs.google.com/presentation/d/1q8MU8wWAj79WdowlBbMnYNEO6wsHu3VKxZdveiHwr_s/edit?usp=sharing).
