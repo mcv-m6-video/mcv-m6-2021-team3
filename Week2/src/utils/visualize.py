@@ -120,10 +120,14 @@ def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets
                                                                                     opt.bilateral_filter,
                                                                                     opt.pre_denoise]))
         save_path = 'outputs'
-        if opt.task == 1.1:
-            save_path = join('outputs', 'task_11', str(opt.resize_factor), str(opt.alpha)+'_'.join(filters_name))
-        elif opt.task == 1.2:
-            save_path = join('outputs', 'task_12', str(opt.resize_factor), str(opt.alpha)+'_'+str(opt.rho)+'_'.join(filters_name))
+        if opt.task == 1:
+            save_path = join('outputs', 'task_1', str(opt.resize_factor), str(opt.alpha)+'_'+'_'.join(filters_name))
+        elif opt.task == 2:
+            save_path = join('outputs', 'task_2', str(opt.resize_factor), str(opt.alpha)+'_'+str(opt.rho)+'_'+'_'.join(filters_name))
+        elif opt.task == 3:
+            save_path = join('outputs', 'task_3', str(opt.resize_factor), '_'.join(filters_name))
+        elif opt.task == 4:
+            save_path = join('outputs', 'task_4', str(opt.resize_factor), str(opt.alpha)+'_'+str(opt.rho)+'_'+'_'.join(filters_name))
         
         os.makedirs(save_path, exist_ok=True)
 
