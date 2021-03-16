@@ -31,19 +31,19 @@ def main(argv):
             mAP = []
             for alpha in alphas:
                 options = {
-                    'resize_factor': 0.5,
+                    'resize_factor': 0.3,
                     'split_factor': 0.25,
                     'test_mode': False,
                     'colorspace': 'gray',
                     'extension': 'png',
-                    'laplacian': False,
-                    'median_filter': False,
+                    'laplacian': True,
+                    'median_filter': True,
                     'bilateral_filter': False,
                     'pre_denoise': False,
                     'alpha': alpha,
                     'rho': 0.5,
-                    'noise_filter': None,
-                    'fill': False,
+                    'noise_filter': ['morph_filter', True],
+                    'fill': True,
                     'apply_road_mask': True,
                     'adaptive_model': False,
                     'save_img': False,
@@ -56,9 +56,11 @@ def main(argv):
                 aicity.create_background_model()
                 aicity.get_frames_background()
 
-                mAP.append(aicity.get_mAP())
+                mAP.append(float(aicity.get_mAP()))
 
-                write_json_file({'miou':aicity.miou, 'std_miou':aicity.std_iou},str(alpha)+'.json')
+                write_json_file({'miou':aicity.miou.tolist(), 'std_miou':aicity.std_iou.tolist()},str(alpha)+'.json')
+            
+            write_json_file(mAP,'task11_mAP.json')
 
         elif task == 1.2:
             options = {

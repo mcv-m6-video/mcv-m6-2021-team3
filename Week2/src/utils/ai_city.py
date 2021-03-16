@@ -138,7 +138,6 @@ class AICity:
         self.bg_modeling_frames_paths = self.frames_paths[
                                         :int(len(self.frames_paths) * self.options['split_factor'])]  # 535 frames
         self.bg_frames_paths = self.frames_paths[int(len(self.frames_paths) * self.options['split_factor']):]
-        self.bg_frames_paths = self.bg_frames_paths[:150]
         # 1606 frames
 
     def create_background_model(self):
