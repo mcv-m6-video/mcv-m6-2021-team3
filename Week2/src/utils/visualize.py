@@ -6,9 +6,10 @@ import flow_vis
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from metrics import compute_miou
-from utils import dict_to_list
+from utils.metrics import compute_miou
+from utils.utils import dict_to_list
 import imageio
+import random
 
 def draw_bboxes(img, bboxes, color):
     """
@@ -24,76 +25,48 @@ def draw_bboxes(img, bboxes, color):
         img = cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
     return img
 
+def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets, opt, axis=[536, 536+1606]):#850
+    pos = np.where(bg[:,:,0])
+    frame[pos+(np.zeros(pos[0].shape, dtype=np.uint64),)]=255
+    frame[pos+(np.ones(pos[0].shape, dtype=np.uint64),)]=191
+    frame[pos+(np.ones(pos[0].shape, dtype=np.uint64)*2,)]=0
 
-def visualize_iou(gt, dets, frames, det_model, save_dir='./task2'):
-    """
-    Plot the graphic of the IOU metric
-    :param gt: list with the bounding boxes of the GT file
-    :param dets: list with the detected bounding boxes
-    :param frames: frames extracted from the video
-    :param det_model: model used (Mask RCNN, SSD512, YOLO3)
-    :param save_dir: path to where gif will be saved
-    """
-    os.makedirs(join(save_dir, det_model), exist_ok=True)
+    if frame_id in gt.keys():
+        gt_frame = np.array(dict_to_list(gt[frame_id], False))
 
-    gif_dir = join(save_dir, det_model + '.gif')
+        img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img = draw_bboxes(img, gt_frame*opt['resize_factor'], (0, 255, 0))
 
-    if os.path.exists(gif_dir):
-        print('Gif saved at ' + gif_dir)
-        return
+        if frame_id in dets.keys():
+            dets_frame = np.array(dict_to_list(dets[frame_id], False))
+            mean, std = compute_miou(gt_frame, dets_frame, opt['resize_factor'])
 
-    miou, std_iou = np.empty(0, ), np.empty(0, )
+            img = draw_bboxes(img, dets_frame, (0, 0, 255))
+        else:
+            mean, std = 0, 0
 
-    with imageio.get_writer(gif_dir, mode='I') as writer:
+        miou = np.hstack((miou, mean))
+        std_iou = np.hstack((std_iou, std))
+        plt.figure(figsize=(5, 6))
 
-        for frame in tqdm(frames[499:800], 'Evaluating detections from {} at each frame'.format(det_model)):
-            if os.name == 'nt':
-                frame = frame.replace(os.sep, '/')
-            frame_id = (frame.split('/')[-1]).split('.')[0]
+        plt.subplot(2, 1, 1)
+        plt.imshow(img)
+        plt.plot(0, 0, "-", c=(0, 1, 0), label='Ground Truth')
+        plt.plot(0, 0, "-", c=(0, 0, 1), label='Detection')
+        plt.legend(prop={'size': 8}, loc='lower right')
 
-            if frame_id in gt.keys():
-                gt_frame = np.array(dict_to_list(gt[frame_id], False))
-                dets_frame = np.array(dict_to_list(dets[frame_id], False))
+        xaxis = np.hstack((xaxis, int(frame_id)))
 
-                mean, std = compute_miou(gt_frame, dets_frame)
-                miou = np.hstack((miou, mean))
-                std_iou = np.hstack((std_iou, std))
+        plt.subplot(2, 1, 2)
+        plt.plot(xaxis, miou, 'cadetblue', label='Mean IoU')
+        plt.fill(np.append(xaxis, xaxis[::-1]), np.append(miou + std_iou, (miou - std_iou)[::-1]), 'powderblue',
+                    label='STD IoU')
+        plt.axis([axis[0], axis[1], 0, 1])
+        plt.xlabel('Frame id', fontsize=10)
+        plt.ylabel('IoU', fontsize=10)
+        plt.legend(prop={'size': 8}, loc='lower right')
 
-                plt.figure(figsize=(5, 6))
+        plt.savefig(join('outputs', 'task_'+str(opt['task']), frame_id + '.png'))
+        plt.close()
 
-                plt.subplot(2, 1, 1)
-                img = cv2.cvtColor(cv2.imread(frame), cv2.COLOR_BGR2RGB)
-                img = draw_bboxes(img, gt_frame, (0, 255, 0))
-                img = draw_bboxes(img, dets_frame, (0, 0, 255))
-                plt.imshow(img)
-                plt.plot(0, 0, "-", c=(0, 1, 0), label='Ground Truth')
-                plt.plot(0, 0, "-", c=(0, 0, 1), label='Detection')
-                plt.legend(prop={'size': 8}, loc='lower right')
-
-                xaxis = np.arange(500, 500 + len(miou), 1)
-
-                plt.subplot(2, 1, 2)
-                plt.plot(xaxis, miou, 'cadetblue', label='Mean IoU')
-                plt.fill(np.append(xaxis, xaxis[::-1]), np.append(miou + std_iou, (miou - std_iou)[::-1]), 'powderblue',
-                         label='STD IoU')
-                plt.axis([500, 800, 0, 1])
-                plt.xlabel('Frame id', fontsize=10)
-                plt.ylabel('IoU', fontsize=10)
-                plt.legend(prop={'size': 8}, loc='lower right')
-
-                plt.savefig(join(save_dir, det_model, frame_id + '.png'))
-                plt.close()
-
-                image = imageio.imread(join(save_dir, det_model, frame_id + '.png'))
-                writer.append_data(image)
-
-    print('Gif saved at ' + gif_dir)
-
-
-    '''def plot_map_alphas(map,alpha):
-
-        plt.plot(alpha,map)
-        plt.xlabel('Alpha')
-        plt.ylabel(mAP)
-        plt.title('Alpha vs mAP')
-        plt.show()'''
+    return miou, std_iou, xaxis

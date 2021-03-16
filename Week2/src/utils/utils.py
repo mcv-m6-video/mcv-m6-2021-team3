@@ -1,12 +1,13 @@
 from os import makedirs
-from os.path import exists
+from os.path import exists, join
+import glob
 import numpy as np
 import pathlib
 import tqdm
 import random
 import json
 from termcolor import colored
-
+import imageio
 
 def write_json_file(data_dict, json_file):
     """
@@ -153,3 +154,14 @@ def close_odd_kernel(num):
         return np.ones((num+1,num+1))
     else:
         return np.ones((num, num))
+
+def frames_to_gif(save_dir, ext):
+    img_paths = glob.glob(join(save_dir,'*.'+ext))
+    img_paths.sort()
+    gif_dir = save_dir+'.gif'
+    with imageio.get_writer(gif_dir, mode='I') as writer:
+        for img_path in img_paths:
+            image = imageio.imread(img_path)
+            writer.append_data(image)
+    
+    print('Gif saved at ' + gif_dir)

@@ -32,7 +32,7 @@ def compute_iou(bb_gt, bb, resize_factor = 1):
     return inters / uni
 
 
-def compute_miou(gt_frame, dets_frame):
+def compute_miou(gt_frame, dets_frame, resize_factor=1):
     """
     Computes the mean iou by averaging the individual iou results.
     :param gt_frame: Ground truth bboxes
@@ -41,7 +41,7 @@ def compute_miou(gt_frame, dets_frame):
     """
     iou = []
     for det in dets_frame:
-        iou.append(np.max(compute_iou(gt_frame, det)))
+        iou.append(np.max(compute_iou(gt_frame, det, resize_factor)))
 
     return np.mean(iou), np.std(iou)
 
