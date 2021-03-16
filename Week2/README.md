@@ -86,8 +86,7 @@ The results obtained from the different OpenCV background estimation methods in 
 <table>
     <thead>
         <tr>
-            <th></th>
-            <th></th>
+            <th colspan=2></th>
             <th>KNN</th>
             <th>MOG2</th>
             <th>GMG</th>
