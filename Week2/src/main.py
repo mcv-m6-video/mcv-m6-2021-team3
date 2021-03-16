@@ -44,7 +44,7 @@ def main(argv):
                 'apply_road_mask': True,
                 'adaptive_model': False,
                 'save_img': False,
-                'task': task
+                'task': int(task)
             }
 
             aicity = AICity(frames_paths, data_path, options)
@@ -70,7 +70,7 @@ def main(argv):
                 'adaptive_model': False,
                 'return_bboxes': True,
                 'save_img': False,
-                'task': task
+                'task': int(task)
             }
 
             aicity = AICity(frames_paths, data_path, options)
@@ -98,7 +98,7 @@ def main(argv):
                 'fill': False,
                 'adaptive_model': False,
                 'save_img': False,
-                'task': task
+                'task': int(task)
             }
 
             aicity = AICity(frames_paths, data_path, options)
@@ -125,7 +125,7 @@ def main(argv):
             'adaptive_model': False,
             'return_bboxes': True,
             'save_img': False,
-            'task': task
+            'task': int(task)
         }
 
         methods = ['MOG2', 'KNN', 'GMG', 'LSBP']
@@ -142,28 +142,28 @@ def main(argv):
     elif int(task) == 4:
         os.makedirs('outputs/task_4',exist_ok=True)
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
-        
+
         options = {
             'resize_factor': 0.5,
             'denoise': False,
             'split_factor': 0.25,
             'test_mode': False,
-            'colorspace': 'LAB',
+            'colorspace': 'YCbCr',
             'extension': 'png',
             'laplacian': False,
             'median_filter': True,
             'bilateral_filter': False,
             'pre_denoise': False,
-            'alpha':1.428,
+            'alpha': 1.75,
             'rho': 0.001,
-            'noise_filter': ['base',False],#'morph_filter',
+            'noise_filter': ['base', False],  # 'morph_filter',
             'fill': True,
             'apply_road_mask': True,
             'adaptive_model': False,
             'return_bboxes': True,
             'save_img': False,
             'visualize': True,
-            'task': task
+            'task': int(task)
         }
 
         aicity = AICity(frames_paths, data_path, options)
