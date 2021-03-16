@@ -25,8 +25,9 @@ In this project the main goal was to get used to different background estimation
 Run the command below, from Week2/src folder, to obtain the desired task results.
 
 ```bash
-$ python main.py ${TASK_NUMBER}
+$ python main.py 
 ```
+Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week2/src/config/config.py)
 
 ### Directory structure
 
