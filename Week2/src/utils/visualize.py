@@ -11,6 +11,9 @@ from utils.utils import dict_to_list
 import imageio
 import random
 
+def visualize_background_variance(bg_var):
+    return
+
 def draw_bboxes(img, bboxes, color):
     """
     Draw bounding boxes onto an image
@@ -70,3 +73,11 @@ def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets
         plt.close()
 
     return miou, std_iou, xaxis
+
+def plot_map_alphas(map,alpha):
+
+    plt.plot(alpha,map)
+    plt.xlabel('Alpha')
+    plt.ylabel('mAP')
+    plt.title('Alpha vs mAP')
+    plt.show()
