@@ -171,7 +171,7 @@ The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-ad
         <tr>
             <td>&nbsp;All frames</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.019</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.014</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.023</td>
         </tr>
         <tr>
