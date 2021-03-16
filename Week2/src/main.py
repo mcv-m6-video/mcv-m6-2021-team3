@@ -4,6 +4,7 @@ from os.path import join
 import cv2
 from utils.ai_city import AICity
 from utils.visualize import plot_map_alphas
+from utils.utils import write_json_file
 import matplotlib.pyplot as plt
 
 data_path = '../../data'
@@ -26,30 +27,39 @@ def main(argv):
         frames_paths = join(data_path, 'AICity/train/S03/c010/vdo')
 
         if task == 1.1:
-            options = {
-                'resize_factor': 1,
-                'denoise': False,
-                'split_factor': 0.25,
-                'test_mode': True,
-                'colorspace': 'gray',
-                'extension': 'png',
-                'laplacian': False,
-                'median_filter': False,
-                'bilateral_filter': False,
-                'pre_denoise': False,
-                'alpha': 3,
-                'rho': 0.5,
-                'noise_filter': None,
-                'fill': False,
-                'apply_road_mask': True,
-                'adaptive_model': False,
-                'save_img': False,
-                'task': int(task)
-            }
+            alphas = [1,1.5,2,3,4,5]
+            mAP = []
+            for alpha in alphas:
+                options = {
+                    'resize_factor': 0.5,
+                    'split_factor': 0.25,
+                    'test_mode': False,
+                    'colorspace': 'gray',
+                    'extension': 'png',
+                    'laplacian': False,
+                    'median_filter': False,
+                    'bilateral_filter': False,
+                    'pre_denoise': False,
+                    'alpha': alpha,
+                    'rho': 0.5,
+                    'noise_filter': None,
+                    'fill': False,
+                    'apply_road_mask': True,
+                    'adaptive_model': False,
+                    'save_img': False,
+                    'visualize': True,
+                    'return_bboxes': True,
+                    'task': task
+                }
 
-            aicity = AICity(frames_paths, data_path, options)
-            aicity.create_background_model()
-            aicity.get_frames_background()
+                aicity = AICity(frames_paths, data_path, options)
+                aicity.create_background_model()
+                aicity.get_frames_background()
+
+                mAP.append(aicity.get_mAP())
+
+                write_json_file({'miou':aicity.miou, 'std_miou':aicity.std_iou},str(alpha)+'.json')
+
         elif task == 1.2:
             options = {
                 'resize_factor': 0.5,

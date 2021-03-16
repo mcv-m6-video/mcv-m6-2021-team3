@@ -281,8 +281,8 @@ class AICity:
             elif self.options['visualize']:
                 #cv2.imshow("Background", img)
                 #cv2.waitKey(100)
-                #if int(frame_id) < 850:
-                self.visualize_task(img, bg, frame_id)
+                if int(frame_id) < 915:
+                    self.visualize_task(img, bg, frame_id)
             
             # Free memory
             del img, frame, bg

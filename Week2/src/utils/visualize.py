@@ -74,7 +74,7 @@ def draw_bboxes(img, bboxes, color):
         img = cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
     return img
 
-def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets, opt, axis=[536, 536+1606]):#850
+def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets, opt, axis=[536, 915]):
     pos = np.where(bg[:,:,0])
     frame[pos+(np.zeros(pos[0].shape, dtype=np.uint64),)]=255
     frame[pos+(np.ones(pos[0].shape, dtype=np.uint64),)]=191
@@ -115,7 +115,19 @@ def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets
         plt.ylabel('IoU', fontsize=10)
         plt.legend(prop={'size': 8}, loc='lower right')
 
-        plt.savefig(join('outputs', 'task_'+str(opt['task']), frame_id + '.png'))
+        filters_name = list(compress(['laplacian','median','bilateral','denoise'], [opt['laplacian'],
+                                                                                    opt['median_filter'],
+                                                                                    opt['bilateral_filter'],
+                                                                                    opt['pre_denoise']]))
+        save_path = 'outputs'
+        if opt['task'] == 1.1:
+            save_path = join('outputs', 'task_11', str(opt['resize_factor']), str(opt['alpha'])+'_'.join(filters_name))
+        elif opt['task'] == 1.2:
+            save_path = join('outputs', 'task_12', str(opt['resize_factor']), str(opt['alpha'])+'_'+str(opt['rho'])+'_'.join(filters_name))
+        
+        os.makedirs(save_path,exist_ok=True)
+
+        plt.savefig(join(save_path, frame_id + '.png'))
         plt.close()
 
     return miou, std_iou, xaxis
