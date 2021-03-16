@@ -105,7 +105,7 @@ The results obtained from the different OpenCV background estimation methods in 
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.3937</td>
             <td>&nbsp;0.1554</td>
             <td>&nbsp;0.0013</td>
-            <td>0.51</td>
+            <td>&nbsp;&nbsp;0.51</td>
         </tr>
         <tr>
             <td>&nbsp;All frames</td>
@@ -113,7 +113,7 @@ The results obtained from the different OpenCV background estimation methods in 
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.1544</td>
             <td>&nbsp;0.0008</td>
             <td>&nbsp;0.0210</td>
-            <td>0.04</td>
+            <td>&nbsp;&nbsp;0.04</td>
         </tr>
         <tr>
             <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Configuration</td>
