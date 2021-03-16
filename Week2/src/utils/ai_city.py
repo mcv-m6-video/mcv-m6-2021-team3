@@ -25,7 +25,6 @@ def load_text(text_dir, text_name):
         update_data(annot, frame_id, xmin, ymin, xmin + width, ymin + height, conf)
     return annot
 
-
 def load_xml(xml_dir, xml_name, ignore_parked=True):
     """
     Parses an annotations XML file
@@ -93,7 +92,6 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
     return annot
 
 
-
 class AICity:
     """
 
@@ -111,6 +109,7 @@ class AICity:
         self.options = options
         self.gt_bboxes = load_annot(gt_path,'ai_challenge_s03_c010-full_annotation.xml')
         self.det_bboxes = {}
+        self.bg_model = bg_model
 
         self.bg_model = bg_model
 
@@ -122,7 +121,9 @@ class AICity:
                                         (int(self.road_mask.shape[1] * options['resize_factor']),
                                          int(self.road_mask.shape[0] * options['resize_factor'])),
                                         cv2.INTER_CUBIC)
+
         del self.frames_paths[-1]
+    
 
         # FUNCTIONS
         self.split_data()
@@ -144,9 +145,9 @@ class AICity:
         """
 
         """
-        bg_modeling_frames = self.read_frames()
-        
         if self.bg_model == 'base':
+            
+            bg_modeling_frames = self.read_frames()
 
             if self.options['colorspace'] == 'gray':
                 n_frames, height, width = bg_modeling_frames.shape
@@ -157,7 +158,7 @@ class AICity:
                 del bg_modeling_frames
 
             else:
-                if self.options['colorspace'] == "LAB":
+                if self.options['colorspace'] == "LAB" or self.options['colorspace'] == "YCbCr":
                     n_frames, height, width, n_channels = bg_modeling_frames.shape
                     gaussian = np.zeros((height, width, 4))
 
@@ -234,6 +235,7 @@ class AICity:
         if self.options['apply_road_mask']:
             bg = cv2.bitwise_and(bg, self.road_mask)
 
+
         if self.options['return_bboxes']:
             bg, bboxes = get_single_objs(bg, self.options['resize_factor'], self.options['noise_filter'], self.options['fill'])
             return bg, bboxes
@@ -245,6 +247,7 @@ class AICity:
         return bg, None
 
     def get_frames_background(self):
+
         for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
             frame_id = frame_path[-8:-4]
             img, frame = self.read_frame(frame_path, colorspace=self.options['colorspace'],

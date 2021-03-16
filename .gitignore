@@ -4,6 +4,10 @@
 Week1/results_opticalflow_kitti
 Week1/data_stereo_flow
 Week1/AICity_data/
+data_stereo_flow/
+results_opticalflow_kitti/
+data/
+Week2/src/outputs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
