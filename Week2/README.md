@@ -56,8 +56,7 @@ The results obtained from the non-adaptive grayscale method using different alph
 
 | alpha | 1 | 1.5 | 2 | 3 | 4 | 5 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| AP50 |  |  |  |  |  |  |
-| Configuration |  |  |  |  |  |  |
+| AP50 | 0.12 | 0.16 | 0.21 | 0.4 | 0.17 | 0.10 |
 
 
 ### Task 2.1: Recursive Gaussian modeling
@@ -149,7 +148,7 @@ The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-ad
         <tr>
             <td>&nbsp;All frames</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.012</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.004</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.014</td>
         </tr>
         <tr>
@@ -167,7 +166,7 @@ The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-ad
         </tr>
         <tr>
             <td>&nbsp;All frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.019</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.023</td>
         </tr>
