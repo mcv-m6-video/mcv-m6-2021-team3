@@ -18,13 +18,13 @@ class Config:
         parser.add_argument('--resize_factor', type=float, default=0.5, help="Resize factor")
         parser.add_argument('--split_factor', type=float, default=0.25, help="Split factor")
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
-        parser.add_argument('--colorspace', type=str, default="LAB", help="Colorpsace to use")
+        parser.add_argument('--colorspace', type=str, default="HSV", help="Colorpsace to use")
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         parser.add_argument('--laplacian', type=bool, default=False, help="Use laplacian filter")
         parser.add_argument('--median_filter', type=bool, default=True, help="Use median filter")
-        parser.add_argument('--bilateral_filter', type=bool, default=6, help="Use bilateral filter")
+        parser.add_argument('--bilateral_filter', type=bool, default=False, help="Use bilateral filter")
         parser.add_argument('--pre_denoise', type=bool, default=True, help="Pre denoise image")
-        parser.add_argument('--alpha', type=list, default=1.75, help="Alpha for foreground estimation")
+        parser.add_argument('--alpha', type=list, default=1.71, help="Alpha for foreground estimation")
         parser.add_argument('--rho', type=float, default=0.001, help="Rho for gaussian update")
         parser.add_argument('--noise_filter', type=list, default=['base', True], help="Type of noise filter and "
                                                                                       "whether to use connected "
