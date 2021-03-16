@@ -276,11 +276,11 @@ class AICity:
                     img = cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
                 img = cv2.hconcat((bg, img))
-                cv2.imwrite('/' + str(self.options.task) + '_{}/{}/{}.jpg'.format(self.options.task,
+                cv2.imwrite(self.options.output_path + '/{}/{}/{}.jpg'.format(self.options.task,
                                                                                  self.options.colorspace,
                                                                                  frame_id), img)
 
-            elif self.options.visualize:
+            if self.options.visualize:
                 # cv2.imshow("Background", img)
                 # cv2.waitKey(100)
                 if int(frame_id) < 915:
