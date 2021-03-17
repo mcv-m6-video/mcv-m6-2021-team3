@@ -41,10 +41,12 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 ├── Week2
 │   ├── src
 │   │   ├── main.py
-│   │   │   ├── utils
-│   │   │   │   ├── ai_city.py
-│   │   │   │   ├── metrics.py
-│   │   │   │   ├── refinement.py
+│   │   ├── utils
+│   │   │   ├── ai_city.py
+│   │   │   ├── metrics.py
+│   │   │   ├── refinement.py
+│   │   ├── config
+│   │   │   ├── config.py
 ```
 
 ## Results
@@ -57,7 +59,8 @@ The results obtained from the non-adaptive grayscale method using different alph
 
 | alpha | 1 | 1.5 | 2 | 3 | 4 | 5 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| AP50 | 0.12 | 0.16 | 0.21 | 0.4 | 0.17 | 0.10 |
+| AP50 250 frames | 0.119 | 0.168 | 0.240 | 0.409 | 0.171 | 0.100 |
+| AP50 all frames | 0.0146 | 0.0424 | 0.0426 | 0.0201 | 0.0066 | 0.0032 |
 
 
 ### Task 2.1: Recursive Gaussian modeling
@@ -102,7 +105,7 @@ The results obtained from the different OpenCV background estimation methods in 
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.3937</td>
             <td>&nbsp;0.1554</td>
             <td>&nbsp;0.0013</td>
-            <td></td>
+            <td>&nbsp;&nbsp;0.51</td>
         </tr>
         <tr>
             <td>&nbsp;All frames</td>
@@ -110,7 +113,7 @@ The results obtained from the different OpenCV background estimation methods in 
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.1544</td>
             <td>&nbsp;0.0008</td>
             <td>&nbsp;0.0210</td>
-            <td></td>
+            <td>&nbsp;&nbsp;0.04</td>
         </tr>
         <tr>
             <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Configuration</td>
@@ -118,7 +121,7 @@ The results obtained from the different OpenCV background estimation methods in 
             <td>&nbsp;Shadows detector <br> &nbsp;&nbsp;&nbsp;threshold = 12</td>
             <td>Default</td>
             <td>Default</td>
-            <td>OURS</td>
+            <td>Task 2</td>
         </tr>
     </tbody>
 </table>
@@ -168,7 +171,7 @@ The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-ad
         <tr>
             <td>&nbsp;All frames</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.019</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.014</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.023</td>
         </tr>
         <tr>
