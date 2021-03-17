@@ -60,7 +60,7 @@ The results obtained from the non-adaptive grayscale method using different alph
 | alpha | 1 | 1.5 | 2 | 3 | 4 | 5 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | AP50 250 frames | 0.119 | 0.168 | 0.240 | 0.409 | 0.171 | 0.100 |
-| AP50 all frames | 0.0146 | 0.0424 | 0.0426 | 0.0201 | 0.0066 | 0.0032 |
+| AP50 all frames | 0.0146 | 0.1424 | 0.1426 | 0.1201 | 0.0166 | 0.0132 |
 
 
 ### Task 2.1: Recursive Gaussian modeling
@@ -79,7 +79,7 @@ The comparisson between the best result in Task 1 and in Task 2.1.
 |  | AP50 | alpha | rho |
 | :---: | :---: | :---: | :---: |
 | Adaptive | 0.51 | 1.6 | 0.025 |
-| Non-adaptive | 0.43 | 2.6 | 0 |
+| Non-adaptive | 0.36 | 2.6 | 0 |
 
 
 ### Task 3: Compare with state-of-the-art
@@ -109,11 +109,11 @@ The results obtained from the different OpenCV background estimation methods in 
         </tr>
         <tr>
             <td>&nbsp;All frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2025</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.1544</td>
-            <td>&nbsp;0.0008</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.3307</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2544</td>
+            <td>&nbsp;0.0018</td>
             <td>&nbsp;0.0210</td>
-            <td>&nbsp;&nbsp;0.04</td>
+            <td>&nbsp;&nbsp;0.23</td>
         </tr>
         <tr>
             <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Configuration</td>
@@ -151,9 +151,9 @@ The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-ad
         </tr>
         <tr>
             <td>&nbsp;All frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.012</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.112</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.004</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.014</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.114</td>
         </tr>
         <tr>
             <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameters</td>
@@ -170,9 +170,9 @@ The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-ad
         </tr>
         <tr>
             <td>&nbsp;All frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.019</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.193</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.014</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.023</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.212</td>
         </tr>
         <tr>
             <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameters</td>
