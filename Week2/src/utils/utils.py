@@ -8,6 +8,8 @@ import random
 import json
 from termcolor import colored
 import imageio
+import cv2
+
 
 def write_json_file(data_dict, json_file):
     """
@@ -85,6 +87,7 @@ def dict_to_list(frame_info, tlwh=True):
     else:
         return [[obj['bbox'][0], obj['bbox'][1], obj['bbox'][2], obj['bbox'][3]] for obj in frame_info]
 
+
 def gen_noisy_bbox(list_bbox, x_size=1920, y_size=1080, bbox_generate=False,
                    bbox_delete=False, random_noise=False, bbox_displacement=False,
                    max_random_px=5, max_displacement_px=5, max_perc_create_bbox=0.5,
@@ -148,20 +151,22 @@ def gen_noisy_bbox(list_bbox, x_size=1920, y_size=1080, bbox_generate=False,
 
     return noisy_list_bbox
 
+
 def close_odd_kernel(num):
     num = int(np.ceil(num))
     if num % 2 == 0:
-        return np.ones((num+1,num+1))
+        return np.ones((num + 1, num + 1))
     else:
         return np.ones((num, num))
 
+
 def frames_to_gif(save_dir, ext):
-    img_paths = glob.glob(join(save_dir,'*.'+ext))
+    img_paths = glob.glob(join(save_dir, '*.' + ext))
     img_paths.sort()
-    gif_dir = save_dir+'.gif'
+    gif_dir = save_dir + '.gif'
     with imageio.get_writer(gif_dir, mode='I') as writer:
         for img_path in img_paths:
             image = imageio.imread(img_path)
             writer.append_data(image)
-    
+
     print('Gif saved at ' + gif_dir)

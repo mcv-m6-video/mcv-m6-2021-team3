@@ -98,12 +98,14 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
 
 class AICity:
     """
-
+    This class contains all the logic of the background estimation process for the AICity dataset
     """
 
     def __init__(self, args):
         """
+        Init of the AICity class
 
+        :param args: configuration for the current estimation
         """
 
         # PARAMETERS
@@ -143,8 +145,9 @@ class AICity:
 
     def create_background_model(self):
         """
-
+        Creates the initial background model with the first frames of the sequence
         """
+
         if self.options.bg_model == 'base':
 
             bg_modeling_frames = self.read_frames()
@@ -198,8 +201,10 @@ class AICity:
 
     def get_frame_background(self, frame):
         """
-        :param frame:
-        :return:
+        Estimates the background/foreground of the given frame
+        :param frame: frame to estimate
+
+        :return: background mask, bbox of the objects detected
         """
         if self.options.bg_model == 'base':
             if self.options.colorspace == 'gray':
@@ -254,6 +259,9 @@ class AICity:
         return bg, None
 
     def get_frames_background(self):
+        """
+        Gets the background of the frames not used to estimate the initial background model
+        """
 
         for frame_id, frame_path in tqdm(enumerate(self.bg_frames_paths), 'Predicting background'):
             frame_id = frame_path[-8:-4]
@@ -293,7 +301,9 @@ class AICity:
 
     def read_frames(self):
         """
-        :return:
+        Reds all the frames from disk
+
+        :return: np.array of frames
         """
 
         images = []
@@ -306,7 +316,12 @@ class AICity:
 
     def read_frame(self, path, laplacian=False, pre_denoise=False):
         """
+        Reads a frame from disk and applies filters to it
+        :param path: file name of the frame to load
+        :param laplacian: whether to apply a laplacian filter to the frame
+        :param pre_denoise: whether to apply a pre_denoise process to the frame.
 
+        :return: unmodified frame and modified frame
         """
         img0 = cv2.imread(path)
         img = img0
@@ -355,7 +370,10 @@ class AICity:
 
     def update_gaussian(self, frame, bg):
         """
+        Updates the gaussian background model
 
+        :param frame: original frame for the estimation
+        :param bg: estimated background/foreground
         """
 
         if self.options.colorspace == 'gray':
@@ -398,13 +416,30 @@ class AICity:
                                                          1 - self.options.rho) * self.background_model[x, y, 1]
 
     def get_mAP(self):
+        """
+        Estimats the mAP using the VOC evaluation
+
+        :return: map of all estimated frames
+        """
         return \
         voc_eval(self.gt_bboxes, self.bg_frames_paths, self.det_bboxes, resize_factor=self.options.resize_factor)[2]
 
     def save_results(self, name_json):
+        """
+        Saves results to a JSON file
+
+        :param name_json: name of the json file
+        """
         write_json_file(self.det_bboxes, name_json)
 
     def visualize_task(self, frame, bg, frame_id):
+        """
+        Creates plots for a given frame and background estimation
+
+        :param frame: original image
+        :param bg: estimated background/foreground
+        :param frame_id: id of the given frame
+        """
         self.miou, self.std_iou, self.xaxis = visualize_background_iou(self.miou, self.std_iou, self.xaxis,
                                                                        frame, frame_id, bg, self.gt_bboxes,
                                                                        self.det_bboxes, self.options)
