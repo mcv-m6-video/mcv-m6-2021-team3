@@ -79,7 +79,7 @@ def fill_and_get_bbox(labels, resize_factor, fill=True):
         x, y, w, h = generate_bbox(aux)
 
         # Filter by overlap
-        if np.sum(aux > 0) / (w * h) >= .5:
+        if np.sum(aux>0)/(w*h) >= .3 and (w*h)>0.008*labels.size:
 
             if fill:
                 # Fill holes
