@@ -7,7 +7,6 @@ from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 from utils.metrics import voc_eval
 from utils.utils import write_json_file
-from pandas import DataFrame
 
 def load_text(text_dir, text_name):
     """
