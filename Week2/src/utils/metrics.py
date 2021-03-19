@@ -3,7 +3,7 @@ import numpy as np
 from utils.utils import dict_to_list
 
 
-def compute_iou(bb_gt, bb, resize_factor = 1):
+def compute_iou(bb_gt, bb, resize_factor=1):
     """
     iou = compute_iou(bb_gt, bb)
     Compute IoU between bboxes from ground truth and a single bbox.
@@ -14,19 +14,19 @@ def compute_iou(bb_gt, bb, resize_factor = 1):
     """
 
     # intersection
-    bb = bb/resize_factor
-    
+    bb = bb / resize_factor
+
     ixmin = np.maximum(bb_gt[:, 0], bb[0])
-    iymin = np.maximum(bb_gt[:, 1], bb[1]) 
-    ixmax = np.minimum(bb_gt[:, 2], bb[2]) 
-    iymax = np.minimum(bb_gt[:, 3], bb[3]) 
+    iymin = np.maximum(bb_gt[:, 1], bb[1])
+    ixmax = np.minimum(bb_gt[:, 2], bb[2])
+    iymax = np.minimum(bb_gt[:, 3], bb[3])
     iw = np.maximum(ixmax - ixmin + 1., 0.)
     ih = np.maximum(iymax - iymin + 1., 0.)
     inters = iw * ih
 
     # union
     uni = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) +
-           (bb_gt[:, 2] - bb_gt[:, 0]  + 1.) *
+           (bb_gt[:, 2] - bb_gt[:, 0] + 1.) *
            (bb_gt[:, 3] - bb_gt[:, 1] + 1.) - inters)
 
     return inters / uni
@@ -110,7 +110,7 @@ def voc_eval(recs,
              dets,
              classname='car',
              ovthresh=0.5,
-             resize_factor = 1,
+             resize_factor=1,
              use_07_metric=False):
     """rec, prec, ap = voc_eval(recs,
                                 imagenames,

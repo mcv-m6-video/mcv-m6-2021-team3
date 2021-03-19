@@ -4,6 +4,7 @@ from os import makedirs
 import tqdm
 import cv2
 
+
 def read_video_file(video_file):
     """
     Read video from file
