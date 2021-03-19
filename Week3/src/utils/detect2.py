@@ -43,7 +43,7 @@ def predict(img_path, model):
     out_img = out.get_image()
 
     # filter only cars
-    output = [[label.cpu().numpy().tolist(), box.cpu().numpy().tolist()] for label, box in zip(outputs["instances"].pred_classes,outputs["instances"].pred_boxes) if label == 2]
+    output = [box.cpu().numpy().tolist() for label, box in zip(outputs["instances"].pred_classes,outputs["instances"].pred_boxes) if label == 2]
 
     return output
 

@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from utils.metrics import voc_eval
 from utils.utils import write_json_file
 from shutil import copyfile
+from detectron2.structures import BoxMode
 
 def load_text(text_dir, text_name):
     """
@@ -127,7 +128,7 @@ def to_yolov3(data, gt_bboxes, save_path='yolov3_data'):
 
     for split, split_data in data.items():
         files = []
-        for path in tqdm(split_data,'Preparing '+split+' data'):
+        for path in tqdm(split_data,'Preparing '+split+' data for YOLOv3'):
             # Convert to yolov3 format
             frame_id = basename(path).split('.')[0]
             lines_out = gt_multi_txt(path, gt_bboxes[frame_id])
@@ -142,6 +143,44 @@ def to_yolov3(data, gt_bboxes, save_path='yolov3_data'):
         split_txt = open(join(os.getcwd(),save_path,split+'.txt'), 'w')
         split_txt.writelines(files)
 
+def add_record(image_id, filename, bboxes):
+    record = {}
+        
+    width, height = Image.open(filename).size
+    
+    record["file_name"] = filename
+    record["image_id"] = int(image_id)
+    record["height"] = height
+    record["width"] = width
+
+    objs = []
+    for obj_info in bboxes:
+        label = 0 #obj_info['name']
+        xmin, ymin, xmax, ymax = obj_info['bbox']
+
+        obj = {
+            "bbox": [xmin, ymin, xmax, ymax],
+            "bbox_mode": BoxMode.XYXY_ABS,
+            "category_id": 0,
+        }
+        objs.append(obj)
+    record["annotations"] = objs
+    
+    return record
+
+
+def to_detectron2(data, gt_bboxes):
+    
+    datasets_dicts = {}
+    for split, split_data in data.items():
+        dataset_dicts = []
+        for path in tqdm(split_data,'Preparing '+split+' data for detectron2'):
+            frame_id = basename(path).split('.')[0]
+            dataset_dicts.append(add_record(frame_id, path, gt_bboxes[frame_id]))
+        
+        datasets_dicts.update({split:dataset_dicts})
+
+    return datasets_dicts
 
 class AICity:
     """
@@ -201,6 +240,8 @@ class AICity:
     def data_to_model(self):
         if self.model in 'yolov3':
             to_yolov3(self.data, self.gt_bboxes)
+        elif self.model in ['faster_rcnn', 'retinanet']:
+            to_detectron2(self.data, self.gt_bboxes)
     
     '''def detect(self):
         if self.model in ['Faster_RCNN', 'Mask_RCNN', 'RetinaNet']:

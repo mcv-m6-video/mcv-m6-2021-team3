@@ -8,7 +8,8 @@ data_stereo_flow/
 results_opticalflow_kitti/
 data/
 Week2/src/outputs/
-Week3/src/yolov3
+Week3/src/yolov3_data
+Week3/data/weights
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
