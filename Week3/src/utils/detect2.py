@@ -6,7 +6,9 @@ setup_logger()
 # import some common libraries
 import numpy as np
 import os, json, cv2, random
+from os.path import basename
 from PIL import Image
+from tqdm import tqdm
 from utils.utils import get_weights
 
 # import some common detectron2 utilities
