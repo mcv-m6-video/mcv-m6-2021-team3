@@ -115,7 +115,7 @@ def gt_multi_txt(path, bboxes):
     return lines_out
 
 
-def to_yolov3(data, gt_bboxes, save_path='yolov3'):
+def to_yolov3(data, gt_bboxes, save_path='yolov3_data'):
     
     data_path = join(os.getcwd(),save_path,'data')
     if os.path.exists(data_path):
@@ -199,8 +199,13 @@ class AICity:
         self.data['val'] = val.tolist()
     
     def data_to_model(self):
-        if self.model in 'YOLOv3':
+        if self.model in 'yolov3':
             to_yolov3(self.data, self.gt_bboxes)
+    
+    '''def detect(self):
+        if self.model in ['Faster_RCNN', 'Mask_RCNN', 'RetinaNet']:
+            detect2'''
+
 
     def train_split(self, split=0):
         """

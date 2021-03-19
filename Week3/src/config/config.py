@@ -21,9 +21,10 @@ class Config:
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='YOLOv3', choices=['Faster_RCNN', 'Mask_RCNN', 'RetinaNet', 'YOLOv3', 'SSD'], help="Detection model used")
+        parser.add_argument('--model', type=str, default='YOLOv3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
 
         # =============================== FINETUNE =============================== #
+
         parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=300)
         parser.add_argument('--batch_size', type=int, default=16, help='total batch size for all GPUs')

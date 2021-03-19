@@ -9,7 +9,7 @@ import json
 from termcolor import colored
 import imageio
 import cv2
-
+import subprocess
 
 def write_json_file(data_dict, json_file):
     """
@@ -98,3 +98,9 @@ def frames_to_gif(save_dir, ext):
             writer.append_data(image)
 
     print('Gif saved at ' + gif_dir)
+
+def get_weights(model):
+    model_path = 'data/weights/'+model+'.pkl'
+    if not exists(model_path):
+        subprocess.call(['sh','./data/scripts/get_'+model+'.sh'])
+    return model_path
