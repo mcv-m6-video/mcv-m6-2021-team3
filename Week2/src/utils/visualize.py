@@ -1,15 +1,13 @@
 import os
 import cv2
+import glob
 import numpy as np
 from os.path import join
-import flow_vis
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from utils.metrics import compute_miou
-from utils.utils import dict_to_list
-import imageio
-import random
+from utils.utils import dict_to_list, read_json_file
 from itertools import compress
 
 def visualize_background_model(gaussian, colorspace, scale, filters):
@@ -136,6 +134,49 @@ def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets
 
     return miou, std_iou, xaxis
 
+def visualize_iou(path_miou, axis=[536, 700]):
+    paths_miou = glob.glob(path_miou+'/*.json')
+    paths_miou.sort()
+
+    color = ['cadetblue', 'sandybrown', 'mediumseagreen', 'tomato']#'mediumorchid', 'indianred',
+
+    save_path = join(path_miou,'miou')
+    os.makedirs(save_path, exist_ok=True)
+
+    plt.figure(figsize=(5, 6))
+
+    for i, path in enumerate(paths_miou):
+        iou_dict = read_json_file(path)
+        miou = iou_dict['miou']
+        c = color[i]
+        alpha = float(path[-7:-5])/10
+        if alpha.is_integer():
+            alpha = int(alpha)
+
+        for frame_id in range(axis[0],axis[1]+1,1):
+
+            xaxis = np.arange(axis[0],frame_id+1)
+
+            plt.subplot(2, 1, 1)
+
+            try:
+                img = cv2.cvtColor(cv2.imread('outputs/task_11/0.3/{}laplacian_median/'.format(alpha)+'%04d' % frame_id + '.png'), cv2.COLOR_BGR2RGB)[73:283,70:444,:]
+            except:
+                continue
+            plt.imshow(img)
+            
+            plt.subplot(2, 1, 2)
+            if frame_id == axis[0]:
+                plt.plot(xaxis, miou[:frame_id-axis[0]+1], c, label='Alpha '+str(alpha))
+            else:
+                plt.plot(xaxis, miou[:frame_id-axis[0]+1], c)
+            plt.axis([axis[0], axis[1], 0, 1])
+            plt.xlabel('Frame id', fontsize=10)
+            plt.ylabel('IoU', fontsize=10)
+            plt.legend(prop={'size': 8}, loc='lower right')
+            
+            plt.savefig(join(save_path,str(alpha) + '_' + str(frame_id) + '.png'))
+
 def plot_map_alphas(map,alpha):
 
     plt.plot(alpha,map)
@@ -143,3 +184,5 @@ def plot_map_alphas(map,alpha):
     plt.ylabel('mAP')
     plt.title('Alpha vs mAP')
     plt.show()
+
+
