@@ -1,16 +1,16 @@
 import numpy as np
 import cv2
-from PIL import Image
 import os
 from os.path import join, basename
 import glob
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
+
 from utils.metrics import voc_eval
 from utils.utils import write_json_file
-from shutil import copyfile
-from detectron2.structures import BoxMode
+from utils.detect2 import to_detectron2
+from utils.yolov3 import to_yolov3
 
 def load_text(text_dir, text_name):
     """
@@ -96,91 +96,6 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
         annot[frame_name].append(obj_info)
 
     return annot
-
-def gt_multi_txt(path, bboxes):
-    
-    W, H = Image.open(path).size
-
-    lines_out=[]
-    for obj_info in bboxes:
-        label = 0 #obj_info['name']
-        xmin, ymin, xmax, ymax = obj_info['bbox']
-
-        cx = '%.3f' % np.clip(((xmax+xmin)/2)/W,0,1)
-        cy = '%.3f' % np.clip(((ymax+ymin)/2)/H,0,1)
-        w = '%.3f' % np.clip((xmax-xmin)/W ,0,1)
-        h = '%.3f' % np.clip((ymax-ymin)/H ,0,1)
-
-        lines_out.append(' '.join([str(label),cx,cy,w,h,'\n']))
-
-    return lines_out
-
-
-def to_yolov3(data, gt_bboxes, save_path='yolov3_data'):
-    
-    data_path = join(os.getcwd(),save_path,'data')
-    if os.path.exists(data_path):
-        if len(glob.glob(data_path+'/*.*')) == 2*sum([len(d) for _,d in data.items()]):
-            print('Data already in YOLOv3 format!')
-            return
-
-    os.makedirs(data_path,exist_ok=True)
-
-    for split, split_data in data.items():
-        files = []
-        for path in tqdm(split_data,'Preparing '+split+' data for YOLOv3'):
-            # Convert to yolov3 format
-            frame_id = basename(path).split('.')[0]
-            lines_out = gt_multi_txt(path, gt_bboxes[frame_id])
-
-            # Write/save files
-            file_out = open(join(data_path,frame_id+'.txt'), 'w')
-            file_out.writelines(lines_out)
-            new_path = join(data_path,frame_id+'.jpg')
-            files.append(new_path+'\n')
-            copyfile(path, new_path)
-
-        split_txt = open(join(os.getcwd(),save_path,split+'.txt'), 'w')
-        split_txt.writelines(files)
-
-def add_record(image_id, filename, bboxes):
-    record = {}
-        
-    width, height = Image.open(filename).size
-    
-    record["file_name"] = filename
-    record["image_id"] = int(image_id)
-    record["height"] = height
-    record["width"] = width
-
-    objs = []
-    for obj_info in bboxes:
-        label = 0 #obj_info['name']
-        xmin, ymin, xmax, ymax = obj_info['bbox']
-
-        obj = {
-            "bbox": [xmin, ymin, xmax, ymax],
-            "bbox_mode": BoxMode.XYXY_ABS,
-            "category_id": 0,
-        }
-        objs.append(obj)
-    record["annotations"] = objs
-    
-    return record
-
-
-def to_detectron2(data, gt_bboxes):
-    
-    datasets_dicts = {}
-    for split, split_data in data.items():
-        dataset_dicts = []
-        for path in tqdm(split_data,'Preparing '+split+' data for detectron2'):
-            frame_id = basename(path).split('.')[0]
-            dataset_dicts.append(add_record(frame_id, path, gt_bboxes[frame_id]))
-        
-        datasets_dicts.update({split:dataset_dicts})
-
-    return datasets_dicts
 
 class AICity:
     """

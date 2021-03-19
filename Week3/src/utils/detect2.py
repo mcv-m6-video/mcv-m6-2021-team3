@@ -6,6 +6,7 @@ setup_logger()
 # import some common libraries
 import numpy as np
 import os, json, cv2, random
+from PIL import Image
 from utils.utils import get_weights
 
 # import some common detectron2 utilities
@@ -14,6 +15,46 @@ from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
+from detectron2.structures import BoxMode
+
+def add_record(image_id, filename, bboxes):
+    record = {}
+        
+    width, height = Image.open(filename).size
+    
+    record["file_name"] = filename
+    record["image_id"] = int(image_id)
+    record["height"] = height
+    record["width"] = width
+
+    objs = []
+    for obj_info in bboxes:
+        label = 0 #obj_info['name']
+        xmin, ymin, xmax, ymax = obj_info['bbox']
+
+        obj = {
+            "bbox": [xmin, ymin, xmax, ymax],
+            "bbox_mode": BoxMode.XYXY_ABS,
+            "category_id": 0,
+        }
+        objs.append(obj)
+    record["annotations"] = objs
+    
+    return record
+
+def to_detectron2(data, gt_bboxes):
+    
+    datasets_dicts = {}
+    for split, split_data in data.items():
+        dataset_dicts = []
+        for path in tqdm(split_data,'Preparing '+split+' data for detectron2'):
+            frame_id = basename(path).split('.')[0]
+            dataset_dicts.append(add_record(frame_id, path, gt_bboxes[frame_id]))
+        
+        datasets_dicts.update({split:dataset_dicts})
+
+    return datasets_dicts
+
 
 def predict(img_path, model):
     
