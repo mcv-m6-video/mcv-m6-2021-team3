@@ -11,6 +11,7 @@ def main(args):
 
     aicity = AICity(args)
     aicity.train_val_split()
+    aicity.data_to_model()
         
 
 if __name__ == "__main__":

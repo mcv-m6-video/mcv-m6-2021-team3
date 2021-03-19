@@ -21,7 +21,7 @@ class Config:
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='base', choices=['Faster_RCNN', 'Mask_RCNN', 'RetinaNet', 'YOLOv3', 'SSD'], help="Detection model used")
+        parser.add_argument('--model', type=str, default='YOLOv3', choices=['Faster_RCNN', 'Mask_RCNN', 'RetinaNet', 'YOLOv3', 'SSD'], help="Detection model used")
 
         # =============================== FINETUNE =============================== #
         parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path for finetuning')

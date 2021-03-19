@@ -1,12 +1,15 @@
 import numpy as np
 import cv2
-from os.path import join
+from PIL import Image
+import os
+from os.path import join, basename
 import glob
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 from utils.metrics import voc_eval
 from utils.utils import write_json_file
+from shutil import copyfile
 
 def load_text(text_dir, text_name):
     """
@@ -41,8 +44,8 @@ def load_xml(xml_dir, xml_name, ignore_parked=True):
             if child.attrib['label'] not in 'car':
                 continue
             for bbox in child.getchildren():
-                if bbox.getchildren()[0].text in 'true':
-                    continue
+                '''if bbox.getchildren()[0].text in 'true':
+                    continue'''
                 frame_id, xmin, ymin, xmax, ymax, _, _, _ = list(map(float, ([v for k, v in bbox.attrib.items()])))
                 update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1.)
 
@@ -93,6 +96,52 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
 
     return annot
 
+def gt_multi_txt(path, bboxes):
+    
+    W, H = Image.open(path).size
+
+    lines_out=[]
+    for obj_info in bboxes:
+        label = 0 #obj_info['name']
+        xmin, ymin, xmax, ymax = obj_info['bbox']
+
+        cx = '%.3f' % np.clip(((xmax+xmin)/2)/W,0,1)
+        cy = '%.3f' % np.clip(((ymax+ymin)/2)/H,0,1)
+        w = '%.3f' % np.clip((xmax-xmin)/W ,0,1)
+        h = '%.3f' % np.clip((ymax-ymin)/H ,0,1)
+
+        lines_out.append(' '.join([str(label),cx,cy,w,h,'\n']))
+
+    return lines_out
+
+
+def to_yolov3(data, gt_bboxes, save_path='yolov3'):
+    
+    data_path = join(os.getcwd(),save_path,'data')
+    if os.path.exists(data_path):
+        if len(glob.glob(data_path+'/*.*')) == 2*sum([len(d) for _,d in data.items()]):
+            print('Data already in YOLOv3 format!')
+            return
+
+    os.makedirs(data_path,exist_ok=True)
+
+    for split, split_data in data.items():
+        files = []
+        for path in tqdm(split_data,'Preparing '+split+' data'):
+            # Convert to yolov3 format
+            frame_id = basename(path).split('.')[0]
+            lines_out = gt_multi_txt(path, gt_bboxes[frame_id])
+
+            # Write/save files
+            file_out = open(join(data_path,frame_id+'.txt'), 'w')
+            file_out.writelines(lines_out)
+            new_path = join(data_path,frame_id+'.jpg')
+            files.append(new_path+'\n')
+            copyfile(path, new_path)
+
+        split_txt = open(join(os.getcwd(),save_path,split+'.txt'), 'w')
+        split_txt.writelines(files)
+
 
 class AICity:
     """
@@ -121,6 +170,7 @@ class AICity:
         if args.test_mode:
             self.frames_paths = self.frames_paths[0:int(len(self.frames_paths) / 10)]
         '''
+        self.data = {'train':[], 'val':[]}
 
         self.split_factor = args.split_factor
         self.task = args.task
@@ -145,9 +195,13 @@ class AICity:
         train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
                                             test_size=self.split_factor, random_state=0)
 
-        self.train_dataset = train.tolist()  
-        self.val_dataset = val.tolist()
+        self.data['train'] = train.tolist()  
+        self.data['val'] = val.tolist()
     
+    def data_to_model(self):
+        if self.model in 'YOLOv3':
+            to_yolov3(self.data, self.gt_bboxes)
+
     def train_split(self, split=0):
         """
         Apply random split to specific propotion of the train set.
