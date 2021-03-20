@@ -5,23 +5,83 @@ import glob
 import numpy as np
 from tqdm import tqdm
 from shutil import copyfile
+import torch
+import cv2
 
 # Import YOLOv3 libraries
 from yolov3.models.experimental import attempt_load
-from yolov3.utils.datasets import LoadStreams, LoadImages
-from yolov3.utils.general import check_img_size, check_requirements, non_max_suppression, apply_classifier, scale_coords, \
-    xyxy2xywh, strip_optimizer, set_logging, increment_path
+from yolov3.utils.general import check_img_size, non_max_suppression, scale_coords, xyxy2xywh, set_logging
 from yolov3.utils.plots import plot_one_box
-from yolov3.utils.torch_utils import select_device, load_classifier, time_synchronized
+from yolov3.utils.torch_utils import select_device
+from yolov3.utils.datasets import letterbox
 
-class YOLOv3():
-    def __init__(self, img_size=640, device='cuda'):
-        weights = 'data/weights/yolov3.pt'
+class UltralyricsYolo():
+    def __init__(self,
+                 weights='yolov3.pt',
+                 img_size=640, 
+                 classes=[0,1,2], 
+                 device="0",
+                 conf_thres=0.25, 
+                 iou_thres=0.45, 
+                 agnostic_nms=False):
+                 
+        # Initialize
+        set_logging()
+        self.device = select_device(device)
 
         # Load model
-        model = attempt_load(weights, map_location=device)  # load FP32 model
-        imgsz = check_img_size(img_size, s=model.stride.max())  # check img_size
+        self.model = attempt_load(weights, map_location=self.device)  # load FP32 model
+        self.img_size = check_img_size(img_size, s=self.model.stride.max())  # check img_size
+            
+        self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
 
+        self.conf_thres = conf_thres
+        self.iou_thres = iou_thres
+        self.classes = classes
+        self.agnostic_nms = agnostic_nms
+        
+        img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
+        _ = self.model(img) if self.device.type != 'cpu' else None  # run once
+
+
+    def predict(self, img_path):
+
+        img = cv2.imread(img_path)
+        img0 = img.copy()
+        
+        #This happens inside datasets
+        # Convert
+        img = letterbox(img, new_shape=self.img_size)[0]
+
+        # Convert
+        img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        img = np.ascontiguousarray(img)
+        
+        #this happens on detect
+        img = torch.from_numpy(img).to(self.device)
+        img = img.float()  # uint8 to fp16/32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        if img.ndimension() == 3:
+            img = img.unsqueeze(0)
+
+        # Inference
+        pred = self.model(img)[0]
+
+        # Apply NMS
+        pred = non_max_suppression(pred, self.conf_thres, self.iou_thres, classes=self.classes, agnostic=self.agnostic_nms)
+        
+        # Process detections
+        for i, det in enumerate(pred):  # detections per image
+            if det is not None and len(det):
+                # Rescale boxes from img_size to im0 size
+                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], img0.shape).round()
+
+        pred = [d.cpu().detach().numpy() for d in pred if d is not None]
+        pred = pred[0] if len(pred) else pred
+        
+        pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss in pred if clss==2]
+
+        return pred
 
 def gt_multi_txt(path, bboxes):
     

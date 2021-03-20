@@ -4,9 +4,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from models.common import Conv, DWConv
-from utils.google_utils import attempt_download
+from yolov3.models.common import Conv, DWConv
+from yolov3.utils.google_utils import attempt_download
 
+import sys
+sys.path.append('yolov3')
 
 class CrossConv(nn.Module):
     # Cross Convolution Downsample

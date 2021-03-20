@@ -12,7 +12,7 @@ from utils.utils import write_json_file
 
 from utils.detect2 import Detect2, to_detectron2
 #from utils.tf_models import TFModel
-import utils.yolov3 as yolov3
+from utils.yolov3 import UltralyricsYolo
 
 def load_text(text_dir, text_name):
     """
@@ -88,7 +88,7 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
     obj_info = dict(
         name='car',
         bbox=list(map(float, [xmin, ymin, xmax, ymax])),
-        confidence=conf
+        confidence=float(conf)
     )
 
     if frame_name not in annot.keys():
@@ -154,15 +154,17 @@ class AICity:
         self.data['val'] = val.tolist()
     
     def data_to_model(self):
-        if self.framework in 'yolov3':
+        if self.framework in 'ultralytics':
             yolov3.to_yolov3(self.data, self.gt_bboxes)
         elif self.framework in 'detectron2':
             to_detectron2(self.data, self.gt_bboxes)
     
     def inference(self):
-        if self.framework in 'detectron2':
+        if self.framework in 'ultralytics':
+            model = UltralyricsYolo()
+        elif self.framework in 'detectron2':
             model = Detect2(self.model)
-        
+                
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
             frame_id = file_name[-8:-4]

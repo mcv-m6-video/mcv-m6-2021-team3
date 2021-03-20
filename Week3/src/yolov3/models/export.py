@@ -13,10 +13,10 @@ sys.path.append('./')  # to run '$ python *.py' files in subdirectories
 import torch
 import torch.nn as nn
 
-import models
-from models.experimental import attempt_load
-from utils.activations import Hardswish, SiLU
-from utils.general import set_logging, check_img_size
+import yolov3.models as models
+from yolov3.models.experimental import attempt_load
+from yolov3.utils.activations import Hardswish, SiLU
+from yolov3.utils.general import set_logging, check_img_size
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
