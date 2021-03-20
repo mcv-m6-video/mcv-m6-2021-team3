@@ -6,10 +6,9 @@ Week1/data_stereo_flow
 Week1/AICity_data/
 data_stereo_flow/
 results_opticalflow_kitti/
-data/
+./data/
 Week2/src/outputs/
 Week3/src/yolov3_data
-Week3/data/weights
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -149,3 +148,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# models
+*.pkl
+*.pth.tar
