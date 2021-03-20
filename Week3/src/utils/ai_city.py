@@ -13,7 +13,7 @@ from utils.visualize import visualize_background_iou
 
 from utils.detect2 import Detect2, to_detectron2
 from utils.tf_models import TFModel
-from utils.yolov3 import UltralyricsYolo
+from utils.yolov3 import UltralyricsYolo, to_yolov3
 
 def load_text(text_dir, text_name):
     """
@@ -162,7 +162,7 @@ class AICity:
     
     def data_to_model(self):
         if self.framework in 'ultralytics':
-            yolov3.to_yolov3(self.data, self.gt_bboxes)
+            to_yolov3(self.data, self.gt_bboxes)
         elif self.framework in 'detectron2':
             to_detectron2(self.data, self.gt_bboxes)
 

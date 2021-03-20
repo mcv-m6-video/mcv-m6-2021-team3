@@ -14,7 +14,9 @@ def main(args):
     aicity.train_val_split()
 
     if args.mode in 'inference':
-        aicity.inference()
+        if len(aicity.det_bboxes)<1:
+            aicity.inference()
+
         print('mAP: ',aicity.get_mAP())
         
         if args.save_img:

@@ -19,38 +19,33 @@ from yolov3.train import main as train_yolov3
 class UltralyricsYolo():
     def __init__(self,
                  weights='yolov3.pt',
-                 img_size=640, 
-                 classes=[2], 
-                 device="0",
-                 conf_thres=0.25, 
-                 iou_thres=0.45, 
+                 classes=[2],
+                 device='0',
                  agnostic_nms=False,
                  args=None):
-        
-        mode = args.mode
-        hyp = args.hyp
 
         # Initialize
         set_logging()
         self.device = select_device(device)
         
-        if mode=='inference':
+        if args.mode in 'inference':
         
             # Load model
             self.model = attempt_load(weights, map_location=self.device)  # load FP32 model
-            self.img_size = check_img_size(img_size, s=self.model.stride.max())  # check img_size
+            self.img_size = check_img_size(args.img_size[0], s=self.model.stride.max())  # check img_size
                 
             self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
 
-            self.conf_thres = conf_thres
-            self.iou_thres = iou_thres
+            self.conf_thres = args.conf_thres
+            self.iou_thres = args.iou_thres
             self.classes = classes
             self.agnostic_nms = agnostic_nms
             
             img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
             _ = self.model(img) if self.device.type != 'cpu' else None  # run once
 
-        elif mode == 'train':
+        elif args.mode in 'train':
+            self.weights = weights
             self.args = args
 
     def predict(self, img_path):
@@ -93,7 +88,7 @@ class UltralyricsYolo():
         return pred
 
     def train(self, args):
-        train_yolov3(args)
+        train_yolov3(weights, args)
         
 
 

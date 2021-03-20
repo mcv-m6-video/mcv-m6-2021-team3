@@ -429,7 +429,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
     return results
 
 
-def main(weights, hyp, args):
+def main(weights, args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default='yolov3.pt', help='initial weights path')
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
@@ -463,7 +463,7 @@ def main(weights, hyp, args):
     opt = parser.parse_args()
 
     # Refine opt variables
-    opt.weights = args.weights
+    opt.weights = weights
     opt.hyp = args.hyp
     opt.data = args.data_yolov3
     opt.epochs = args.epochs
