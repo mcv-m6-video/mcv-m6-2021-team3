@@ -447,7 +447,7 @@ def main(weights, args):
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
     parser.add_argument('--image-weights', action='store_true', help='use weighted image selection for training')
-    parser.add_argument('--device', default=0, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--device', default="0", help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--multi-scale', action='store_true', help='vary img-size +/- 50%%')
     parser.add_argument('--single-cls', action='store_true', help='train multi-class data as single-class')
     parser.add_argument('--adam', action='store_true', help='use torch.optim.Adam() optimizer')
@@ -467,17 +467,17 @@ def main(weights, args):
     opt.hyp = args.hyp
     opt.data = args.data_yolov3
     opt.epochs = args.epochs
-    opt['batch-size'] = args.batch_size
-    opt['img-size'] = args.img_size
+    opt.batch_size = args.batch_size
+    opt.img_size = args.img_size
     opt.name = args.model
 
     # Set DDP variables
     opt.world_size = int(os.environ['WORLD_SIZE']) if 'WORLD_SIZE' in os.environ else 1
     opt.global_rank = int(os.environ['RANK']) if 'RANK' in os.environ else -1
     set_logging(opt.global_rank)
-    if opt.global_rank in [-1, 0]:
+    '''if opt.global_rank in [-1, 0]:
         check_git_status()
-        check_requirements()
+        check_requirements()'''
 
     # Resume
     if opt.resume:  # resume an interrupted run

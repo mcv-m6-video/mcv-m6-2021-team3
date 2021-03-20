@@ -26,12 +26,12 @@ class UltralyricsYolo():
 
         # Initialize
         set_logging()
-        self.device = select_device(device)
         
         if args.mode in 'inference':
+            device = select_device(device)
         
             # Load model
-            self.model = attempt_load(weights, map_location=self.device)  # load FP32 model
+            self.model = attempt_load(weights, map_location=device)  # load FP32 model
             self.img_size = check_img_size(args.img_size[0], s=self.model.stride.max())  # check img_size
                 
             self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
@@ -41,8 +41,8 @@ class UltralyricsYolo():
             self.classes = classes
             self.agnostic_nms = agnostic_nms
             
-            img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
-            _ = self.model(img) if self.device.type != 'cpu' else None  # run once
+            img = torch.zeros((1, 3, self.img_size, self.img_size), device=device)  # init img
+            _ = self.model(img) if device.type != 'cpu' else None  # run once
 
         elif args.mode in 'train':
             self.weights = weights
@@ -87,8 +87,8 @@ class UltralyricsYolo():
 
         return pred
 
-    def train(self, args):
-        train_yolov3(weights, args)
+    def train(self):
+        train_yolov3(self.weights, self.args)
         
 
 

@@ -5,7 +5,6 @@ from utils.utils import write_json_file
 from config.config import Config
 from utils.yolov3 import UltralyricsYolo
 
-
 def main(args):
 
     os.makedirs(join(args.output_path, str(args.task)), exist_ok=True)
@@ -24,7 +23,8 @@ def main(args):
 
     elif args.mode in 'train':
         aicity.data_to_model()
-        model = UltralyricsYolo(args.weights,args=args)
+        model = UltralyricsYolo(args=args)
+        model.train()
         
 
 

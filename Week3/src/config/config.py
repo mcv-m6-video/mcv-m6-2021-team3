@@ -30,8 +30,8 @@ class Config:
 
         parser.add_argument('--conf_thres', type=float, default=0.25)
         parser.add_argument('--iou_thres', type=float, default=0.45)
-        parser.add_argument('--data_yolov3', type=str, default='data/yolov3', help='data.yaml path')
-        parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path for finetuning')
+        parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars.yaml', help='data.yaml path')
+        parser.add_argument('--hyp', type=str, default='data/finetune/yolov3/hyp.finetune.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=300)
         parser.add_argument('--batch_size', type=int, default=16, help='total batch size for all GPUs')
         
