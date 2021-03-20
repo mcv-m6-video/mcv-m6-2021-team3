@@ -100,6 +100,7 @@ def frames_to_gif(save_dir, ext):
     print('Gif saved at ' + gif_dir)
 
 def get_weights(model):
+    makedirs('data/weights/',exist_ok=True)
     model_path = 'data/weights/'+model+'.pkl'
     if not exists(model_path):
         subprocess.call(['sh','./data/scripts/get_'+model+'.sh'])
