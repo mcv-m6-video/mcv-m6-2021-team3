@@ -99,9 +99,12 @@ def frames_to_gif(save_dir, ext):
 
     print('Gif saved at ' + gif_dir)
 
-def get_weights(model):
+def get_weights(model, framework):
     makedirs('data/weights/',exist_ok=True)
-    model_path = 'data/weights/'+model+'.pkl'
+    if framework in 'detectron2':
+        model_path = 'data/weights/'+model+'.pkl'
+    elif framework in 'ultralytics':
+        model_path = 'data/weights/'+model+'.pt'
     if not exists(model_path):
         subprocess.call(['sh','./data/scripts/get_'+model+'.sh'])
     return model_path

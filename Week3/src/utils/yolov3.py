@@ -8,6 +8,8 @@ from shutil import copyfile
 import torch
 import cv2
 
+from utils.utils import get_weights
+
 # Import YOLOv3 libraries
 from yolov3.models.experimental import attempt_load
 from yolov3.utils.general import check_img_size, non_max_suppression, scale_coords, xyxy2xywh, set_logging
@@ -18,7 +20,7 @@ from yolov3.train import main as train_yolov3
 
 class UltralyricsYolo():
     def __init__(self,
-                 weights='yolov3.pt',
+                 weights='yolov3',
                  classes=[2],
                  device='0',
                  agnostic_nms=False,
@@ -26,12 +28,13 @@ class UltralyricsYolo():
 
         # Initialize
         set_logging()
-        
+        weights = get_weights(weights,'ultralytics')
+
         if args.mode in 'inference':
-            device = select_device(device)
+            self.device = select_device(device)
         
             # Load model
-            self.model = attempt_load(weights, map_location=device)  # load FP32 model
+            self.model = attempt_load(weights, map_location=self.device)  # load FP32 model
             self.img_size = check_img_size(args.img_size[0], s=self.model.stride.max())  # check img_size
                 
             self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
@@ -41,8 +44,8 @@ class UltralyricsYolo():
             self.classes = classes
             self.agnostic_nms = agnostic_nms
             
-            img = torch.zeros((1, 3, self.img_size, self.img_size), device=device)  # init img
-            _ = self.model(img) if device.type != 'cpu' else None  # run once
+            img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
+            _ = self.model(img) if self.device.type != 'cpu' else None  # run once
 
         elif args.mode in 'train':
             self.weights = weights

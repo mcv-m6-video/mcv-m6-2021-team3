@@ -169,7 +169,7 @@ class AICity:
         if self.framework in 'ultralytics':
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
         elif self.framework in 'detectron2':
-            to_detectron2(self.data, self.gt_bboxes
+            to_detectron2(self.data, self.gt_bboxes)
 
     
     def inference(self):
