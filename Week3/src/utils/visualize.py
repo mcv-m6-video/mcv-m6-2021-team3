@@ -25,7 +25,7 @@ def draw_bboxes(img, bboxes, color):
     return img
 
 
-def visualize_background_iou(data, segmen, gt, dets, framework, model, mode='inference', axis=[536, 915]):
+def visualize_background_iou(data, segmen, gt, dets, framework, model, output_path, mode='inference', axis=[536, 915]):
     """
     Creates a plot to visualize the IoU with its mean and std deviation.
 
@@ -84,7 +84,7 @@ def visualize_background_iou(data, segmen, gt, dets, framework, model, mode='inf
             plt.ylabel('IoU', fontsize=10)
             plt.legend(prop={'size': 8}, loc='lower right')
 
-            save_path = join('outputs', mode, model, framework)
+            save_path = join(output_path, mode, model, framework)
 
             os.makedirs(save_path, exist_ok=True)
 

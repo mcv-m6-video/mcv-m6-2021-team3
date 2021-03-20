@@ -218,4 +218,4 @@ class AICity:
         """
         Creates plots for a given frame and bbox estimation
         """
-        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework, self.model)
+        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework, self.model, self.options.output_path)

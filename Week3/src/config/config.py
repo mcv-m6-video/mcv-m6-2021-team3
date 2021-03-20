@@ -10,12 +10,12 @@ class Config:
     def get_args():
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
-        parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
+        parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
 
         # ================================ INPUT ================================ #
-        parser.add_argument('--data_path', type=str, default='../../data/AICity/train/S03/c010/vdo',
+        parser.add_argument('--data_path', type=str, default='../../datasets/AICity/train/S03/c010/vdo',
                             help="Path where the AICity data is located")
-        parser.add_argument('--gt_path', type=str, default='../../data', help="Folder where the annotations are stored")
+        parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         
         parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
         parser.add_argument('--split_factor', type=float, default=0.25, help="Split factor")
@@ -23,7 +23,7 @@ class Config:
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='SSD MobileNet V1 FPN 640x640', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
+        parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
 
         # =============================== FINETUNE =============================== #
 

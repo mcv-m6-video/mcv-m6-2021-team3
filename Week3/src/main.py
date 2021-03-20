@@ -10,9 +10,10 @@ def main(args):
     os.makedirs(join(args.output_path, str(args.task)), exist_ok=True)
 
     aicity = AICity(args)
-    aicity.inference()
+    #aicity.inference()
     #print(aicity.get_mAP())
-    #aicity.train_val_split()
+    aicity.train_val_split()
+    aicity.visualize_task()
     #aicity.data_to_model()
 
     #img_path = aicity.frames_paths[0]
