@@ -9,8 +9,10 @@ import xml.etree.ElementTree as ET
 
 from utils.metrics import voc_eval
 from utils.utils import write_json_file
-from utils.detect2 import to_detectron2
-from utils.yolov3 import to_yolov3
+
+from utils.detect2 import Detect2, to_detectron2
+#from utils.tf_models import TFModel
+import utils.yolov3 as yolov3
 
 def load_text(text_dir, text_name):
     """
@@ -129,6 +131,7 @@ class AICity:
         self.split_factor = args.split_factor
         self.task = args.task
         self.model = args.model
+        self.framework = args.framework
 
         # OUTPUT PARAMETERS
         self.output_path = args.output_path
@@ -152,14 +155,25 @@ class AICity:
         self.data['val'] = val.tolist()
     
     def data_to_model(self):
-        if self.model in 'yolov3':
-            to_yolov3(self.data, self.gt_bboxes)
-        elif self.model in ['faster_rcnn', 'retinanet']:
+        if self.framework in 'yolov3':
+            yolov3.to_yolov3(self.data, self.gt_bboxes)
+        elif self.framework in 'detectron2':
             to_detectron2(self.data, self.gt_bboxes)
     
-    '''def detect(self):
-        if self.model in ['Faster_RCNN', 'Mask_RCNN', 'RetinaNet']:
-            detect2'''
+    def inference(self):
+        if self.framework in 'detectron2':
+            model = Detect2(self.model)
+        
+        for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
+            pred = model.predict(file_name)
+            frame_id = file_name[-8:-4]
+            for (bbox), conf in pred:
+                self.det_bboxes = update_data(self.det_bboxes, frame_id, *bbox, conf)
+        
+        if self.save_json:
+            save_path = 'outputs/inference/'
+            os.makedirs(save_path, exist_ok=True)
+            write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
 
 
     def train_split(self, split=0):
@@ -170,22 +184,7 @@ class AICity:
             split (float): proportion of the train set that will be used.
         """
         self.train_dataset = random.choices(self.dataset_train,k=int(len(self.dataset_train)*split))
-
-    def read_frames(self):
-        """
-        Reds all the frames from disk
-
-        :return: np.array of frames
-        """
-
-        images = []
-        for file_name in tqdm(self.bg_modeling_frames_paths, 'Reading frames'):
-            images.append(self.read_frame(file_name,
-                                          laplacian=self.options.laplacian,
-                                          pre_denoise=self.options.pre_denoise)[1])
-
-        return np.asarray(images)
-    
+   
 
     def get_mAP(self):
         """

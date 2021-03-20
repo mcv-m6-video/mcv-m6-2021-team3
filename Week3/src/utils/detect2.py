@@ -19,6 +19,47 @@ from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.structures import BoxMode
 
+class Detect2():
+    def __init__(self, model):
+        if model in 'faster_rcnn':
+            cfg_file = 'COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml'        
+        elif model in 'mask_rcnn':
+            cfg_file = 'COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml'
+        elif model in 'retinanet':
+            cfg_file = 'COCO-Detection/retinanet_R_101_FPN_3x.yaml'
+
+        weights = get_weights(model)
+
+        cfg = get_cfg()
+        # add project-specific config (e.g., TensorMask) here if you're not running a model in detectron2's core library
+        cfg.merge_from_file(model_zoo.get_config_file(cfg_file))
+        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
+        cfg.MODEL.WEIGHTS = weights
+
+        self.model = model
+        self.cfg = cfg
+    
+        
+    def predict(self, img_path):
+
+        # load image
+        img = cv2.imread(img_path)
+
+        predictor = DefaultPredictor(self.cfg)
+        outputs = predictor(img)
+
+        # Visualize
+        v = Visualizer(img[:, :, ::-1], MetadataCatalog.get(self.cfg.DATASETS.TRAIN[0]), scale=1.2)
+        out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+        out_img = out.get_image()
+
+        # filter only cars
+        output = [[box.cpu().numpy().tolist(),score.cpu().numpy().tolist()] for label, box, score in zip(outputs["instances"].pred_classes,
+                    outputs["instances"].pred_boxes, outputs["instances"].scores) if label == 2]
+
+        return output
+
+
 def add_record(image_id, filename, bboxes):
     record = {}
         
@@ -56,39 +97,4 @@ def to_detectron2(data, gt_bboxes):
         datasets_dicts.update({split:dataset_dicts})
 
     return datasets_dicts
-
-
-def predict(img_path, model):
-    
-    if model in 'faster_rcnn':
-        cfg_file = 'COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml'        
-    elif model in 'mask_rcnn':
-        cfg_file = 'COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml'
-    elif model in 'retinanet':
-        cfg_file = 'COCO-Detection/retinanet_R_101_FPN_3x.yaml'
-
-    weights = get_weights(model)
-
-    # load image
-    img = cv2.imread(img_path)
-
-    cfg = get_cfg()
-    # add project-specific config (e.g., TensorMask) here if you're not running a model in detectron2's core library
-    cfg.merge_from_file(model_zoo.get_config_file(cfg_file))
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
-    cfg.MODEL.WEIGHTS = weights
-    predictor = DefaultPredictor(cfg)
-    outputs = predictor(img)
-
-    # Visualize
-    v = Visualizer(img[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1.2)
-    out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    out_img = out.get_image()
-
-    # filter only cars
-    output = [box.cpu().numpy().tolist() for label, box in zip(outputs["instances"].pred_classes,outputs["instances"].pred_boxes) if label == 2]
-
-    return output
-
-
 
