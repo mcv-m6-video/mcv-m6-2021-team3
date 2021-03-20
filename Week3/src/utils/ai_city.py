@@ -11,7 +11,7 @@ from utils.metrics import voc_eval
 from utils.utils import write_json_file, read_json_file
 
 from utils.detect2 import Detect2, to_detectron2
-#from utils.tf_models import TFModel
+from utils.tf_models import TFModel
 from utils.yolov3 import UltralyricsYolo
 
 def load_text(text_dir, text_name):
@@ -109,6 +109,7 @@ class AICity:
 
         :param args: configuration for the current estimation
         """
+        self.options = args
 
         # INPUT PARAMETERS
         self.data_path = args.data_path
@@ -120,7 +121,7 @@ class AICity:
 
         # Load detections
         self.gt_bboxes = load_annot(args.gt_path, 'ai_challenge_s03_c010-full_annotation.xml')
-        infer_path = 'outputs/inference/'+'_'.join((self.model, self.framework+'.json'))
+        infer_path = join(self.options.output_path,'inference/') +'_'.join((self.model, self.framework+'.json'))
         if exists(infer_path):
             self.det_bboxes = read_json_file(infer_path)
         else:
@@ -162,12 +163,15 @@ class AICity:
             yolov3.to_yolov3(self.data, self.gt_bboxes)
         elif self.framework in 'detectron2':
             to_detectron2(self.data, self.gt_bboxes)
+
     
     def inference(self):
         if self.framework in 'ultralytics':
             model = UltralyricsYolo()
         elif self.framework in 'detectron2':
             model = Detect2(self.model)
+        elif self.framework in 'tensorflow':
+            model = TFModel(self.options, self.model)
                 
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
