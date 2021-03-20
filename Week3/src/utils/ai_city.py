@@ -1,14 +1,14 @@
 import numpy as np
 import cv2
 import os
-from os.path import join, basename
+from os.path import join, basename, exists
 import glob
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 
 from utils.metrics import voc_eval
-from utils.utils import write_json_file
+from utils.utils import write_json_file, read_json_file
 
 from utils.detect2 import Detect2, to_detectron2
 #from utils.tf_models import TFModel
@@ -112,10 +112,19 @@ class AICity:
 
         # INPUT PARAMETERS
         self.data_path = args.data_path
-        self.img_size = args.img_size        
+        self.img_size = args.img_size
+        self.split_factor = args.split_factor
+        self.task = args.task
+        self.model = args.model
+        self.framework = args.framework
 
+        # Load detections
         self.gt_bboxes = load_annot(args.gt_path, 'ai_challenge_s03_c010-full_annotation.xml')
-        self.det_bboxes = {}
+        infer_path = 'outputs/inference/'+'_'.join((self.model, self.framework+'.json'))
+        if exists(infer_path):
+            self.det_bboxes = read_json_file(infer_path)
+        else:
+            self.det_bboxes = {}
 
         # Load frame paths and filter by gt
         self.frames_paths = glob.glob(join(self.data_path, "*." + args.extension))
@@ -126,11 +135,6 @@ class AICity:
             self.frames_paths = self.frames_paths[0:int(len(self.frames_paths) / 10)]
         '''
         self.data = {'train':[], 'val':[]}
-
-        self.split_factor = args.split_factor
-        self.task = args.task
-        self.model = args.model
-        self.framework = args.framework
 
         # OUTPUT PARAMETERS
         self.output_path = args.output_path
@@ -194,7 +198,7 @@ class AICity:
         :return: map of all estimated frames
         """
         return \
-        voc_eval(self.gt_bboxes, self.bg_frames_paths, self.det_bboxes, resize_factor=self.options.resize_factor)[2]
+        voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, resize_factor=1)[2]
 
     def save_results(self, name_json):
         """

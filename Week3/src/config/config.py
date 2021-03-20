@@ -10,7 +10,7 @@ class Config:
     def get_args():
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
-        parser.add_argument('--framework', type=str, default='detectron2', help='What framework to use')
+        parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../data/AICity/train/S03/c010/vdo',
@@ -23,10 +23,12 @@ class Config:
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='faster_rcnn', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
+        parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
 
         # =============================== FINETUNE =============================== #
 
+        parser.add_argument('--conf_thres', type=float, default=0.25)
+        parser.add_argument('--iou_thres', type=float, default=0.45)
         parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=300)
         parser.add_argument('--batch_size', type=int, default=16, help='total batch size for all GPUs')

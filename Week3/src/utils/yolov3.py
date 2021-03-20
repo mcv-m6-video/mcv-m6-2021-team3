@@ -19,7 +19,7 @@ class UltralyricsYolo():
     def __init__(self,
                  weights='yolov3.pt',
                  img_size=640, 
-                 classes=[0,1,2], 
+                 classes=[2], 
                  device="0",
                  conf_thres=0.25, 
                  iou_thres=0.45, 
@@ -79,7 +79,7 @@ class UltralyricsYolo():
         pred = [d.cpu().detach().numpy() for d in pred if d is not None]
         pred = pred[0] if len(pred) else pred
         
-        pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss in pred if clss==2]
+        pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss]
 
         return pred
 
