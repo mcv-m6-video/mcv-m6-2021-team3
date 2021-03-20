@@ -25,10 +25,11 @@ class UltralyricsYolo():
                  conf_thres=0.25, 
                  iou_thres=0.45, 
                  agnostic_nms=False,
-                 hyp=None,
-                 mode='inference',
                  args=None):
-                 
+        
+        mode = args.mode
+        hyp = args.hyp
+
         # Initialize
         set_logging()
         self.device = select_device(device)
@@ -50,8 +51,6 @@ class UltralyricsYolo():
             _ = self.model(img) if self.device.type != 'cpu' else None  # run once
 
         elif mode == 'train':
-            self.weights = weights
-            self.hyp = hyp
             self.args = args
 
     def predict(self, img_path):
@@ -93,8 +92,8 @@ class UltralyricsYolo():
 
         return pred
 
-    def train(self, hyp):
-        train_yolov3(hyp)
+    def train(self, args):
+        train_yolov3(args)
         
 
 

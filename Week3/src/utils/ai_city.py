@@ -169,7 +169,7 @@ class AICity:
     
     def inference(self):
         if self.framework in 'ultralytics':
-            model = UltralyricsYolo()
+            model = UltralyricsYolo(args=self.options)
         elif self.framework in 'detectron2':
             model = Detect2(self.model)
         elif self.framework in 'tensorflow':

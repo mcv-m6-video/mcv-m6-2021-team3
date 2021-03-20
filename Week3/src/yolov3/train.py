@@ -463,12 +463,12 @@ def main(weights, hyp, args):
     opt = parser.parse_args()
 
     # Refine opt variables
-    opt.weights = weights
-    opt.hyp = hyp
+    opt.weights = args.weights
+    opt.hyp = args.hyp
     opt.data = args.data_yolov3
     opt.epochs = args.epochs
-    opt.batch-size = args.batch_size
-    opt.img-size = args.img_size
+    opt['batch-size'] = args.batch_size
+    opt['img-size'] = args.img_size
     opt.name = args.model
 
     # Set DDP variables
