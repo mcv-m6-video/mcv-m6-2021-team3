@@ -47,11 +47,12 @@ def load_xml(xml_dir, xml_name, ignore_parked=True):
         if child.tag in 'track':
             if child.attrib['label'] not in 'car':
                 continue
+            obj_id = int(child.attrib['id'])
             for bbox in child.getchildren():
                 '''if bbox.getchildren()[0].text in 'true':
                     continue'''
                 frame_id, xmin, ymin, xmax, ymax, _, _, _ = list(map(float, ([v for k, v in bbox.attrib.items()])))
-                update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1.)
+                update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1., obj_id)
 
     return annot
 
@@ -116,7 +117,7 @@ class AICity:
         # INPUT PARAMETERS
         self.data_path = args.data_path
         self.img_size = args.img_size
-        self.split_factor = args.split_factor
+        self.split = args.split
         self.task = args.task
         self.model = args.model
         self.framework = args.framework
@@ -151,18 +152,19 @@ class AICity:
 
     def train_val_split(self):
         """
-        Apply random split to specific propotion of the dataset (split_factor).
+        Apply random split to specific propotion of the dataset (split).
 
         """
-        train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
-                                            test_size=self.split_factor, random_state=0)
+        if self.split[0] in 'rand':
+            train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
+                                                test_size=1-self.split[1], random_state=0)
 
         self.data['train'] = train.tolist()  
         self.data['val'] = val.tolist()
     
     def data_to_model(self):
         if self.framework in 'ultralytics':
-            to_yolov3(self.data, self.gt_bboxes)
+            to_yolov3(self.data, self.gt_bboxes, self.split[0])
         elif self.framework in 'detectron2':
             to_detectron2(self.data, self.gt_bboxes)
 
@@ -170,10 +172,12 @@ class AICity:
     def inference(self):
         if self.framework in 'ultralytics':
             model = UltralyricsYolo(args=self.options)
-        elif self.framework in 'detectron2':
-            model = Detect2(self.model)
+        
         elif self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
+
+        '''elif self.framework in 'detectron2':
+            model = Detect2(self.model)'''
                 
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
