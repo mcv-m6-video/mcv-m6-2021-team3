@@ -137,7 +137,6 @@ class AICity:
         self.save_img = args.save_img
 
         
-    
     def __len__(self):
         return len(self.frames_paths)
 

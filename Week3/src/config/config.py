@@ -9,6 +9,8 @@ class Config:
     @staticmethod
     def get_args():
         parser = argparse.ArgumentParser()
+        # ================================ FRAMEWORK ============================ #
+        parser.add_argument('--framework', type=str, default='detectron2', help='What framework to use')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../data/AICity/train/S03/c010/vdo',
