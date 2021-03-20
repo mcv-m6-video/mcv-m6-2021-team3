@@ -10,7 +10,7 @@ class Config:
     def get_args():
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
-        parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
+        parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../data/AICity/train/S03/c010/vdo',
@@ -23,7 +23,7 @@ class Config:
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
+        parser.add_argument('--model', type=str, default='SSD MobileNet V1 FPN 640x640', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
 
         # =============================== FINETUNE =============================== #
 
@@ -39,5 +39,7 @@ class Config:
         parser.add_argument('--view_img', type=bool, default=True, help="View detection results")
         parser.add_argument('--save_img', type=bool, default=True, help="Save detection qualitative results")
         
+         # ================================ TENSORFLOW PARAMS ====================== #
+        parser.add_argument('--threshold', type=float, default=0.5, help="Threshold to discard detections")
 
         return parser.parse_args()
