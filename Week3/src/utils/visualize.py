@@ -90,3 +90,4 @@ def visualize_background_iou(data, segmen, gt, dets, framework, model, mode='inf
 
             plt.savefig(join(save_path, frame_id + '.png'))
             plt.close()
+
