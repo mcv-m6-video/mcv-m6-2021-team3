@@ -182,7 +182,7 @@ class AICity:
                 self.det_bboxes = update_data(self.det_bboxes, frame_id, *bbox, conf)
         
         if self.save_json:
-            save_path = 'outputs/inference/'
+            save_path = join(self.options.output_path, 'inference/')
             os.makedirs(save_path, exist_ok=True)
             write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
 
