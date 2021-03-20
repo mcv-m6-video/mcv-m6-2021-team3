@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 
 from utils.metrics import voc_eval
 from utils.utils import write_json_file, read_json_file
+from utils.visualize import visualize_background_iou
 
 from utils.detect2 import Detect2, to_detectron2
 #from utils.tf_models import TFModel
@@ -71,7 +72,7 @@ def load_annot(annot_dir, name, ignore_parked=True):
 
     return annot
 
-def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
+def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf, obj_id=0):
     """
     Updates the annotations dict with by adding the desired data to it
     :param annot: annotation dict
@@ -87,6 +88,7 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
     frame_name = '%04d' % int(frame_id)
     obj_info = dict(
         name='car',
+        obj_id=obj_id,
         bbox=list(map(float, [xmin, ymin, xmax, ymax])),
         confidence=float(conf)
     )
@@ -208,12 +210,8 @@ class AICity:
         """
         write_json_file(self.det_bboxes, name_json)
 
-    def visualize_task(self, frame, bg, frame_id):
+    def visualize_task(self):
         """
-        Creates plots for a given frame and background estimation
-
-        :param frame: original image
-        :param bg: estimated background/foreground
-        :param frame_id: id of the given frame
+        Creates plots for a given frame and bbox estimation
         """
-        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.options)
+        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework, self.model)

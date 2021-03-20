@@ -6,7 +6,7 @@ Week1/data_stereo_flow
 Week1/AICity_data/
 data_stereo_flow/
 results_opticalflow_kitti/
-./data/
+datasets/
 Week2/src/outputs/
 Week3/src/yolov3_data
 
@@ -153,3 +153,4 @@ cython_debug/
 *.pkl
 *.pth.tar
 *.pt
+*.png

@@ -25,116 +25,68 @@ def draw_bboxes(img, bboxes, color):
     return img
 
 
-def visualize_background_iou(data, segmen, gt, dets, opt, axis=[536, 915]):
+def visualize_background_iou(data, segmen, gt, dets, framework, model, mode='inference', axis=[536, 915]):
     """
     Creates a plot to visualize the IoU with its mean and std deviation.
 
-    :param miou: mean IoU
-    :param std_iou: standard deviation of the IoU
-    :param xaxis: x axis of the plot
-    :param frame: original image
-    :param frame_id: id of the frame plotted
-    :param bg: background/foreground estimated
+    :param data: path to train and val images
+    :param segmen: segmentation estimated
     :param gt: ground truth
     :param dets: bbox detected
     :param opt: options/config used in the background removal process
     :param axis: list of the frame ids evaluated
     """
+    miou, std_iou, xaxis = np.empty(0, ), np.empty(0, ), np.empty(0, )
+    frames_paths = data['train']+data['val']
+    frames_paths.sort()
+    for file_name in tqdm(frames_paths, 'Saving predictions ({}, {})'.format(model, framework)):
+        
+        frame_id = file_name[-8:-4]
+        if frame_id in gt.keys() and axis[0]<int(frame_id)<axis[1]:
+            frame = cv2.imread(file_name)
+            gt_frame = np.array(dict_to_list(gt[frame_id], False))
 
-    pos = np.where(bg[:, :, 0])
-    frame[pos + (np.zeros(pos[0].shape, dtype=np.uint64),)] = 255
-    frame[pos + (np.ones(pos[0].shape, dtype=np.uint64),)] = 191
-    frame[pos + (np.ones(pos[0].shape, dtype=np.uint64) * 2,)] = 0
+            if segmen is not None:
+                pos = np.where(segmen[:, :, 0])
+                frame[pos + (np.zeros(pos[0].shape, dtype=np.uint64),)] = 255
+                frame[pos + (np.ones(pos[0].shape, dtype=np.uint64),)] = 191
+                frame[pos + (np.ones(pos[0].shape, dtype=np.uint64) * 2,)] = 0
 
-    if frame_id in gt.keys():
-        gt_frame = np.array(dict_to_list(gt[frame_id], False))
+            img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img = draw_bboxes(img, gt_frame, (0, 255, 0))
 
-        img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = draw_bboxes(img, gt_frame * opt.resize_factor, (0, 255, 0))
+            if frame_id in dets.keys():
+                dets_frame = np.array(dict_to_list(dets[frame_id], False))
+                mean, std = compute_miou(gt_frame, dets_frame)
 
-        if frame_id in dets.keys():
-            dets_frame = np.array(dict_to_list(dets[frame_id], False))
-            mean, std = compute_miou(gt_frame, dets_frame, opt.resize_factor)
+                img = draw_bboxes(img, dets_frame, (0, 0, 255))
+            else:
+                mean, std = 0, 0
 
-            img = draw_bboxes(img, dets_frame, (0, 0, 255))
-        else:
-            mean, std = 0, 0
-
-        miou = np.hstack((miou, mean))
-        std_iou = np.hstack((std_iou, std))
-        plt.figure(figsize=(5, 6))
-
-        plt.subplot(2, 1, 1)
-        plt.imshow(img)
-        plt.plot(0, 0, "-", c=(0, 1, 0), label='Ground Truth')
-        plt.plot(0, 0, "-", c=(0, 0, 1), label='Detection')
-        plt.legend(prop={'size': 8}, loc='lower right')
-
-        xaxis = np.hstack((xaxis, int(frame_id)))
-
-        plt.subplot(2, 1, 2)
-        plt.plot(xaxis, miou, 'cadetblue', label='Mean IoU')
-        plt.fill(np.append(xaxis, xaxis[::-1]), np.append(miou + std_iou, (miou - std_iou)[::-1]), 'powderblue',
-                 label='STD IoU')
-        plt.axis([axis[0], axis[1], 0, 1])
-        plt.xlabel('Frame id', fontsize=10)
-        plt.ylabel('IoU', fontsize=10)
-        plt.legend(prop={'size': 8}, loc='lower right')
-
-        filters_name = list(compress(['laplacian', 'median', 'bilateral', 'denoise'], [opt.laplacian,
-                                                                                       opt.median_filter,
-                                                                                       opt.bilateral_filter,
-                                                                                       opt.pre_denoise]))
-
-        save_path = join(opt.output_path, str(opt.task), str(opt.resize_factor),
-                         str(opt.alpha) + '_' + '_'.join(filters_name))
-
-        os.makedirs(save_path, exist_ok=True)
-
-        plt.savefig(join(save_path, frame_id + '.png'))
-        plt.close()
-
-def visualize_iou(path_miou, axis=[536, 700]):
-    paths_miou = glob.glob(path_miou+'/*.json')
-    paths_miou.sort()
-
-    color = ['cadetblue', 'sandybrown', 'mediumseagreen', 'tomato']#'mediumorchid', 'indianred',
-
-    save_path = join(path_miou,'miou')
-    os.makedirs(save_path, exist_ok=True)
-
-    plt.figure(figsize=(5, 6))
-
-    for i, path in enumerate(paths_miou):
-        iou_dict = read_json_file(path)
-        miou = iou_dict['miou']
-        c = color[i]
-        alpha = float(path[-7:-5])/10
-        if alpha.is_integer():
-            alpha = int(alpha)
-
-        for frame_id in range(axis[0],axis[1]+1,1):
-
-            xaxis = np.arange(axis[0],frame_id+1)
+            miou = np.hstack((miou, mean))
+            std_iou = np.hstack((std_iou, std))
+            plt.figure(figsize=(5, 6))
 
             plt.subplot(2, 1, 1)
-
-            try:
-                img = cv2.cvtColor(cv2.imread('outputs/task_11/0.3/{}laplacian_median/'.format(alpha)+'%04d' % frame_id + '.png'), cv2.COLOR_BGR2RGB)[73:283,70:444,:]
-            except:
-                continue
             plt.imshow(img)
-            
+            plt.plot(0, 0, "-", c=(0, 1, 0), label='Ground Truth')
+            plt.plot(0, 0, "-", c=(0, 0, 1), label='Detection')
+            plt.legend(prop={'size': 8}, loc='lower right')
+
+            xaxis = np.hstack((xaxis, int(frame_id)))
+
             plt.subplot(2, 1, 2)
-            if frame_id == axis[0]:
-                plt.plot(xaxis, miou[:frame_id-axis[0]+1], c, label='Alpha '+str(alpha))
-            else:
-                plt.plot(xaxis, miou[:frame_id-axis[0]+1], c)
+            plt.plot(xaxis, miou, 'cadetblue', label='Mean IoU')
+            plt.fill(np.append(xaxis, xaxis[::-1]), np.append(miou + std_iou, (miou - std_iou)[::-1]), 'powderblue',
+                    label='STD IoU')
             plt.axis([axis[0], axis[1], 0, 1])
             plt.xlabel('Frame id', fontsize=10)
             plt.ylabel('IoU', fontsize=10)
             plt.legend(prop={'size': 8}, loc='lower right')
-            
-            plt.savefig(join(save_path,str(alpha) + '_' + str(frame_id) + '.png'))
 
+            save_path = join('outputs', mode, model, framework)
 
+            os.makedirs(save_path, exist_ok=True)
+
+            plt.savefig(join(save_path, frame_id + '.png'))
+            plt.close()
