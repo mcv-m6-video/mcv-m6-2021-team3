@@ -11,6 +11,7 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
+        parser.add_argument('--mode', type=str, default='train', choices=['train','inference','tracking'], help='What task to perform')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../datasets/AICity/train/S03/c010/vdo',
@@ -29,6 +30,7 @@ class Config:
 
         parser.add_argument('--conf_thres', type=float, default=0.25)
         parser.add_argument('--iou_thres', type=float, default=0.45)
+        parser.add_argument('--data_yolov3', type=str, default='data/yolov3', help='data.yaml path')
         parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=300)
         parser.add_argument('--batch_size', type=int, default=16, help='total batch size for all GPUs')
@@ -36,7 +38,7 @@ class Config:
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")
         parser.add_argument('--save_json', type=bool, default=True, help="Save detection results to json")
-        parser.add_argument('--view_img', type=bool, default=True, help="View detection results")
+        parser.add_argument('--view_img', type=bool, default=False, help="View detection results")
         parser.add_argument('--save_img', type=bool, default=True, help="Save detection qualitative results")
         
          # ================================ TENSORFLOW PARAMS ====================== #

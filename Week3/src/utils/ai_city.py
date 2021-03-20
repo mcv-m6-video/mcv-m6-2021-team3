@@ -186,7 +186,6 @@ class AICity:
             os.makedirs(save_path, exist_ok=True)
             write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
 
-
     def train_split(self, split=0):
         """
         Apply random split to specific propotion of the train set.

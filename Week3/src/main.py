@@ -10,16 +10,19 @@ def main(args):
     os.makedirs(join(args.output_path, str(args.task)), exist_ok=True)
 
     aicity = AICity(args)
-    #aicity.inference()
-    #print(aicity.get_mAP())
     aicity.train_val_split()
-    aicity.visualize_task()
-    #aicity.data_to_model()
 
-    #img_path = aicity.frames_paths[0]
-    #print(detect2.predict(img_path, 'faster_rcnn'))
+    if args.mode == 'inference':
+        aicity.inference()
+        print('mAP: ',aicity.get_mAP())
+        
+        if args.save_img:
+            aicity.visualize_task()
 
-    #tfm.predict("../../data/AICity/train/S03/c010/vdo", "SSD MobileNet V1 FPN 640x640")
+    elif args.mode == 'train':
+        aicity.data_to_model()
+        
+
 
 if __name__ == "__main__":
     main(Config().get_args())

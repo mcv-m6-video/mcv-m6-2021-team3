@@ -14,6 +14,7 @@ from yolov3.utils.general import check_img_size, non_max_suppression, scale_coor
 from yolov3.utils.plots import plot_one_box
 from yolov3.utils.torch_utils import select_device
 from yolov3.utils.datasets import letterbox
+from yolov3.train import main as train_yolov3
 
 class UltralyricsYolo():
     def __init__(self,
@@ -23,26 +24,35 @@ class UltralyricsYolo():
                  device="0",
                  conf_thres=0.25, 
                  iou_thres=0.45, 
-                 agnostic_nms=False):
+                 agnostic_nms=False,
+                 hyp=None,
+                 mode='inference',
+                 args=None):
                  
         # Initialize
         set_logging()
         self.device = select_device(device)
-
-        # Load model
-        self.model = attempt_load(weights, map_location=self.device)  # load FP32 model
-        self.img_size = check_img_size(img_size, s=self.model.stride.max())  # check img_size
-            
-        self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
-
-        self.conf_thres = conf_thres
-        self.iou_thres = iou_thres
-        self.classes = classes
-        self.agnostic_nms = agnostic_nms
         
-        img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
-        _ = self.model(img) if self.device.type != 'cpu' else None  # run once
+        if mode=='inference':
+        
+            # Load model
+            self.model = attempt_load(weights, map_location=self.device)  # load FP32 model
+            self.img_size = check_img_size(img_size, s=self.model.stride.max())  # check img_size
+                
+            self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
 
+            self.conf_thres = conf_thres
+            self.iou_thres = iou_thres
+            self.classes = classes
+            self.agnostic_nms = agnostic_nms
+            
+            img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
+            _ = self.model(img) if self.device.type != 'cpu' else None  # run once
+
+        elif mode == 'train':
+            self.weights = weights
+            self.hyp = hyp
+            self.args = args
 
     def predict(self, img_path):
 
@@ -82,6 +92,11 @@ class UltralyricsYolo():
         pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss in pred if clss==2]
 
         return pred
+
+    def train(self, hyp):
+        train_yolov3(hyp)
+        
+
 
 def gt_multi_txt(path, bboxes):
     
