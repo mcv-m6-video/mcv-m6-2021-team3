@@ -158,6 +158,9 @@ class AICity:
         if self.split[0] in 'rand':
             train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
                                                 test_size=1-self.split[1], random_state=0)
+        elif self.split[0] in 'first_frames':
+            train = self.frames_paths[:len(self)*self.split[1]]
+            train = self.frames_paths[len(self)*self.split[1]:]
 
         self.data['train'] = train.tolist()  
         self.data['val'] = val.tolist()
@@ -166,7 +169,7 @@ class AICity:
         if self.framework in 'ultralytics':
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
         elif self.framework in 'detectron2':
-            to_detectron2(self.data, self.gt_bboxes)
+            to_detectron2(self.data, self.gt_bboxes
 
     
     def inference(self):
@@ -176,8 +179,8 @@ class AICity:
         elif self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
 
-        '''elif self.framework in 'detectron2':
-            model = Detect2(self.model)'''
+        elif self.framework in 'detectron2':
+            model = Detect2(self.model)
                 
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
