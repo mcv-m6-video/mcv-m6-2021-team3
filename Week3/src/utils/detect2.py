@@ -35,6 +35,9 @@ class Detect2():
         cfg.merge_from_file(model_zoo.get_config_file(cfg_file))
         cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
         cfg.MODEL.WEIGHTS = weights
+        cfg.MODEL.MASK_ON = False
+        cfg.MODEL.DEVICE = "cuda"
+        cfg.MODEL.CUDNN_BENCHMARK = True
 
         self.model = model
         self.cfg = cfg

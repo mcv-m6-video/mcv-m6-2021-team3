@@ -71,7 +71,6 @@ def load_annot(annot_dir, name, ignore_parked=True):
 
     return annot
 
-
 def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf):
     """
     Updates the annotations dict with by adding the desired data to it

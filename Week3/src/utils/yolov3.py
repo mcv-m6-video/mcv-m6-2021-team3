@@ -6,6 +6,23 @@ import numpy as np
 from tqdm import tqdm
 from shutil import copyfile
 
+# Import YOLOv3 libraries
+from yolov3.models.experimental import attempt_load
+from yolov3.utils.datasets import LoadStreams, LoadImages
+from yolov3.utils.general import check_img_size, check_requirements, non_max_suppression, apply_classifier, scale_coords, \
+    xyxy2xywh, strip_optimizer, set_logging, increment_path
+from yolov3.utils.plots import plot_one_box
+from yolov3.utils.torch_utils import select_device, load_classifier, time_synchronized
+
+class YOLOv3():
+    def __init__(self, img_size=640, device='cuda'):
+        weights = 'data/weights/yolov3.pt'
+
+        # Load model
+        model = attempt_load(weights, map_location=device)  # load FP32 model
+        imgsz = check_img_size(img_size, s=model.stride.max())  # check img_size
+
+
 def gt_multi_txt(path, bboxes):
     
     W, H = Image.open(path).size

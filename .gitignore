@@ -152,3 +152,4 @@ cython_debug/
 # models
 *.pkl
 *.pth.tar
+*.pt
