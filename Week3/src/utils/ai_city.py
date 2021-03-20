@@ -216,7 +216,4 @@ class AICity:
         :param bg: estimated background/foreground
         :param frame_id: id of the given frame
         """
-        self.miou, self.std_iou = np.empty(0, ), np.empty(0, )
-        self.miou, self.std_iou, self.xaxis = visualize_background_iou(self.miou, self.std_iou, self.xaxis,
-                                                                       frame, frame_id, bg, self.gt_bboxes,
-                                                                       self.det_bboxes, self.options)
+        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.options)

@@ -79,7 +79,7 @@ class UltralyricsYolo():
         pred = [d.cpu().detach().numpy() for d in pred if d is not None]
         pred = pred[0] if len(pred) else pred
         
-        pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss]
+        pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss in pred if clss==2]
 
         return pred
 

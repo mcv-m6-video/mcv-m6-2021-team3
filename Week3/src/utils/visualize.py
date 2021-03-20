@@ -10,65 +10,6 @@ from utils.metrics import compute_miou
 from utils.utils import dict_to_list, read_json_file
 from itertools import compress
 
-
-def visualize_background_model(gaussian, colorspace, scale, filters):
-    """
-    Creates a plot with the estimated background
-
-    :param gaussian: gaussian model
-    :param colorspace: colorspace of the image
-    :param scale: resize factor of the original image
-    :param filters: filters used in the bg removal
-    """
-
-    if gaussian.shape[2] == 2:
-        plt.figure(figsize=(10, 3))
-
-        plt.subplot(1, 2, 1)
-        plt.imshow(gaussian[:, :, 0], 'gray')
-        plt.title('Mean')
-
-        plt.subplot(1, 2, 2)
-        ax = plt.gca()
-        im = ax.imshow(gaussian[:, :, 1])
-        plt.title('Variance')
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        plt.colorbar(im, cax=cax)
-
-    elif gaussian.shape[2] == 4:
-
-        plt.figure(figsize=(10, 6))
-
-        plt.subplot(2, 2, 1)
-        plt.imshow(gaussian[:, :, 0], 'gray')
-        plt.title('Mean')
-
-        plt.subplot(2, 2, 2)
-        ax = plt.gca()
-        im = ax.imshow(gaussian[:, :, 1])
-        plt.title('Variance')
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        plt.colorbar(im, cax=cax)
-
-        plt.subplot(2, 2, 3)
-        plt.imshow(gaussian[:, :, 2], 'gray')
-        plt.title('Mean')
-
-        plt.subplot(2, 2, 4)
-        ax = plt.gca()
-        im = ax.imshow(gaussian[:, :, 3])
-        plt.title('Variance')
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        plt.colorbar(im, cax=cax)
-
-    filters_name = list(compress(['laplacian', 'median', 'bilateral', 'denoise'], filters))
-
-    plt.savefig(join('outputs', colorspace + '_' + str(scale) + '_'.join(filters_name) + '.jpg'))
-
-
 def draw_bboxes(img, bboxes, color):
     """
     Draw bounding boxes onto an image
@@ -84,7 +25,7 @@ def draw_bboxes(img, bboxes, color):
     return img
 
 
-def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets, opt, axis=[536, 915]):
+def visualize_background_iou(data, segmen, gt, dets, opt, axis=[536, 915]):
     """
     Creates a plot to visualize the IoU with its mean and std deviation.
 
@@ -153,8 +94,6 @@ def visualize_background_iou(miou, std_iou, xaxis, frame, frame_id, bg, gt, dets
         plt.savefig(join(save_path, frame_id + '.png'))
         plt.close()
 
-    return miou, std_iou, xaxis
-
 def visualize_iou(path_miou, axis=[536, 700]):
     paths_miou = glob.glob(path_miou+'/*.json')
     paths_miou.sort()
@@ -197,14 +136,5 @@ def visualize_iou(path_miou, axis=[536, 700]):
             plt.legend(prop={'size': 8}, loc='lower right')
             
             plt.savefig(join(save_path,str(alpha) + '_' + str(frame_id) + '.png'))
-
-def plot_map_alphas(map,alpha):
-
-def plot_map_alphas(map, alpha):
-    plt.plot(alpha, map)
-    plt.xlabel('Alpha')
-    plt.ylabel('mAP')
-    plt.title('Alpha vs mAP')
-    plt.show()
 
 
