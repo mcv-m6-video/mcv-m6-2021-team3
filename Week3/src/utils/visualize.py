@@ -68,6 +68,7 @@ def visualize_background_iou(data, segmen, gt, dets, framework, model, output_pa
             plt.figure(figsize=(5, 6))
 
             plt.subplot(2, 1, 1)
+            img = cv2.resize(img, (int(img.shape[1]*.5),int(img.shape[0]*.5)))
             plt.imshow(img)
             plt.plot(0, 0, "-", c=(0, 1, 0), label='Ground Truth')
             plt.plot(0, 0, "-", c=(0, 0, 1), label='Detection')

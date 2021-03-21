@@ -29,8 +29,14 @@ def main(args):
         model = UltralyricsYolo(args=args)
         model.train()
 
-    None
-        
+    elif args.mode in 'eval':
+        if len(aicity.det_bboxes)<1:
+            aicity.inference()
+        map50, map70 = aicity.get_mAP()
+        print('Evaluation of training for split {} ({}, {}): mAP50={}, mAP70={}'.format(args.split[0], args.model, args.framework, map50, map70))
+        if args.save_img:
+            aicity.visualize_task()
+
 
 
 if __name__ == "__main__":

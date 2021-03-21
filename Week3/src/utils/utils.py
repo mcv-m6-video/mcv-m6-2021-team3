@@ -105,6 +105,7 @@ def get_weights(model, framework):
         model_path = 'data/weights/'+model+'.pkl'
     elif framework in 'ultralytics':
         model_path = 'data/weights/'+model+'.pt'
+        
     if not exists(model_path):
         subprocess.call(['sh','./data/scripts/get_'+model+'.sh'])
     return model_path

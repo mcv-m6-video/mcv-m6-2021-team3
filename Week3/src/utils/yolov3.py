@@ -27,10 +27,12 @@ class UltralyricsYolo():
                  args=None):
 
         # Initialize
+        if weights is None:
+            weights='yolov3'
         set_logging()
         weights = get_weights(weights,'ultralytics')
 
-        if args.mode in 'inference':
+        if args.mode in 'inference' or args.mode in 'eval':
             self.device = select_device(device)
         
             # Load model
