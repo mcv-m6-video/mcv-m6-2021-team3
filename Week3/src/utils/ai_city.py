@@ -11,7 +11,7 @@ from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total
 from utils.utils import write_json_file, read_json_file, frame_id
 from utils.visualize import visualize_background_iou
 
-from utils.detect2 import Detect2, to_detectron2
+#from utils.detect2 import Detect2, to_detectron2
 from utils.tf_models import TFModel
 from utils.yolov3 import UltralyricsYolo, to_yolov3
 
@@ -120,10 +120,11 @@ class AICity:
         self.task = args.task
         self.model = args.model
         self.framework = args.framework
+        self.mode = args.mode
 
         # Load detections
         self.gt_bboxes = load_annot(args.gt_path, 'ai_challenge_s03_c010-full_annotation.xml')
-        infer_path = join(self.options.output_path,'inference/') +'_'.join((self.model, self.framework+'.json'))
+        infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework+'.json'))
         if exists(infer_path):
             self.det_bboxes = read_json_file(infer_path)
         else:
@@ -167,19 +168,19 @@ class AICity:
     def data_to_model(self):
         if self.framework in 'ultralytics':
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
-        elif self.framework in 'detectron2':
-            to_detectron2(self.data, self.gt_bboxes)
+        '''elif self.framework in 'detectron2':
+            to_detectron2(self.data, self.gt_bboxes)'''
 
     
-    def inference(self):
+    def inference(self, weights=None):
         if self.framework in 'ultralytics':
-            model = UltralyricsYolo(args=self.options)
+            model = UltralyricsYolo(weights, args=self.options)
         
         elif self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
 
-        elif self.framework in 'detectron2':
-            model = Detect2(self.model)
+        '''elif self.framework in 'detectron2':
+            model = Detect2(self.model)'''
                 
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
@@ -188,7 +189,7 @@ class AICity:
                 self.det_bboxes = update_data(self.det_bboxes, frame_id, *bbox, conf)
         
         if self.save_json:
-            save_path = join(self.options.output_path, 'inference/')
+            save_path = join(self.options.output_path, self.mode+'/')
             os.makedirs(save_path, exist_ok=True)
             write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
 
@@ -202,14 +203,19 @@ class AICity:
         self.train_dataset = random.choices(self.dataset_train,k=int(len(self.dataset_train)*split))
    
 
-    def get_mAP(self):
+    def get_mAP(self, test=False):
         """
         Estimats the mAP using the VOC evaluation
 
         :return: map of all estimated frames
         """
-        return \
-        voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, resize_factor=1)[2]
+        if self.mode == 'eval':
+            mAP50 = voc_eval(self.gt_bboxes, self.data['val'], self.det_bboxes)[2]
+            mAP70 = voc_eval(self.gt_bboxes, self.data['val'], self.det_bboxes, use_07_metric=True)[2]
+        else:
+            mAP50 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes)[2]
+            mAP70 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, use_07_metric=True)[2]
+        return mAP50, mAP70
 
     def get_mIoU(self):
         """
@@ -232,7 +238,7 @@ class AICity:
         """
         Creates plots for a given frame and bbox estimation
         """
-        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework, self.model, self.options.output_path)
+        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework, self.model, self.options.output_path, self.mode)
   
     def return_bb(self, frame, bb_id):
         for bbox in self.det_bboxes[frame_id(frame)]:

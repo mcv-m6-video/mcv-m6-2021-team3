@@ -20,17 +20,19 @@ from yolov3.train import main as train_yolov3
 
 class UltralyricsYolo():
     def __init__(self,
-                 weights='yolov3',
-                 classes=[2],
+                 weights=None,
+                 classes=[0],
                  device='0',
                  agnostic_nms=False,
                  args=None):
 
         # Initialize
+        if weights is None:
+            weights=args.model
         set_logging()
         weights = get_weights(weights,'ultralytics')
 
-        if args.mode in 'inference':
+        if args.mode in 'inference' or args.mode in 'eval':
             self.device = select_device(device)
         
             # Load model

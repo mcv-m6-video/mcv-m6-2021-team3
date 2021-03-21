@@ -11,7 +11,7 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
-        parser.add_argument('--mode', type=str, default='inference', choices=['train','inference','tracking'], help='What task to perform')
+        parser.add_argument('--mode', type=str, default='eval', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
@@ -20,17 +20,18 @@ class Config:
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         
         parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
-        parser.add_argument('--split', type=list, default=['rand',0.25], help="Split mode and factor")
+        parser.add_argument('--split', type=list, default=['first_frames',0.25], help="Split mode and factor")
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
         parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
+        parser.add_argument('--weights', type=str, default='runs/train/yolov3_first_frames/weights/best.pt')
 
         # =============================== FINETUNE =============================== #
 
-        parser.add_argument('--conf_thres', type=float, default=0.25)
-        parser.add_argument('--iou_thres', type=float, default=0.45)
+        parser.add_argument('--conf_thres', type=float, default=0.2)
+        parser.add_argument('--iou_thres', type=float, default=0.3)
         parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars_rand.yaml', help='data.yaml path')
         parser.add_argument('--hyp', type=str, default='data/finetune/yolov3/hyp.finetune.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=20)
