@@ -52,7 +52,7 @@ def load_xml(xml_dir, xml_name, ignore_parked=True):
                 '''if bbox.getchildren()[0].text in 'true':
                     continue'''
                 frame_id, xmin, ymin, xmax, ymax, _, _, _ = list(map(float, ([v for k, v in bbox.attrib.items()])))
-                update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1.)
+                update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1., obj_id)
 
     return annot
 
@@ -116,7 +116,7 @@ class AICity:
         # INPUT PARAMETERS
         self.data_path = args.data_path
         self.img_size = args.img_size
-        self.split_factor = args.split_factor
+        self.split = args.split
         self.task = args.task
         self.model = args.model
         self.framework = args.framework
@@ -131,8 +131,8 @@ class AICity:
 
         # Load frame paths and filter by gt
         self.frames_paths = glob.glob(join(self.data_path, "*." + args.extension))
-        self.frames_paths.sort()
         self.frames_paths = [path for frame_id,_ in self.gt_bboxes.items() for path in self.frames_paths if frame_id in path]
+        self.frames_paths.sort()
         '''
         if args.test_mode:
             self.frames_paths = self.frames_paths[0:int(len(self.frames_paths) / 10)]
@@ -151,18 +151,22 @@ class AICity:
 
     def train_val_split(self):
         """
-        Apply random split to specific propotion of the dataset (split_factor).
+        Apply random split to specific propotion of the dataset (split).
 
         """
-        train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
-                                            test_size=self.split_factor, random_state=0)
+        if self.split[0] in 'rand':
+            train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
+                                                test_size=1-self.split[1], random_state=0)
+            self.data['train'] = train.tolist()
+            self.data['val'] = val.tolist()
 
-        self.data['train'] = train.tolist()  
-        self.data['val'] = val.tolist()
+        elif self.split[0] in 'first_frames':
+            self.data['train'] = self.frames_paths[:int(len(self)*self.split[1])]
+            self.data['val'] = self.frames_paths[int(len(self)*self.split[1]):]
     
     def data_to_model(self):
         if self.framework in 'ultralytics':
-            to_yolov3(self.data, self.gt_bboxes)
+            to_yolov3(self.data, self.gt_bboxes, self.split[0])
         elif self.framework in 'detectron2':
             to_detectron2(self.data, self.gt_bboxes)
 
@@ -170,10 +174,12 @@ class AICity:
     def inference(self):
         if self.framework in 'ultralytics':
             model = UltralyricsYolo(args=self.options)
-        elif self.framework in 'detectron2':
-            model = Detect2(self.model)
+        
         elif self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
+
+        elif self.framework in 'detectron2':
+            model = Detect2(self.model)
                 
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)

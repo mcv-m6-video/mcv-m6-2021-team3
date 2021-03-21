@@ -8,6 +8,8 @@ from shutil import copyfile
 import torch
 import cv2
 
+from utils.utils import get_weights
+
 # Import YOLOv3 libraries
 from yolov3.models.experimental import attempt_load
 from yolov3.utils.general import check_img_size, non_max_suppression, scale_coords, xyxy2xywh, set_logging
@@ -18,7 +20,7 @@ from yolov3.train import main as train_yolov3
 
 class UltralyricsYolo():
     def __init__(self,
-                 weights='yolov3.pt',
+                 weights='yolov3',
                  classes=[2],
                  device='0',
                  agnostic_nms=False,
@@ -26,7 +28,8 @@ class UltralyricsYolo():
 
         # Initialize
         set_logging()
-        
+        weights = get_weights(weights,'ultralytics')
+
         if args.mode in 'inference':
             self.device = select_device(device)
         
@@ -111,8 +114,10 @@ def gt_multi_txt(path, bboxes):
     return lines_out
 
 
-def to_yolov3(data, gt_bboxes, save_path='yolov3_data'):
+def to_yolov3(data, gt_bboxes, mode, save_path='yolov3_data'):
     
+    save_path = join(save_path,mode)
+
     data_path = join(os.getcwd(),save_path,'data')
     if os.path.exists(data_path):
         if len(glob.glob(data_path+'/*.*')) == 2*sum([len(d) for _,d in data.items()]):

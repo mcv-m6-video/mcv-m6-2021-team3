@@ -28,7 +28,7 @@ class Detect2():
         elif model in 'retinanet':
             cfg_file = 'COCO-Detection/retinanet_R_101_FPN_3x.yaml'
 
-        weights = get_weights(model)
+        weights = get_weights(model, 'detectron2')
 
         cfg = get_cfg()
         # add project-specific config (e.g., TensorMask) here if you're not running a model in detectron2's core library

@@ -20,7 +20,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-import test  # import test.py to get mAP after each epoch
+import yolov3.test as test  # import test.py to get mAP after each epoch
 from yolov3.models.experimental import attempt_load
 from yolov3.models.yolo import Model
 from yolov3.utils.autoanchor import check_anchors
@@ -469,7 +469,7 @@ def main(weights, args):
     opt.epochs = args.epochs
     opt.batch_size = args.batch_size
     opt.img_size = args.img_size
-    opt.name = args.model
+    opt.name = args.model+'_'+args.split[0]
 
     # Set DDP variables
     opt.world_size = int(os.environ['WORLD_SIZE']) if 'WORLD_SIZE' in os.environ else 1
