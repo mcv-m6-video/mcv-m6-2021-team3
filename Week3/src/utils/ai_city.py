@@ -11,7 +11,7 @@ from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total
 from utils.utils import write_json_file, read_json_file, frame_id
 from utils.visualize import visualize_background_iou
 
-from utils.detect2 import Detect2, to_detectron2
+#from utils.detect2 import Detect2, to_detectron2
 from utils.tf_models import TFModel
 from utils.yolov3 import UltralyricsYolo, to_yolov3
 
@@ -168,8 +168,8 @@ class AICity:
     def data_to_model(self):
         if self.framework in 'ultralytics':
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
-        elif self.framework in 'detectron2':
-            to_detectron2(self.data, self.gt_bboxes)
+        '''elif self.framework in 'detectron2':
+            to_detectron2(self.data, self.gt_bboxes)'''
 
     
     def inference(self, weights=None):
@@ -179,8 +179,8 @@ class AICity:
         elif self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
 
-        elif self.framework in 'detectron2':
-            model = Detect2(self.model)
+        '''elif self.framework in 'detectron2':
+            model = Detect2(self.model)'''
                 
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)

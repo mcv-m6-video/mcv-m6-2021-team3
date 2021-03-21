@@ -31,7 +31,7 @@ def main(args):
 
     elif args.mode in 'eval':
         if len(aicity.det_bboxes)<1:
-            aicity.inference()
+            aicity.inference(args.weights)
         map50, map70 = aicity.get_mAP()
         print('Evaluation of training for split {} ({}, {}): mAP50={}, mAP70={}'.format(args.split[0], args.model, args.framework, map50, map70))
         if args.save_img:

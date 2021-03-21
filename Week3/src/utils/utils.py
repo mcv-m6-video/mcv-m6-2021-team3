@@ -101,10 +101,13 @@ def frames_to_gif(save_dir, ext):
 
 def get_weights(model, framework):
     makedirs('data/weights/',exist_ok=True)
-    if framework in 'detectron2':
-        model_path = 'data/weights/'+model+'.pkl'
-    elif framework in 'ultralytics':
-        model_path = 'data/weights/'+model+'.pt'
+    if model.endswith('.pt') or model.endswith('.pkl'):
+        model_path = model
+    else:
+        if framework in 'detectron2':
+            model_path = 'data/weights/'+model+'.pkl'
+        elif framework in 'ultralytics':
+            model_path = 'data/weights/'+model+'.pt'
         
     if not exists(model_path):
         subprocess.call(['sh','./data/scripts/get_'+model+'.sh'])
