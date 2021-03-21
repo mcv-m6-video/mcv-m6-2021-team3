@@ -3,6 +3,14 @@ import numpy as np
 from utils.utils import dict_to_list
 
 
+def interpolate_bb(bb_first, bb_last, distance):
+    bb_first = np.array(bb_first)
+    bb_last = np.array(bb_last)
+    #interpolate new bbox depending on de distance in frames between first and last bbox
+    new_bb = bb_first + (bb_last-bb_first)/distance
+
+    return list(np.round(new_bb,2))
+
 def compute_iou(bb_gt, bb, resize_factor=1):
     """ 
     iou = compute_iou(bb_gt, bb)

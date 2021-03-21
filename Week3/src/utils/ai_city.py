@@ -7,7 +7,7 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 
-from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou
+from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
 from utils.utils import write_json_file, read_json_file, frame_id
 from utils.visualize import visualize_background_iou
 
@@ -233,8 +233,15 @@ class AICity:
         Creates plots for a given frame and bbox estimation
         """
         visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework, self.model, self.options.output_path)
+  
+    def return_bb(self, frame, bb_id):
+        for bbox in self.det_bboxes[frame_id(frame)]:
+            if bbox['obj_id'] == bb_id:
+                return bbox['bbox']
+        return None
 
-    def compute_tracking(self, threshold = 0.5):
+    
+    def compute_tracking(self, threshold = 0.5, interpolate = True, remove_noise = True):
        
         id_seq = {}
         #not assuming any order
@@ -245,11 +252,8 @@ class AICity:
         for value, detection in enumerate(self.det_bboxes[frame_id(start_frame)]):
             detection['obj_id'] = value
             id_seq.update({value: True})
-        old_det = []
         #now, frame by frame, no assuming order nor continuity
         for i in range(start_frame, num_frames):
-            new_det = []
-            print('FRAME #',i)
             #init
             id_seq = {frame_id: False for frame_id in id_seq}
             
@@ -268,30 +272,46 @@ class AICity:
                         if id_seq[matching_id] == False:
                             detection['obj_id'] = matching_id
                             bbox_matched = True
-                            print("Matching with:",matching_id," at:",compute_centroid(np.array(self.det_bboxes[frame_id(active_frame)][np.argmax(iou)]['bbox'])))
+                            #interpolate bboxes 
+                            if i != active_frame and interpolate:
+                                frames_skip = i - active_frame
+                                for j in range(frames_skip):
+                                    new_bb = interpolate_bb(self.return_bb((active_frame+j), matching_id), detection['bbox'],frames_skip-j+1)
+                                    update_data(self.det_bboxes, (active_frame+1+j),*new_bb,0,matching_id)
                             break
                         else: #try next best match
                             iou[np.argmax(iou)] = 0
-                            print("Already used")
                     active_frame = active_frame - 1
 
                 if not bbox_matched:
                     #new object
                     detection['obj_id'] = max(id_seq.keys())+1
-                    new_det.append(detection['obj_id'])
-                    print("New object", detection['obj_id']," at:",compute_centroid(np.array(detection['bbox'])))
 
                 id_seq.update({detection['obj_id']: True})
-            
-            #filter detections which only appears in one frame
-            for detection in old_det:
-                if detection not in new_det:
-                    #to be done
-                    None
+        
+        # filter by number of ocurrences
+        if remove_noise:
+            id_ocurrence = {}
+            # Count ocurrences
+            for i in range(start_frame, num_frames):
+                for detection in self.det_bboxes[frame_id(i)]:
+                    objt_id = detection['obj_id']
+                    if objt_id in id_ocurrence:
+                        id_ocurrence[objt_id] += 1
+                    else:
+                        id_ocurrence[objt_id] = 1
+            # detectiosn to be removed
+            ids_to_remove = [id_obj for id_obj in id_ocurrence if id_ocurrence[id_obj]<4]
+            for i in range(start_frame, num_frames):
+                for idx, detection in enumerate(self.det_bboxes[frame_id(i)]):
+                    if detection['obj_id'] in ids_to_remove:
+                        self.det_bboxes[frame_id(i)].pop(idx)
 
-            old_det = new_det.copy()
-            
+        
 
+
+            
+ 
 
         
 
