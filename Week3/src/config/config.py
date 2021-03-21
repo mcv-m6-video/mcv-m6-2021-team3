@@ -11,7 +11,8 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
-        parser.add_argument('--mode', type=str, default='train', choices=['train','inference','tracking'], help='What task to perform')
+        parser.add_argument('--mode', type=str, default='inference', choices=['train','inference','tracking'], help='What task to perform')
+        parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../datasets/AICity/train/S03/c010/vdo',
@@ -39,7 +40,7 @@ class Config:
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")
         parser.add_argument('--save_json', type=bool, default=True, help="Save detection results to json")
         parser.add_argument('--view_img', type=bool, default=False, help="View detection results")
-        parser.add_argument('--save_img', type=bool, default=True, help="Save detection qualitative results")
+        parser.add_argument('--save_img', type=bool, default=False, help="Save detection qualitative results")
         
          # ================================ TENSORFLOW PARAMS ====================== #
         parser.add_argument('--threshold', type=float, default=0.5, help="Threshold to discard detections")

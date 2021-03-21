@@ -20,11 +20,16 @@ def main(args):
         
         if args.save_img:
             aicity.visualize_task()
+        
+        if args.tracking_mode in 'overlapping':
+            aicity.compute_tracking()
 
     elif args.mode in 'train':
         aicity.data_to_model()
         model = UltralyricsYolo(args=args)
         model.train()
+
+    None
         
 
 

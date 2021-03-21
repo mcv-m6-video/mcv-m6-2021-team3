@@ -105,3 +105,6 @@ def get_weights(model):
     if not exists(model_path):
         subprocess.call(['sh','./data/scripts/get_'+model+'.sh'])
     return model_path
+
+def frame_id(id):
+    return ('%04d' % id)

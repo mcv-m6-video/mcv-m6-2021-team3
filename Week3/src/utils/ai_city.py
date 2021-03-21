@@ -7,8 +7,8 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 
-from utils.metrics import voc_eval
-from utils.utils import write_json_file, read_json_file
+from utils.metrics import voc_eval, compute_iou, compute_centroid
+from utils.utils import write_json_file, read_json_file, frame_id
 from utils.visualize import visualize_background_iou
 
 from utils.detect2 import Detect2, to_detectron2
@@ -47,6 +47,7 @@ def load_xml(xml_dir, xml_name, ignore_parked=True):
         if child.tag in 'track':
             if child.attrib['label'] not in 'car':
                 continue
+            obj_id = int(child.attrib['id'])
             for bbox in child.getchildren():
                 '''if bbox.getchildren()[0].text in 'true':
                     continue'''
@@ -54,7 +55,6 @@ def load_xml(xml_dir, xml_name, ignore_parked=True):
                 update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1.)
 
     return annot
-
 
 def load_annot(annot_dir, name, ignore_parked=True):
     """
@@ -218,3 +218,52 @@ class AICity:
         Creates plots for a given frame and bbox estimation
         """
         visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework, self.model, self.options.output_path)
+
+    def compute_tracking(self, threshold = 0.5):
+       
+        id_seq = {}
+        #not assuming any order
+        start_frame = int(min(self.det_bboxes.keys()))
+        num_frames = int(max(self.det_bboxes.keys())) - start_frame + 1
+
+        #init the tracking by  using the first frame 
+        for value, detection in enumerate(self.det_bboxes[frame_id(start_frame)]):
+            detection['obj_id'] = value
+            id_seq.update({value: True})
+        
+        #now, frame by frame, no assuming order nor continuity
+        for i in range(start_frame, 450):#num_frames):
+            print('FRAME #',i)
+            #init
+            id_seq = {frame_id: False for frame_id in id_seq}
+            candidates = [candidate['bbox'] for candidate in self.det_bboxes[frame_id(i)]]               
+            for detection in self.det_bboxes[frame_id(i+1)]:
+                #compare with all detections in previous frame
+                #best match
+                iou = compute_iou(np.array(candidates), np.array(detection['bbox']))
+                bbox_matched = False
+                while np.max(iou) > threshold:
+                    #candidate found, check if free
+                    matching_id = self.det_bboxes[frame_id(i)][np.argmax(iou)]['obj_id']
+                    if id_seq[matching_id] == False:
+                        detection['obj_id'] = matching_id
+                        bbox_matched = True
+                        print("Matching with:",matching_id," at:",compute_centroid(np.array(self.det_bboxes[frame_id(i)][np.argmax(iou)]['bbox'])))
+                        break
+                    else: #try next best match
+                        iou[np.argmax(iou)] = 0
+                        print("Already used")
+
+                if not bbox_matched:
+                    #new object
+                    detection['obj_id'] = max(id_seq.keys())+1
+                    print("New object", detection['obj_id']," at:",compute_centroid(np.array(self.det_bboxes[frame_id(i)][np.argmax(iou)]['bbox'])))
+
+                id_seq.update({detection['obj_id']: True})
+            
+
+
+        
+
+        
+        
