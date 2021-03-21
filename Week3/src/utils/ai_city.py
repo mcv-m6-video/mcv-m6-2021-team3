@@ -1,11 +1,21 @@
+from __future__ import print_function
+import matplotlib.pyplot as plt  
+import matplotlib.patches as patches
+#matplotlib inline
+from IPython import display as dp
 import numpy as np
 import cv2
+import json
 import os
+from skimage import io
 from os.path import join, basename, exists
 import glob
+import time
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
+
+from sort import Sort
 
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
 from utils.utils import write_json_file, read_json_file, frame_id
@@ -14,6 +24,9 @@ from utils.visualize import visualize_background_iou
 #from utils.detect2 import Detect2, to_detectron2
 from utils.tf_models import TFModel
 from utils.yolov3 import UltralyricsYolo, to_yolov3
+
+
+
 
 def load_text(text_dir, text_name):
     """
@@ -247,7 +260,7 @@ class AICity:
         return None
 
     
-    def compute_tracking(self, threshold = 0.5, interpolate = True, remove_noise = True):
+    def compute_tracking_overlapping(self, threshold = 0.5, interpolate = True, remove_noise = True):
        
         id_seq = {}
         #not assuming any order
@@ -313,7 +326,52 @@ class AICity:
                     if detection['obj_id'] in ids_to_remove:
                         self.det_bboxes[frame_id(i)].pop(idx)
 
+    def compute_tracking_kalman(self,dispaly=False): 
         
+        data_list = dict_to_list_tracking(self.det_bboxes)[:,:-3]
+
+        total_time = 0.0
+        total_frames = 0
+        out = []
+        idx_frame = []
+        colours = np.random.rand(32,3) #used only for display
+
+        mot_tracker = Sort() #create instance of the SORT tracker
+
+        for idx, frame in self.det_bboxes.keys(): # all frames in the sequence
+            colors = []
+
+            dets = data_list[data_list[:,0]==idx,1:6]
+            im = io.imread('./vdo/'+frame+'.png')
+
+            start_time = time.time()
+            trackers = mot_tracker.update(dets)
+            cycle_time = time.time() - start_time
+            total_time += cycle_time
+
+            out.append(trackers)
+            if display:
+                for d in trackers:
+                    d = d.astype(np.uint32)
+                    ec=colours[d[4]%32,:]
+                    colors.append(ec)
+                
+                image,centers = draw_bboxes(im,trackers,colors)
+                
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                cv2.imshow('Image', image)
+                cv2.waitKey(1)
+                cv2.imwrite('Tracking_'+frame+'.png',image)
+            
+            n_bboxes = len(out[idx])
+            for track in out[idx]:
+                self.det_bboxes[frame][n_bboxes-1]['obj_id'] = track[4]
+                count = count + 1
+                n_bboxes = n_bboxes-1
+
+        idx_frame.append(frame)
+        print("Total Tracking took: %.3f for %d frames or %.1f FPS"%(total_time,total_frames,total_frames/total_time))
+        return(self.det_bboxes)    
 
 
             
