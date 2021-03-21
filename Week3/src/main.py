@@ -30,10 +30,11 @@ def main(args):
             model = UltralyricsYolo(args=args)
             model.train()
         elif args.framework == 'tensorflow':
-            aicity.data_to_model()
+            # aicity.data_to_model()
             aicity.train()
 
-    None
+    else:
+        raise NameError
         
 
 

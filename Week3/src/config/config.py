@@ -19,7 +19,7 @@ class Config:
                             help="Path where the AICity data is located")
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         
-        parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
+        parser.add_argument('--img_size', nargs='+', type=int, default=[1024, 1024], help='train and test image sizes')
         parser.add_argument('--split', type=list, default=['first_frames',0.25], help="Split mode and factor")
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
@@ -28,14 +28,14 @@ class Config:
         parser.add_argument('--model', type=str, default='SSD ResNet152 V1 FPN 1024x1024 (RetinaNet152)', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
 
         # =============================== FINETUNE =============================== #
-
         parser.add_argument('--conf_thres', type=float, default=0.25)
         parser.add_argument('--iou_thres', type=float, default=0.45)
         parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars_rand.yaml', help='data.yaml path')
         parser.add_argument('--hyp', type=str, default='data/finetune/yolov3/hyp.finetune.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=20)
         parser.add_argument('--batch_size', type=int, default=16, help='total batch size for all GPUs')
-        
+        parser.add_argument('--learning_rate', type=float, default=0.01, help='Learning rate of the optimizer')
+
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")
         parser.add_argument('--save_json', type=bool, default=True, help="Save detection results to json")
@@ -45,5 +45,6 @@ class Config:
          # ================================ TENSORFLOW PARAMS ====================== #
         parser.add_argument('--threshold', type=float, default=0.5, help="Threshold to discard detections")
         parser.add_argument('--tf_records_path', type=str, default='./data/finetune/tf_records', help='Path to store tfrecords')
+        parser.add_argument('--model_conf_file', type=str, default='ssd_resnet152_v1_fpn_1024x1024_coco17_tpu-8.config')
 
         return parser.parse_args()

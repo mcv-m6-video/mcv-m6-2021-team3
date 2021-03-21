@@ -201,6 +201,7 @@ class AICity:
     def train(self):
         if self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
+            model.train(self.data, self.gt_bboxes)
 
     def train_split(self, split=0):
         """
