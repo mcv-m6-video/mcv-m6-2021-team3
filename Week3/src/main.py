@@ -1,7 +1,7 @@
 import os
 from os.path import join
 from utils.ai_city import AICity
-from utils.utils import write_json_file
+from utils.utils import write_json_file, dict_to_list_IDF1
 from config.config import Config
 from utils.yolov3 import UltralyricsYolo
 
@@ -23,6 +23,8 @@ def main(args):
         
         if args.tracking_mode in 'overlapping':
             aicity.compute_tracking()
+            dict_to_list_IDF1(aicity.det_bboxes)
+            print('hola')
 
     elif args.mode in 'train':
         aicity.data_to_model()
