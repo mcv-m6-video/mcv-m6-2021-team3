@@ -21,7 +21,6 @@ from yolov3.train import main as train_yolov3
 class UltralyricsYolo():
     def __init__(self,
                  weights=None,
-                 classes=[0],
                  device='0',
                  agnostic_nms=False,
                  args=None):
@@ -31,6 +30,11 @@ class UltralyricsYolo():
             weights=args.model
         set_logging()
         weights = get_weights(weights,'ultralytics')
+
+        if args.mode in 'inference':
+            classes=[2]
+        elif args.mode in 'eval':
+            classes=[0]
 
         if args.mode in 'inference' or args.mode in 'eval':
             self.device = select_device(device)
@@ -88,7 +92,7 @@ class UltralyricsYolo():
         pred = [d.cpu().detach().numpy() for d in pred if d is not None]
         pred = pred[0] if len(pred) else pred
         
-        pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss in pred if clss==2]
+        pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss in pred]
 
         return pred
 
