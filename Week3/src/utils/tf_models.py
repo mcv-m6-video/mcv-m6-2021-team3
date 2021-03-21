@@ -21,6 +21,9 @@ import tensorflow_hub as hub
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.utils import ops as utils_ops
+from object_detection.utils import dataset_util
+
+from object_detection.dataset_tools import create_coco_tf_record 
 
 
 class TFModel():
@@ -104,3 +107,76 @@ class TFModel():
     
     def train(self):
         pass
+
+
+def create_tf_example(filename, data):
+    print(filename)
+    
+    # TODO START: Populate the following variables from your example.
+    height = 1080 # Image height
+    width = 1920 # Image width
+    filename = filename.encode() # Filename of the image. Empty if image is not from file
+    #encoded_image_data = None # Encoded image bytes
+    image_format = b'png' # b'jpeg' or b'png'
+
+    xmins = [] # List of normalized left x coordinates in bounding box (1 per box)
+    xmaxs = [] # List of normalized right x coordinates in bounding box
+             # (1 per box)
+    ymins = [] # List of normalized top y coordinates in bounding box (1 per box)
+    ymaxs = [] # List of normalized bottom y coordinates in bounding box
+             # (1 per box)
+    classes_text = [] # List of string class name of bounding box (1 per box)
+    classes = [] # List of integer class id of bounding box (1 per box)
+
+    for entry in data:
+        if entry['name'] == 'car':
+            xmin, ymin, xmax, ymax = entry['bbox']
+            xmins.append(xmin)
+            xmaxs.append(xmax)
+            ymins.append(ymin)
+            ymaxs.append(ymax)
+            classes_text.append('car'.encode())
+            classes.append(3)
+    
+    tf_label_and_data = tf.train.Example(features=tf.train.Features(feature={
+      'image/height': dataset_util.int64_feature(height),
+      'image/width': dataset_util.int64_feature(width),
+      'image/filename': dataset_util.bytes_feature(filename),
+      'image/source_id': dataset_util.bytes_feature(filename),
+      #'image/encoded': dataset_util.bytes_feature(encoded_image_data),
+      'image/format': dataset_util.bytes_feature(image_format),
+      'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
+      'image/object/bbox/xmax': dataset_util.float_list_feature(xmaxs),
+      'image/object/bbox/ymin': dataset_util.float_list_feature(ymins),
+      'image/object/bbox/ymax': dataset_util.float_list_feature(ymaxs),
+      'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
+      'image/object/class/label': dataset_util.int64_list_feature(classes),
+    }))
+
+    return tf_label_and_data
+
+
+def to_tf_record(args, data, gt):
+    paths = {
+        'train': os.path.join(args.tf_records_path, 'train'),
+        'val': os.path.join(args.tf_records_path, 'val')
+    }
+   
+    try:
+        os.removedirs(paths['train'])
+        os.removedirs(paths['val'])
+    except:
+        print("Error removing dirs")
+
+    train_data = data['train']
+    val_data = data['val']
+    
+    for dataset in ['train', 'val']:
+        writer = tf.io.TFRecordWriter(paths[dataset])
+
+        for idx, img in enumerate(data[dataset]):
+            record = create_tf_example(img, gt[img.split('/')[-1].split('.')[0]])
+            writer.write(record.SerializeToString())
+        
+        writer.close()
+

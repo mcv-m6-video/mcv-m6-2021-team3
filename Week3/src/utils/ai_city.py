@@ -12,7 +12,7 @@ from utils.utils import write_json_file, read_json_file, frame_id
 from utils.visualize import visualize_background_iou
 
 from utils.detect2 import Detect2, to_detectron2
-from utils.tf_models import TFModel
+from utils.tf_models import TFModel, to_tf_record
 from utils.yolov3 import UltralyricsYolo, to_yolov3
 
 def load_text(text_dir, text_name):
@@ -169,6 +169,8 @@ class AICity:
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
         elif self.framework in 'detectron2':
             to_detectron2(self.data, self.gt_bboxes)
+        elif self.framework in 'tensorflow':
+            to_tf_record(self.options, self.data, self.gt_bboxes)
 
     
     def inference(self):
@@ -191,6 +193,10 @@ class AICity:
             save_path = join(self.options.output_path, 'inference/')
             os.makedirs(save_path, exist_ok=True)
             write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
+
+    def train(self):
+        if self.framework in 'tensorflow':
+            model = TFModel(self.options, self.model)
 
     def train_split(self, split=0):
         """

@@ -25,9 +25,13 @@ def main(args):
             aicity.compute_tracking()
 
     elif args.mode in 'train':
-        aicity.data_to_model()
-        model = UltralyricsYolo(args=args)
-        model.train()
+        if args.framework == 'ultralytics':
+            aicity.data_to_model()
+            model = UltralyricsYolo(args=args)
+            model.train()
+        elif args.framework == 'tensorflow':
+            aicity.data_to_model()
+            aicity.train()
 
     None
         
