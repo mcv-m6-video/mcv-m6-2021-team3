@@ -236,36 +236,51 @@ class AICity:
         for value, detection in enumerate(self.det_bboxes[frame_id(start_frame)]):
             detection['obj_id'] = value
             id_seq.update({value: True})
-        
+        old_det = []
         #now, frame by frame, no assuming order nor continuity
-        for i in range(start_frame, 450):#num_frames):
+        for i in range(start_frame, num_frames):
+            new_det = []
             print('FRAME #',i)
             #init
             id_seq = {frame_id: False for frame_id in id_seq}
-            candidates = [candidate['bbox'] for candidate in self.det_bboxes[frame_id(i)]]               
+            
             for detection in self.det_bboxes[frame_id(i+1)]:
-                #compare with all detections in previous frame
-                #best match
-                iou = compute_iou(np.array(candidates), np.array(detection['bbox']))
+                active_frame = i 
                 bbox_matched = False
-                while np.max(iou) > threshold:
-                    #candidate found, check if free
-                    matching_id = self.det_bboxes[frame_id(i)][np.argmax(iou)]['obj_id']
-                    if id_seq[matching_id] == False:
-                        detection['obj_id'] = matching_id
-                        bbox_matched = True
-                        print("Matching with:",matching_id," at:",compute_centroid(np.array(self.det_bboxes[frame_id(i)][np.argmax(iou)]['bbox'])))
-                        break
-                    else: #try next best match
-                        iou[np.argmax(iou)] = 0
-                        print("Already used")
+                #if there is no good match on previous frame, check n-1 up to n=5
+                while (bbox_matched == False) and (active_frame >= start_frame) and ((i - active_frame)<5):
+                    candidates = [candidate['bbox'] for candidate in self.det_bboxes[frame_id(active_frame)]]               
+                    #compare with all detections in previous frame
+                    #best match
+                    iou = compute_iou(np.array(candidates), np.array(detection['bbox']))
+                    while np.max(iou) > threshold:
+                        #candidate found, check if free
+                        matching_id = self.det_bboxes[frame_id(active_frame)][np.argmax(iou)]['obj_id']
+                        if id_seq[matching_id] == False:
+                            detection['obj_id'] = matching_id
+                            bbox_matched = True
+                            print("Matching with:",matching_id," at:",compute_centroid(np.array(self.det_bboxes[frame_id(active_frame)][np.argmax(iou)]['bbox'])))
+                            break
+                        else: #try next best match
+                            iou[np.argmax(iou)] = 0
+                            print("Already used")
+                    active_frame = active_frame - 1
 
                 if not bbox_matched:
                     #new object
                     detection['obj_id'] = max(id_seq.keys())+1
-                    print("New object", detection['obj_id']," at:",compute_centroid(np.array(self.det_bboxes[frame_id(i)][np.argmax(iou)]['bbox'])))
+                    new_det.append(detection['obj_id'])
+                    print("New object", detection['obj_id']," at:",compute_centroid(np.array(detection['bbox'])))
 
                 id_seq.update({detection['obj_id']: True})
+            
+            #filter detections which only appears in one frame
+            for detection in old_det:
+                if detection not in new_det:
+                    #to be done
+                    None
+
+            old_det = new_det.copy()
             
 
 
