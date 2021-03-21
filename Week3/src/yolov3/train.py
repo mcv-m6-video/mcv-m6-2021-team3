@@ -469,7 +469,7 @@ def main(weights, args):
     opt.epochs = args.epochs
     opt.batch_size = args.batch_size
     opt.img_size = args.img_size
-    opt.name = args.model
+    opt.name = args.model+'_'+args.split[0]
 
     # Set DDP variables
     opt.world_size = int(os.environ['WORLD_SIZE']) if 'WORLD_SIZE' in os.environ else 1

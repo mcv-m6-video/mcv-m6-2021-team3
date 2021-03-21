@@ -132,8 +132,8 @@ class AICity:
 
         # Load frame paths and filter by gt
         self.frames_paths = glob.glob(join(self.data_path, "*." + args.extension))
-        self.frames_paths.sort()
         self.frames_paths = [path for frame_id,_ in self.gt_bboxes.items() for path in self.frames_paths if frame_id in path]
+        self.frames_paths.sort()
         '''
         if args.test_mode:
             self.frames_paths = self.frames_paths[0:int(len(self.frames_paths) / 10)]
@@ -158,12 +158,12 @@ class AICity:
         if self.split[0] in 'rand':
             train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
                                                 test_size=1-self.split[1], random_state=0)
-        elif self.split[0] in 'first_frames':
-            train = self.frames_paths[:len(self)*self.split[1]]
-            train = self.frames_paths[len(self)*self.split[1]:]
+            self.data['train'] = train.tolist()
+            self.data['val'] = val.tolist()
 
-        self.data['train'] = train.tolist()  
-        self.data['val'] = val.tolist()
+        elif self.split[0] in 'first_frames':
+            self.data['train'] = self.frames_paths[:int(len(self)*self.split[1])]
+            self.data['val'] = self.frames_paths[int(len(self)*self.split[1]):]
     
     def data_to_model(self):
         if self.framework in 'ultralytics':
