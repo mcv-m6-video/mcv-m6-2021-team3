@@ -3,6 +3,7 @@ import pathlib
 import glob
 import time
 import yaml
+from tqdm import tqdm
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -109,14 +110,15 @@ class TFModel():
         pass
 
 
-def create_tf_example(filename, data):
-    print(filename)
-    
-    # TODO START: Populate the following variables from your example.
+def create_tf_example(filename, data):    
+
     height = 1080 # Image height
     width = 1920 # Image width
     filename = filename.encode() # Filename of the image. Empty if image is not from file
-    #encoded_image_data = None # Encoded image bytes
+    
+    with tf.io.gfile.GFile(filename, 'rb') as fid:
+        encoded_image = fid.read()
+
     image_format = b'png' # b'jpeg' or b'png'
 
     xmins = [] # List of normalized left x coordinates in bounding box (1 per box)
@@ -143,7 +145,7 @@ def create_tf_example(filename, data):
       'image/width': dataset_util.int64_feature(width),
       'image/filename': dataset_util.bytes_feature(filename),
       'image/source_id': dataset_util.bytes_feature(filename),
-      #'image/encoded': dataset_util.bytes_feature(encoded_image_data),
+      'image/encoded': dataset_util.bytes_feature(encoded_image),
       'image/format': dataset_util.bytes_feature(image_format),
       'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
       'image/object/bbox/xmax': dataset_util.float_list_feature(xmaxs),
@@ -163,8 +165,7 @@ def to_tf_record(args, data, gt):
     }
    
     try:
-        os.removedirs(paths['train'])
-        os.removedirs(paths['val'])
+        os.removedirs(args.tf_records_path)
     except:
         print("Error removing dirs")
 
@@ -174,9 +175,9 @@ def to_tf_record(args, data, gt):
     for dataset in ['train', 'val']:
         writer = tf.io.TFRecordWriter(paths[dataset])
 
-        for idx, img in enumerate(data[dataset]):
+        for idx, img in tqdm(enumerate(data[dataset]), 'Creating TF Record'):
             record = create_tf_example(img, gt[img.split('/')[-1].split('.')[0]])
             writer.write(record.SerializeToString())
         
+        print("Saving TFRecords file. This can take a while...")
         writer.close()
-
