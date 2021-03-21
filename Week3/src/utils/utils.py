@@ -87,7 +87,7 @@ def dict_to_list(frame_info, tlwh=True):
     else:
         return [[obj['bbox'][0], obj['bbox'][1], obj['bbox'][2], obj['bbox'][3]] for obj in frame_info]
 
-def dict_to_list_tracking(data):
+def dict_to_list_IDF1(data):
     """
     Transform a dictionary into a list 
     <frame>, <id>, <bb_left>, <bb_top>, <bb_width>, <bb_height>, <conf>, <x>, <y>, <z>
@@ -100,6 +100,20 @@ def dict_to_list_tracking(data):
         for detect in frame:
             idf1_list.append([int(frame_id),detect['obj_id'],detect['bbox'][0],detect['bbox'][1], detect['bbox'][2], detect['bbox'][3],detect['confidence']])
     return idf1_list
+
+def dict_to_list_track(frame_info):
+    """
+    Transform a dictionary into a list
+    :param frame_info: dictionary with the information needed to create the list
+    :return: return the list created
+    """
+    boxes = []
+    for idx, obj in enumerate(frame_info):
+        for bbox in frame_info[obj]:
+            box_info = [idx, bbox['bbox'][0], bbox['bbox'][1], bbox['bbox'][2], bbox['bbox'][3], bbox['confidence']]
+            boxes.append(box_info)
+    return np.array(boxes)
+
 
 def frames_to_gif(save_dir, ext):
     img_paths = glob.glob(join(save_dir, '*.' + ext))

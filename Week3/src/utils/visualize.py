@@ -9,6 +9,38 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from utils.metrics import compute_miou
 from utils.utils import dict_to_list, read_json_file
 from itertools import compress
+     
+def draw_frame_track(path_in, path_out, frame, detections, colors, fill = True):
+    """
+    """
+    colors = colors*255
+    img = cv2.imread(join(path_in,frame)+'.png')
+    for detection, color in zip(detections, colors):
+        if fill: 
+            img = cv2.rectangle(img, detection, color, cv2.FILLED)
+        else:
+            img = cv2.rectangle(img, detection, color)
+
+    #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    cv2.imwrite(join(path_out,'tracking',frame)+'.png',img)
+
+
+def visualize_tracking(path_in, path_out, det_bboxes, gt_bboxes):
+    """
+    """
+    colours = np.random.rand(32,3) 
+    for frame_id, frame in tqdm(det_bboxes.items(),"saving tracking img"):
+        colors = []
+        detections = []
+        
+        for detection in frame:
+            bbbox = detection['bbox']
+            detections.append(bbbox)
+
+            ec=colours[detection['obj_id']%32,:]
+            colors.append(ec)
+
+        draw_frame_track(path_in, path_out, frame_id, detections, colors) 
 
 def draw_bboxes(img, bboxes, color):
     """

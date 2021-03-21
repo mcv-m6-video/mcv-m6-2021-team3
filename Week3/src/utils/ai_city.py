@@ -1,16 +1,28 @@
-import numpy as np
-import cv2
-import os
 from os.path import join, basename, exists
 import glob
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+#matplotlib inline
+from IPython import display as dp
+
+import numpy as np
+import matplotlib.pyplot as plt
+import json
+import cv2
+
+import numpy as np
+from skimage import io
+import os
+import time
+
 from utils.sort import Sort
 
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
-from utils.utils import write_json_file, read_json_file, frame_id, dict_to_list_tracking
+from utils.utils import write_json_file, read_json_file, frame_id, dict_to_list_IDF1, dict_to_list_track
 from utils.visualize import visualize_background_iou
 
 #from utils.detect2 import Detect2, to_detectron2
@@ -261,7 +273,7 @@ class AICity:
             detection['obj_id'] = value
             id_seq.update({value: True})
         #now, frame by frame, no assuming order nor continuity
-        for i in range(start_frame, num_frames):
+        for i in tqdm(range(start_frame, num_frames),'Frames Overlapping Tracking'):
             #init
             id_seq = {frame_id: False for frame_id in id_seq}
             
@@ -317,7 +329,7 @@ class AICity:
 
     def compute_tracking_kalman(self, display=False): 
         
-        data_list = np.array(dict_to_list_tracking(self.det_bboxes))
+        data_list = dict_to_list_track(self.det_bboxes)
 
         total_time = 0.0
         total_frames = 0
@@ -327,7 +339,7 @@ class AICity:
 
         mot_tracker = Sort() #create instance of the SORT tracker
 
-        for idx, frame in enumerate(self.det_bboxes): # all frames in the sequence
+        for idx, frame in tqdm(enumerate(self.det_bboxes),'Frames Kalman Tracking'): # all frames in the sequence
             
             idx = int(idx)
             
@@ -358,8 +370,6 @@ class AICity:
             n_bboxes = len(out[idx])
             for track in out[idx]:
                 self.det_bboxes[frame][n_bboxes-1]['obj_id'] = track[4]
-                print("frame:",frame)
-                print("index:",n_bboxes-1)
                 n_bboxes = n_bboxes-1
 
         idx_frame.append(frame)

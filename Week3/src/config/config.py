@@ -43,6 +43,7 @@ class Config:
         parser.add_argument('--save_json', type=bool, default=True, help="Save detection results to json")
         parser.add_argument('--view_img', type=bool, default=False, help="View detection results")
         parser.add_argument('--save_img', type=bool, default=False, help="Save detection qualitative results")
+        parser.add_argument('--view_tracking', type=bool, default=True, help="Save detection qualitative results")
         
          # ================================ TENSORFLOW PARAMS ====================== #
         parser.add_argument('--threshold', type=float, default=0.5, help="Threshold to discard detections")
