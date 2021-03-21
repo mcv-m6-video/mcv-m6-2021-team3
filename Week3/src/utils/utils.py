@@ -96,11 +96,10 @@ def dict_to_list_tracking(data):
     """
     idf1_list = []
 
-    for frame_id, frame in data.keys():
+    for frame_id, frame in data.items():
         for detect in frame:
-            idf1_list.append([frame_id,detect['obj_id'],detect['bbox'][0],detect['bbox'][1], detect['bbox'][2], detect['bbox'][3],detect['confidence'], -1, -1, -1])
+            idf1_list.append([int(frame_id),detect['obj_id'],detect['bbox'][0],detect['bbox'][1], detect['bbox'][2], detect['bbox'][3],detect['confidence']])
     return idf1_list
-
 
 def frames_to_gif(save_dir, ext):
     img_paths = glob.glob(join(save_dir, '*.' + ext))

@@ -15,10 +15,10 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 
-from sort import Sort
+from utils.sort import Sort
 
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
-from utils.utils import write_json_file, read_json_file, frame_id
+from utils.utils import write_json_file, read_json_file, frame_id, dict_to_list_tracking
 from utils.visualize import visualize_background_iou
 
 #from utils.detect2 import Detect2, to_detectron2
@@ -326,9 +326,9 @@ class AICity:
                     if detection['obj_id'] in ids_to_remove:
                         self.det_bboxes[frame_id(i)].pop(idx)
 
-    def compute_tracking_kalman(self,dispaly=False): 
+    def compute_tracking_kalman(self, display=False): 
         
-        data_list = dict_to_list_tracking(self.det_bboxes)[:,:-3]
+        data_list = np.array(dict_to_list_tracking(self.det_bboxes))
 
         total_time = 0.0
         total_frames = 0
@@ -338,11 +338,14 @@ class AICity:
 
         mot_tracker = Sort() #create instance of the SORT tracker
 
-        for idx, frame in self.det_bboxes.keys(): # all frames in the sequence
+        for idx, frame in enumerate(self.det_bboxes): # all frames in the sequence
+            
+            idx = int(idx)
+            
             colors = []
 
             dets = data_list[data_list[:,0]==idx,1:6]
-            im = io.imread('./vdo/'+frame+'.png')
+            im = io.imread(join(self.data_path,frame)+'.png')
 
             start_time = time.time()
             trackers = mot_tracker.update(dets)
@@ -366,7 +369,8 @@ class AICity:
             n_bboxes = len(out[idx])
             for track in out[idx]:
                 self.det_bboxes[frame][n_bboxes-1]['obj_id'] = track[4]
-                count = count + 1
+                print("frame:",frame)
+                print("index:",n_bboxes-1)
                 n_bboxes = n_bboxes-1
 
         idx_frame.append(frame)

@@ -11,7 +11,7 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
-        parser.add_argument('--mode', type=str, default='eval', choices=['train','eval','inference','tracking'], help='What task to perform')
+        parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #

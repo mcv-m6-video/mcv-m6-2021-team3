@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from skimage import io
 from scipy.optimize import linear_sum_assignment
-from sklearn.utils.linear_assignment_ import linear_assignment
 import glob
 import time
 import argparse
