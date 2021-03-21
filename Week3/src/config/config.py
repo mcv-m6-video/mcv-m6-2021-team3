@@ -11,7 +11,7 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
-        parser.add_argument('--mode', type=str, default='train', choices=['train','inference','tracking'], help='What task to perform')
+        parser.add_argument('--mode', type=str, default='inference', choices=['train','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
@@ -25,7 +25,7 @@ class Config:
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='SSD ResNet152 V1 FPN 1024x1024 (RetinaNet152)', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
+        parser.add_argument('--model', type=str, default='SSD_MobileNet_v2_320x320', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'ssd'], help="Detection model used")
 
         # =============================== FINETUNE =============================== #
         parser.add_argument('--conf_thres', type=float, default=0.25)

@@ -213,14 +213,14 @@ class AICity:
         self.train_dataset = random.choices(self.dataset_train,k=int(len(self.dataset_train)*split))
    
 
-    def get_mAP(self):
+    def get_mAP(self, map_70=False):
         """
         Estimats the mAP using the VOC evaluation
 
         :return: map of all estimated frames
         """
         return \
-        voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, resize_factor=1)[2]
+        voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, resize_factor=1, use_07_metric=map_70)[2]
 
     def get_mIoU(self):
         """

@@ -361,7 +361,7 @@ def create_tf_example(filename, data):
             ymins.append(ymin)
             ymaxs.append(ymax)
             classes_text.append('car'.encode())
-            classes.append(3)
+            classes.append(1)
     
     tf_label_and_data = tf.train.Example(features=tf.train.Features(feature={
       'image/height': dataset_util.int64_feature(height),
@@ -386,17 +386,12 @@ def to_tf_record(args, data, gt):
         'train': os.path.join(args.tf_records_path, 'train'),
         'val': os.path.join(args.tf_records_path, 'val')
     }
-   
-    try:
-        os.removedirs(args.tf_records_path)
-    except:
-        print("Error removing dirs")
 
     train_data = data['train']
     val_data = data['val']
     
     for dataset in ['train', 'val']:
-        writer = tf.io.TFRecordWriter(paths[dataset])
+        writer = tf.io.TFRecordWriter(paths[dataset] + '.tfrecord')
 
         for idx, img in tqdm(enumerate(data[dataset]), 'Creating TF Record'):
             record = create_tf_example(img, gt[img.split('/')[-1].split('.')[0]])
