@@ -87,6 +87,20 @@ def dict_to_list(frame_info, tlwh=True):
     else:
         return [[obj['bbox'][0], obj['bbox'][1], obj['bbox'][2], obj['bbox'][3]] for obj in frame_info]
 
+def dict_to_list_tracking(data):
+    """
+    Transform a dictionary into a list 
+    <frame>, <id>, <bb_left>, <bb_top>, <bb_width>, <bb_height>, <conf>, <x>, <y>, <z>
+    :param data: dictionary with the information needed to create the list
+    :return: return the list created
+    """
+    idf1_list = []
+
+    for frame_id, frame in data.keys():
+        for detect in frame:
+            idf1_list.append([frame_id,detect['obj_id'],detect['bbox'][0],detect['bbox'][1], detect['bbox'][2], detect['bbox'][3],detect['confidence'], -1, -1, -1])
+    return idf1_list
+
 
 def frames_to_gif(save_dir, ext):
     img_paths = glob.glob(join(save_dir, '*.' + ext))
