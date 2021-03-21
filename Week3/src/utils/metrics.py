@@ -3,14 +3,6 @@ import numpy as np
 from utils.utils import dict_to_list
 
 
-def interpolate_bb(bb_first, bb_last, distance):
-    bb_first = np.array(bb_first)
-    bb_last = np.array(bb_last)
-    #interpolate new bbox depending on de distance in frames between first and last bbox
-    new_bb = bb_first + (bb_last-bb_first)/distance
-
-    return list(np.round(new_bb,2))
-
 def compute_iou(bb_gt, bb, resize_factor=1):
     """ 
     iou = compute_iou(bb_gt, bb)
@@ -220,58 +212,3 @@ def voc_eval(recs,
     ap = voc_ap(rec, prec, use_07_metric)
 
     return rec, prec, ap
-
-def IDF1(gtDB, stDB, threshold):
-    """
-    compute IDF1 metric
-    """
-    st_ids = np.unique(stDB[:, 1])
-    gt_ids = np.unique(gtDB[:, 1])
-    n_st = len(st_ids)
-    n_gt = len(gt_ids)
-    groundtruth = [gtDB[np.where(gtDB[:, 1] == gt_ids[i])[0], :]
-                   for i in range(n_gt)]
-    prediction = [stDB[np.where(stDB[:, 1] == st_ids[i])[0], :]
-                  for i in range(n_st)]
-    cost = np.zeros((n_gt + n_st, n_st + n_gt), dtype=float)
-    cost[n_gt:, :n_st] = sys.maxsize  # float('inf')
-    cost[:n_gt, n_st:] = sys.maxsize  # float('inf')
-
-    fp = np.zeros(cost.shape)
-    fn = np.zeros(cost.shape)
-    # cost matrix of all trajectory pairs
-    cost_block, fp_block, fn_block = cost_between_gt_pred(
-        groundtruth, prediction, threshold)
-
-    cost[:n_gt, :n_st] = cost_block
-    fp[:n_gt, :n_st] = fp_block
-    fn[:n_gt, :n_st] = fn_block
-
-    # computed trajectory match no groundtruth trajectory, FP
-    for i in range(n_st):
-        cost[i + n_gt, i] = prediction[i].shape[0]
-        fp[i + n_gt, i] = prediction[i].shape[0]
-
-    # groundtruth trajectory match no computed trajectory, FN
-    for i in range(n_gt):
-        cost[i, i + n_st] = groundtruth[i].shape[0]
-        fn[i, i + n_st] = groundtruth[i].shape[0]
-    try:
-        matched_indices = linear_assignment(cost)
-    except:
-        import pdb
-        pdb.set_trace()
-    nbox_gt = sum([groundtruth[i].shape[0] for i in range(n_gt)])
-    nbox_st = sum([prediction[i].shape[0] for i in range(n_st)])
-
-    IDFP = 0
-    IDFN = 0
-    for matched in zip(*matched_indices):
-        IDFP += fp[matched[0], matched[1]]
-        IDFN += fn[matched[0], matched[1]]
-    IDTP = nbox_gt - IDFN
-    assert IDTP == nbox_st - IDFP
-    # IDF1 = 2 * IDTP / (2 * IDTP + IDFP + IDFN)
-    IDF1 = 2 * IDTP / (nbox_gt + nbox_st) * 100
-
-    return IDF1

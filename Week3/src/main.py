@@ -1,11 +1,17 @@
 import os
 from os.path import join
 from utils.ai_city import AICity
+<<<<<<< HEAD
 from utils.utils import write_json_file, dict_to_list_tracking
+=======
+from utils.utils import write_json_file
+>>>>>>> fefe8c52544d9902dcbf1846cb63590d9659cb7f
 from config.config import Config
 from utils.yolov3 import UltralyricsYolo
 
 def main(args):
+
+    print(args.model, args.split)
 
     os.makedirs(join(args.output_path, str(args.task)), exist_ok=True)
 
@@ -16,15 +22,22 @@ def main(args):
         if len(aicity.det_bboxes)<1:
             aicity.inference()
 
-        print('mAP: ',aicity.get_mAP())
+        map50, map70 = aicity.get_mAP()
+        miou = aicity.get_mIoU()
+        print('Inference ({}, {}): mAP50={}, mAP70={}, mIoU={}'.format(args.model, args.framework, map50, map70, miou))
         
         if args.save_img:
             aicity.visualize_task()
         
+<<<<<<< HEAD
         if args.tracking_mode in 'overlapping':
             aicity.compute_tracking_kalman()
             test=dict_to_list_tracking(aicity.det_bboxes)
             print('hola')
+=======
+        '''if args.tracking_mode in 'overlapping':
+            aicity.compute_tracking()'''
+>>>>>>> fefe8c52544d9902dcbf1846cb63590d9659cb7f
 
     elif args.mode in 'train':
         aicity.data_to_model()
@@ -35,7 +48,7 @@ def main(args):
         if len(aicity.det_bboxes)<1:
             aicity.inference(args.weights)
         map50, map70 = aicity.get_mAP()
-        print('Evaluation of training for split {} ({}, {}): mAP50={}, mAP70={}'.format(args.split[0], args.model, args.framework, map50, map70))
+        print('Evaluation of training for split {} ({}, {}): mAP50={}, mAP70={}, mIoU={}'.format(args.split[0], args.model, args.framework, map50, map70, miou))
         if args.save_img:
             aicity.visualize_task()
 
