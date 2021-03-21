@@ -54,9 +54,9 @@ def compute_centroid(bb, resize_factor=1):
     # intersection
     bb = bb / resize_factor
     # (xmax - xmin)  / 2  
-    x = (bb[2] - bb[0]) / 2
+    x = (bb[2] + bb[0]) / 2
     # (ymax - ymin)  / 2  
-    y = (bb[3] - bb[1]) / 2
+    y = (bb[3] + bb[1]) / 2
     
     return [x, y]
 

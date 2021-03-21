@@ -7,8 +7,8 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 
-from utils.metrics import voc_eval
-from utils.utils import write_json_file, read_json_file
+from utils.metrics import voc_eval, compute_iou, compute_centroid
+from utils.utils import write_json_file, read_json_file, frame_id
 from utils.visualize import visualize_background_iou
 
 from utils.detect2 import Detect2, to_detectron2
@@ -47,14 +47,14 @@ def load_xml(xml_dir, xml_name, ignore_parked=True):
         if child.tag in 'track':
             if child.attrib['label'] not in 'car':
                 continue
+            obj_id = int(child.attrib['id'])
             for bbox in child.getchildren():
                 '''if bbox.getchildren()[0].text in 'true':
                     continue'''
                 frame_id, xmin, ymin, xmax, ymax, _, _, _ = list(map(float, ([v for k, v in bbox.attrib.items()])))
-                update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1.)
+                update_data(annot, int(frame_id) + 1, xmin, ymin, xmax, ymax, 1., obj_id)
 
     return annot
-
 
 def load_annot(annot_dir, name, ignore_parked=True):
     """
@@ -116,7 +116,7 @@ class AICity:
         # INPUT PARAMETERS
         self.data_path = args.data_path
         self.img_size = args.img_size
-        self.split_factor = args.split_factor
+        self.split = args.split
         self.task = args.task
         self.model = args.model
         self.framework = args.framework
@@ -131,8 +131,8 @@ class AICity:
 
         # Load frame paths and filter by gt
         self.frames_paths = glob.glob(join(self.data_path, "*." + args.extension))
-        self.frames_paths.sort()
         self.frames_paths = [path for frame_id,_ in self.gt_bboxes.items() for path in self.frames_paths if frame_id in path]
+        self.frames_paths.sort()
         '''
         if args.test_mode:
             self.frames_paths = self.frames_paths[0:int(len(self.frames_paths) / 10)]
@@ -151,18 +151,22 @@ class AICity:
 
     def train_val_split(self):
         """
-        Apply random split to specific propotion of the dataset (split_factor).
+        Apply random split to specific propotion of the dataset (split).
 
         """
-        train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
-                                            test_size=self.split_factor, random_state=0)
+        if self.split[0] in 'rand':
+            train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
+                                                test_size=1-self.split[1], random_state=0)
+            self.data['train'] = train.tolist()
+            self.data['val'] = val.tolist()
 
-        self.data['train'] = train.tolist()  
-        self.data['val'] = val.tolist()
+        elif self.split[0] in 'first_frames':
+            self.data['train'] = self.frames_paths[:int(len(self)*self.split[1])]
+            self.data['val'] = self.frames_paths[int(len(self)*self.split[1]):]
     
     def data_to_model(self):
         if self.framework in 'ultralytics':
-            to_yolov3(self.data, self.gt_bboxes)
+            to_yolov3(self.data, self.gt_bboxes, self.split[0])
         elif self.framework in 'detectron2':
             to_detectron2(self.data, self.gt_bboxes)
 
@@ -170,10 +174,12 @@ class AICity:
     def inference(self):
         if self.framework in 'ultralytics':
             model = UltralyricsYolo(args=self.options)
-        elif self.framework in 'detectron2':
-            model = Detect2(self.model)
+        
         elif self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
+
+        elif self.framework in 'detectron2':
+            model = Detect2(self.model)
                 
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
@@ -218,3 +224,52 @@ class AICity:
         Creates plots for a given frame and bbox estimation
         """
         visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework, self.model, self.options.output_path)
+
+    def compute_tracking(self, threshold = 0.5):
+       
+        id_seq = {}
+        #not assuming any order
+        start_frame = int(min(self.det_bboxes.keys()))
+        num_frames = int(max(self.det_bboxes.keys())) - start_frame + 1
+
+        #init the tracking by  using the first frame 
+        for value, detection in enumerate(self.det_bboxes[frame_id(start_frame)]):
+            detection['obj_id'] = value
+            id_seq.update({value: True})
+        
+        #now, frame by frame, no assuming order nor continuity
+        for i in range(start_frame, 450):#num_frames):
+            print('FRAME #',i)
+            #init
+            id_seq = {frame_id: False for frame_id in id_seq}
+            candidates = [candidate['bbox'] for candidate in self.det_bboxes[frame_id(i)]]               
+            for detection in self.det_bboxes[frame_id(i+1)]:
+                #compare with all detections in previous frame
+                #best match
+                iou = compute_iou(np.array(candidates), np.array(detection['bbox']))
+                bbox_matched = False
+                while np.max(iou) > threshold:
+                    #candidate found, check if free
+                    matching_id = self.det_bboxes[frame_id(i)][np.argmax(iou)]['obj_id']
+                    if id_seq[matching_id] == False:
+                        detection['obj_id'] = matching_id
+                        bbox_matched = True
+                        print("Matching with:",matching_id," at:",compute_centroid(np.array(self.det_bboxes[frame_id(i)][np.argmax(iou)]['bbox'])))
+                        break
+                    else: #try next best match
+                        iou[np.argmax(iou)] = 0
+                        print("Already used")
+
+                if not bbox_matched:
+                    #new object
+                    detection['obj_id'] = max(id_seq.keys())+1
+                    print("New object", detection['obj_id']," at:",compute_centroid(np.array(self.det_bboxes[frame_id(i)][np.argmax(iou)]['bbox'])))
+
+                id_seq.update({detection['obj_id']: True})
+            
+
+
+        
+
+        
+        
