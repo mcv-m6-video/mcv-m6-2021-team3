@@ -7,7 +7,7 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 
-from utils.metrics import voc_eval, compute_iou, compute_centroid
+from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou
 from utils.utils import write_json_file, read_json_file, frame_id
 from utils.visualize import visualize_background_iou
 
@@ -210,6 +210,15 @@ class AICity:
         """
         return \
         voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, resize_factor=1)[2]
+
+    def get_mIoU(self):
+        """
+        Estimates the mIoU
+
+        :return: iou of all estimated frames
+        """
+        return \
+            compute_total_miou(self.gt_bboxes, self.det_bboxes, self.frames_paths)
 
     def save_results(self, name_json):
         """

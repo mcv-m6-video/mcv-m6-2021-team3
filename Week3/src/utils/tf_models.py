@@ -44,6 +44,7 @@ class TFModel():
     def predict(self, image):
         image_np = cv2.imread(image)
         height, width, n_channels = image_np.shape
+        image = image_np.copy()
         image_np = image_np.reshape(1, height, width, n_channels).astype(np.uint8)
 
         # running inference
@@ -70,11 +71,10 @@ class TFModel():
                 self.category_index,
                 use_normalized_coordinates=True,
                 max_boxes_to_draw=200,
-                min_score_thresh=.30,
+                min_score_thresh=self.threshold,
                 agnostic_mode=False)
 
-        cv2.imshow("detection", image_np_with_detections[0])
-        cv2.waitKey(10)
+        #cv2.imshow("detection", image_np_with_detections[0])
 
         detection_boxes = results['detection_boxes'][0].numpy()
         detection_scores = results['detection_scores'][0].numpy()
@@ -89,15 +89,18 @@ class TFModel():
         detection_scores = detection_scores[idx.numpy()]
 
         for idx, bbox in enumerate(detection_boxes):
-            bbox[0] *= width
-            bbox[1] *= height
-            bbox[2] *= width
-            bbox[3] *= height
+            ymin, xmin, ymax, xmax = bbox
 
-            detection_boxes[idx] = bbox
-
+            detection_boxes[idx][1] = ymin * height
+            detection_boxes[idx][0] = xmin * width
+            detection_boxes[idx][3] = ymax * height
+            detection_boxes[idx][2] = xmax * width
+        
         # filter only cars
         output = [[box, score] for label, box, score in zip(detection_classes,
                     detection_boxes, detection_scores) if label == 3]
 
         return output
+    
+    def train(self):
+        pass
