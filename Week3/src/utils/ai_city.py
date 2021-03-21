@@ -192,7 +192,11 @@ class AICity:
         if self.save_json:
             save_path = join(self.options.output_path, 'inference/')
             os.makedirs(save_path, exist_ok=True)
-            write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
+
+            if self.options.mode == 'train':
+                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'_training.json')))
+            else:
+                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
 
     def train(self):
         if self.framework in 'tensorflow':

@@ -22,7 +22,7 @@ import tensorflow_hub as hub
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.utils import ops as utils_ops
-from object_detection.utils import dataset_util
+from object_detection.utils import dataset_util, config_util
 
 from object_detection.dataset_tools import create_coco_tf_record 
 
@@ -37,7 +37,8 @@ class TFModel():
         except:
             # Invalid device or cannot modify virtual devices once initialized.
             pass
-
+        
+        self.options = args
         self.models = yaml.load(open('./data/tfm_models/models.yaml','r'), Loader=yaml.FullLoader)
         self.model = hub.load(self.models[model])
         self.threshold = args.threshold
@@ -106,8 +107,29 @@ class TFModel():
 
         return output
     
-    def train(self):
+    @tf.function
+    def train_step(self):
         pass
+
+    def train(self):
+        tf.keras.backend.clear_session() # Just in case something is there from previous trains / inferences
+
+        model = self.args.model.replace(' ', '_')
+        model = model.lower()
+        configs_path = join('./models/research/object_detection/configs/tf2', model, '_tpu-8.conf')
+        num_classes = 1
+
+        config = config_util.get_configs_from_pipeline_file(configs_path)
+        model_config = configs['model']
+        model_config.ssd.num_classes = num_classes
+        model_config.ssd.freeze_batchnorm = True
+        detection_model = model_builder.build(model_config=model_config, is_training=True)
+
+        # Run model through a dummy image so that variables are created
+        image, shapes = detection_model.preprocess(tf.zeros([1, 640, 640, 3]))
+        prediction_dict = detection_model.predict(image, shapes)
+        _ = detection_model.postprocess(prediction_dict, shapes)
+        print('Weights restored!')
 
 
 def create_tf_example(filename, data):    
