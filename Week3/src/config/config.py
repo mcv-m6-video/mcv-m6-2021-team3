@@ -11,11 +11,7 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
-<<<<<<< HEAD
         parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
-=======
-        parser.add_argument('--mode', type=str, default='train', choices=['train','eval','inference','tracking'], help='What task to perform')
->>>>>>> fefe8c52544d9902dcbf1846cb63590d9659cb7f
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
@@ -29,7 +25,7 @@ class Config:
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='yolov3-spp', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
+        parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
                                                                             'yolov3-tiny','ssd'], help="Detection model used")
         parser.add_argument('--weights', type=str, default='runs/train/yolov3_first_frames/weights/best.pt')
 

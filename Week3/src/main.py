@@ -1,11 +1,7 @@
 import os
 from os.path import join
 from utils.ai_city import AICity
-<<<<<<< HEAD
 from utils.utils import write_json_file, dict_to_list_tracking
-=======
-from utils.utils import write_json_file
->>>>>>> fefe8c52544d9902dcbf1846cb63590d9659cb7f
 from config.config import Config
 from utils.yolov3 import UltralyricsYolo
 
@@ -29,17 +25,11 @@ def main(args):
         if args.save_img:
             aicity.visualize_task()
         
-<<<<<<< HEAD
         if args.tracking_mode in 'overlapping':
-            aicity.compute_tracking_kalman()
+            aicity.compute_tracking_overlapping()
             test=dict_to_list_tracking(aicity.det_bboxes)
-            print('hola')
-=======
-        '''if args.tracking_mode in 'overlapping':
-            aicity.compute_tracking()'''
->>>>>>> fefe8c52544d9902dcbf1846cb63590d9659cb7f
-
-    elif args.mode in 'train':
+            
+    elif args.mode in 'train':C
         aicity.data_to_model()
         model = UltralyricsYolo(args=args)
         model.train()

@@ -7,15 +7,10 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
 
-<<<<<<< HEAD
 from utils.sort import Sort
 
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
 from utils.utils import write_json_file, read_json_file, frame_id, dict_to_list_tracking
-=======
-from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou
-from utils.utils import write_json_file, read_json_file, frame_id
->>>>>>> fefe8c52544d9902dcbf1846cb63590d9659cb7f
 from utils.visualize import visualize_background_iou
 
 #from utils.detect2 import Detect2, to_detectron2
@@ -247,9 +242,15 @@ class AICity:
         """
         visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework,
                                  self.model, self.options.output_path, self.mode)
+    
+    def return_bb(self, frame, bb_id):
+        for bbox in self.det_bboxes[frame_id(frame)]:
+            if bbox['obj_id'] == bb_id:
+                return bbox['bbox']
+        return None
 
-    def compute_tracking(self, threshold = 0.5):
-       
+    def compute_tracking_overlapping(self, threshold = 0.5, interpolate = True, remove_noise = True):
+
         id_seq = {}
         #not assuming any order
         start_frame = int(min(self.det_bboxes.keys()))
@@ -259,38 +260,43 @@ class AICity:
         for value, detection in enumerate(self.det_bboxes[frame_id(start_frame)]):
             detection['obj_id'] = value
             id_seq.update({value: True})
-        
         #now, frame by frame, no assuming order nor continuity
-        for i in range(start_frame, 450):#num_frames):
-            print('FRAME #',i)
+        for i in range(start_frame, num_frames):
             #init
             id_seq = {frame_id: False for frame_id in id_seq}
-            candidates = [candidate['bbox'] for candidate in self.det_bboxes[frame_id(i)]]               
+            
             for detection in self.det_bboxes[frame_id(i+1)]:
-                #compare with all detections in previous frame
-                #best match
-                iou = compute_iou(np.array(candidates), np.array(detection['bbox']))
+                active_frame = i 
                 bbox_matched = False
-                while np.max(iou) > threshold:
-                    #candidate found, check if free
-                    matching_id = self.det_bboxes[frame_id(i)][np.argmax(iou)]['obj_id']
-                    if id_seq[matching_id] == False:
-                        detection['obj_id'] = matching_id
-                        bbox_matched = True
-                        print("Matching with:",matching_id," at:",compute_centroid(np.array(self.det_bboxes[frame_id(i)][np.argmax(iou)]['bbox'])))
-                        break
-                    else: #try next best match
-                        iou[np.argmax(iou)] = 0
-                        print("Already used")
-
+                #if there is no good match on previous frame, check n-1 up to n=5
+                while (bbox_matched == False) and (active_frame >= start_frame) and ((i - active_frame)<5):
+                    candidates = [candidate['bbox'] for candidate in self.det_bboxes[frame_id(active_frame)]]
+                    #compare with all detections in previous frame
+                    #best match
+                    iou = compute_iou(np.array(candidates), np.array(detection['bbox']))
+                    while np.max(iou) > threshold:
+                        #candidate found, check if free
+                        matching_id = self.det_bboxes[frame_id(active_frame)][np.argmax(iou)]['obj_id']
+                        if id_seq[matching_id] == False:
+                            detection['obj_id'] = matching_id
+                            bbox_matched = True
+                            #interpolate bboxes 
+                            if i != active_frame and interpolate:
+                                frames_skip = i - active_frame
+                                for j in range(frames_skip):
+                                    new_bb = interpolate_bb(self.return_bb((active_frame+j), matching_id), detection['bbox'],frames_skip-j+1)
+                                    update_data(self.det_bboxes, (active_frame+1+j),*new_bb,0,matching_id)
+                            break
+                        else: #try next best match
+                            iou[np.argmax(iou)] = 0
+                    active_frame = active_frame - 1
+                
                 if not bbox_matched:
                     #new object
                     detection['obj_id'] = max(id_seq.keys())+1
-                    print("New object", detection['obj_id']," at:",compute_centroid(np.array(self.det_bboxes[frame_id(i)][np.argmax(iou)]['bbox'])))
 
                 id_seq.update({detection['obj_id']: True})
-<<<<<<< HEAD
-        
+
         # filter by number of ocurrences
         if remove_noise:
             id_ocurrence = {}
@@ -359,9 +365,6 @@ class AICity:
         idx_frame.append(frame)
         print("Total Tracking took: %.3f for %d frames or %.1f FPS"%(total_time,total_frames,total_frames/total_time))
         return(self.det_bboxes)    
-=======
-            
->>>>>>> fefe8c52544d9902dcbf1846cb63590d9659cb7f
 
 
         
