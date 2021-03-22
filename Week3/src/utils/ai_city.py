@@ -1,7 +1,7 @@
 from os.path import join, basename, exists
 import glob
 from tqdm import tqdm
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 import xml.etree.ElementTree as ET
 
 import matplotlib.pyplot as plt
@@ -25,7 +25,7 @@ from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total
 from utils.utils import write_json_file, read_json_file, frame_id, dict_to_list_IDF1, dict_to_list_track
 from utils.visualize import visualize_background_iou
 
-#from utils.detect2 import Detect2, to_detectron2
+from utils.detect2 import Detect2, to_detectron2
 from utils.tf_models import TFModel
 from utils.yolov3 import UltralyricsYolo, to_yolov3
 
@@ -148,11 +148,7 @@ class AICity:
         self.frames_paths = glob.glob(join(self.data_path, "*." + args.extension))
         self.frames_paths = [path for frame_id,_ in self.gt_bboxes.items() for path in self.frames_paths if frame_id in path]
         self.frames_paths.sort()
-        '''
-        if args.test_mode:
-            self.frames_paths = self.frames_paths[0:int(len(self.frames_paths) / 10)]
-        '''
-        self.data = {'train':[], 'val':[]}
+        self.data = [{'train':[], 'val':[]}]*self.split[1]
 
         # OUTPUT PARAMETERS
         self.output_path = args.output_path
@@ -166,25 +162,41 @@ class AICity:
 
     def train_val_split(self):
         """
-        Apply random split to specific propotion of the dataset (split).
-
+        Apply split to specific propotion of the dataset for each strategy (A, B, C).
+            A: First 25% frames for training, second 75% for test
+            B: K-Fold sorted frames
+            C: K-Fold random frames
         """
-        if self.split[0] in 'rand':
-            train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
-                                                test_size=1-self.split[1], random_state=0)
-            self.data['train'] = train.tolist()
-            self.data['val'] = val.tolist()
+        if self.split[1] == 1:
+            # Strategy A
+            if self.split[0] in 'sort':
+                self.data['train'] = self.frames_paths[:int(len(self)*.25)]
+                self.data['val'] = self.frames_paths[int(len(self)*.25):]
 
-        elif self.split[0] in 'first_frames':
-            self.data['train'] = self.frames_paths[:int(len(self)*self.split[1])]
-            self.data['val'] = self.frames_paths[int(len(self)*self.split[1]):]
-    
+            elif self.split[0] in 'rand':
+                train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
+                                                    test_size=.75, random_state=0)
+                self.data['train'] = train.tolist()
+                self.data['val'] = val.tolist()
+        else:
+            frames_paths = np.array(self.frames_paths)
+
+            shuffle, random_state = False, None
+            if self.split[0] in 'rand':
+                shuffle, random_state = True, 0
+
+            kf = KFold(n_splits=self.split[1], shuffle=shuffle, random_state=random_state)
+            for k, (val_index, train_index) in enumerate(kf.split(frames_paths)):
+                self.data[k]['train'] = frames_paths[train_index].tolist()
+                self.data[k]['val'] = frames_paths[val_index].tolist()
+
     def data_to_model(self):
         if self.framework in 'ultralytics':
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
-        '''elif self.framework in 'detectron2':
-            to_detectron2(self.data, self.gt_bboxes)'''
-
+        elif self.framework in 'detectron2':
+            to_detectron2(self.data[0], self.gt_bboxes)
+        '''elif self.framework in 'tensorflow':
+            to_tf_record(self.options, self.data[0], self.gt_bboxes)'''
     
     def inference(self, weights=None):
         if self.framework in 'ultralytics':
@@ -193,8 +205,8 @@ class AICity:
         elif self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
 
-        '''elif self.framework in 'detectron2':
-            model = Detect2(self.model)'''
+        elif self.framework in 'detectron2':
+            model = Detect2(self.model)
                 
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
@@ -205,17 +217,11 @@ class AICity:
         if self.save_json:
             save_path = join(self.options.output_path, self.mode+'/')
             os.makedirs(save_path, exist_ok=True)
-            write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
+            if self.mode == 'inference':
+                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
+            else:
+                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework, self.split[0]+'.json')))
 
-    def train_split(self, split=0):
-        """
-        Apply random split to specific propotion of the train set.
-
-        Args:
-            split (float): proportion of the train set that will be used.
-        """
-        self.train_dataset = random.choices(self.dataset_train,k=int(len(self.dataset_train)*split))
-   
 
     def get_mAP(self, test=False):
         """

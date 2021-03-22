@@ -111,7 +111,7 @@ def dict_to_list_IDF1(data):
 
     for frame_id, frame in data.items():
         for detect in frame:
-            idf1_list.append([float(frame_id),float(detect['obj_id']),float(detect['bbox'][0]),float(detect['bbox'][1]),float(detect['bbox'][2]), float(detect['bbox'][3]),float(detect['confidence']]))
+            idf1_list.append([float(frame_id),float(detect['obj_id']),float(detect['bbox'][0]),float(detect['bbox'][1]),float(detect['bbox'][2]), float(detect['bbox'][3]),float(detect['confidence'])])
     return np.array(idf1_list)
 
 def dict_to_list_track(frame_info):
