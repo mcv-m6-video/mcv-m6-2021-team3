@@ -349,14 +349,13 @@ class AICity:
 
         mot_tracker = Sort() #create instance of the SORT tracker
 
-        for idx, frame in tqdm(enumerate(self.det_bboxes),'Frames Kalman Tracking'): # all frames in the sequence
-            
-            idx = int(idx)
+        count = 0
+        for idx, frame in tqdm(self.det_bboxes.items(),'Frames Kalman Tracking'): # all frames in the sequence
             
             colors = []
 
-            dets = data_list[data_list[:,0]==idx,1:6]
-            im = io.imread(join(self.data_path,frame)+'.png')
+            dets = data_list[data_list[:,0]==count,1:6]
+            #im = io.imread(join(self.data_path,idx)+'.png')
 
             start_time = time.time()
             trackers = mot_tracker.update(dets)
@@ -364,15 +363,10 @@ class AICity:
             total_time += cycle_time
 
             out.append(trackers)
-            
-            n_bboxes = len(out[idx])
-            for track in out[idx]:
-                self.det_bboxes[frame][n_bboxes-1]['obj_id'] = track[4]
-                n_bboxes = n_bboxes-1
 
-        idx_frame.append(frame)
-        print("Total Tracking took: %.3f for %d frames or %.1f FPS"%(total_time,total_frames,total_frames/total_time))
-        return(self.det_bboxes)    
+            for i, obj in enumerate(frame):
+                match = np.where(np.array(obj['bbox'])==trackers[:,:4])[0][0]
+                self.det_bboxes[idx][i]['obj_id'] = trackers[match,4]
 
 
         
