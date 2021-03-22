@@ -11,8 +11,13 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
+<<<<<<< HEAD
         parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
+=======
+        parser.add_argument('--mode', type=str, default='eval', choices=['train','eval','inference','tracking'], help='What task to perform')
+        parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman'], help='What type of tracking to perform')
+>>>>>>> 1e965ee5114e3c43ddf87ad9c41fd12382f39685
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../datasets/AICity/train/S03/c010/vdo',
@@ -20,14 +25,14 @@ class Config:
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         
         parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
-        parser.add_argument('--split', nargs='+', default=['sort',4], help="Split mode and K-fold")
+        parser.add_argument('--split', nargs='+', default=['sort',1], help="Split mode and K-fold")
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
         parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
                                                                             'yolov3-tiny','ssd'], help="Detection model used")
-        parser.add_argument('--weights', type=str, default='runs/train/yolov3-tiny_first_frames/weights/best.pt')
+        parser.add_argument('--weights', type=str, default='runs/train/yolov3-tiny_rand/weights/best.pt')
 
         # =============================== FINETUNE =============================== #
 
@@ -35,14 +40,14 @@ class Config:
         parser.add_argument('--iou_thres', type=float, default=0.3)
         parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars_rand.yaml', help='data.yaml path')
         parser.add_argument('--hyp', type=str, default='data/finetune/yolov3/hyp.finetune.yaml', help='hyperparameters path for finetuning')
-        parser.add_argument('--epochs', type=int, default=20)
-        parser.add_argument('--batch_size', type=int, default=16, help='total batch size for all GPUs')
+        parser.add_argument('--epochs', type=int, default=150)
+        parser.add_argument('--batch_size', type=int, default=32, help='total batch size for all GPUs')
         
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")
         parser.add_argument('--save_json', type=bool, default=True, help="Save detection results to json")
         parser.add_argument('--view_img', type=bool, default=False, help="View detection results")
-        parser.add_argument('--save_img', type=bool, default=False, help="Save detection qualitative results")
+        parser.add_argument('--save_img', type=bool, default=True, help="Save detection qualitative results")
         parser.add_argument('--view_tracking', type=bool, default=True, help="Save detection qualitative results")
         
          # ================================ TENSORFLOW PARAMS ====================== #
