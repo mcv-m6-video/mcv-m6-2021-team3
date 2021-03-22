@@ -327,7 +327,11 @@ class AICity:
                     if detection['obj_id'] in ids_to_remove:
                         self.det_bboxes[frame_id(i)].pop(idx)
 
-    def compute_tracking_kalman(self, display=False): 
+    def compute_tracking_kalman(self): 
+        '''
+        Funtion to compute the tracking using Kalman filter
+        :return: dictionary with the detections and the ids of each bbox computed by the tracking
+        '''
         
         data_list = dict_to_list_track(self.det_bboxes)
 
@@ -354,18 +358,6 @@ class AICity:
             total_time += cycle_time
 
             out.append(trackers)
-            if display:
-                for d in trackers:
-                    d = d.astype(np.uint32)
-                    ec=colours[d[4]%32,:]
-                    colors.append(ec)
-                
-                image,centers = draw_bboxes(im,trackers,colors)
-                
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                cv2.imshow('Image', image)
-                cv2.waitKey(1)
-                cv2.imwrite('Tracking_'+frame+'.png',image)
             
             n_bboxes = len(out[idx])
             for track in out[idx]:
