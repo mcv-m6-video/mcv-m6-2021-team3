@@ -349,6 +349,8 @@ class AICity:
 
         mot_tracker = Sort() #create instance of the SORT tracker
 
+        det_bboxes_new = {}
+
         count = 0
         for idx, frame in tqdm(self.det_bboxes.items(),'Frames Kalman Tracking'): # all frames in the sequence
             
@@ -362,11 +364,12 @@ class AICity:
             cycle_time = time.time() - start_time
             total_time += cycle_time
 
-            out.append(trackers)
+            for track in trackers:
+                det_bboxes_new = update_data(det_bboxes_new, idx, *track[:4], 1., track[4])
 
-            for i, obj in enumerate(frame):
-                match = np.where(np.array(obj['bbox'])==trackers[:,:4])[0][0]
-                self.det_bboxes[idx][i]['obj_id'] = trackers[match,4]
+            count+=1
+
+        self.det_bboxes = det_bboxes_new
 
 
         
