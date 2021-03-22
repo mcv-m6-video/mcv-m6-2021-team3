@@ -170,14 +170,14 @@ class AICity:
         if self.split[1] == 1:
             # Strategy A
             if self.split[0] in 'sort':
-                self.data['train'] = self.frames_paths[:int(len(self)*.25)]
-                self.data['val'] = self.frames_paths[int(len(self)*.25):]
+                self.data[0]['train'] = self.frames_paths[:int(len(self)*.25)]
+                self.data[0]['val'] = self.frames_paths[int(len(self)*.25):]
 
             elif self.split[0] in 'rand':
                 train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
                                                     test_size=.75, random_state=0)
-                self.data['train'] = train.tolist()
-                self.data['val'] = val.tolist()
+                self.data[0]['train'] = train.tolist()
+                self.data[0]['val'] = val.tolist()
         else:
             frames_paths = np.array(self.frames_paths)
 
