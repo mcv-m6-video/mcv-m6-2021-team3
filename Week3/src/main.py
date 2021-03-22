@@ -39,7 +39,7 @@ def main(args):
     elif args.mode in 'train':
         aicity.data_to_model()
         model = UltralyricsYolo(args=args)
-        model.train()
+        model.train(args.split[1])
 
     elif args.mode in 'eval':
         if len(aicity.det_bboxes)<1:

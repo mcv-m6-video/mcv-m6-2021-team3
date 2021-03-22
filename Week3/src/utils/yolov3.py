@@ -96,9 +96,12 @@ class UltralyricsYolo():
 
         return pred
 
-    def train(self):
-        train_yolov3(self.weights, self.args)
-        
+    def train(self, kfold=None):
+        if kfold > 1:
+            for k in range(kfold):
+                train_yolov3(self.weights, self.args, k)
+        else:
+            train_yolov3(self.weights, self.args)       
 
 
 def gt_multi_txt(path, bboxes):

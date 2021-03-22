@@ -35,8 +35,8 @@ class Config:
         parser.add_argument('--iou_thres', type=float, default=0.3)
         parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars_rand.yaml', help='data.yaml path')
         parser.add_argument('--hyp', type=str, default='data/finetune/yolov3/hyp.finetune.yaml', help='hyperparameters path for finetuning')
-        parser.add_argument('--epochs', type=int, default=20)
-        parser.add_argument('--batch_size', type=int, default=16, help='total batch size for all GPUs')
+        parser.add_argument('--epochs', type=int, default=150)
+        parser.add_argument('--batch_size', type=int, default=32, help='total batch size for all GPUs')
         
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")
