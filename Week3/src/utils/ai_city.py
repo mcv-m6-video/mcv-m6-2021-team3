@@ -267,7 +267,7 @@ class AICity:
                 return bbox['bbox']
         return None
 
-    def compute_tracking_overlapping(self, threshold = 0.5, interpolate = True, remove_noise = True):
+    def compute_tracking_overlapping(self, threshold = 0.4, interpolate = True, remove_noise = True):
 
         id_seq = {}
         #not assuming any order
@@ -329,9 +329,10 @@ class AICity:
             # detectiosn to be removed
             ids_to_remove = [id_obj for id_obj in id_ocurrence if id_ocurrence[id_obj]<4]
             for i in range(start_frame, num_frames):
-                for idx, detection in enumerate(self.det_bboxes[frame_id(i)]):
+                for idx, detection in reversed(list(enumerate(self.det_bboxes[frame_id(i)]))):
                     if detection['obj_id'] in ids_to_remove:
-                        self.det_bboxes[frame_id(i)].pop(idx)
+                        bb_rem = self.det_bboxes[frame_id(i)].pop(idx)
+        None
 
     def compute_tracking_kalman(self): 
         '''

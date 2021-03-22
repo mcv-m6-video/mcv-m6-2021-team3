@@ -6,11 +6,47 @@ from os.path import join
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from utils.metrics import compute_miou
-from utils.utils import dict_to_list, read_json_file
+from utils.metrics import compute_miou, compute_centroid
+from utils.utils import dict_to_list, read_json_file, frame_id
 from itertools import compress
-     
-def draw_frame_track(path_in, frame, detections, colors, fill = True):
+
+
+def visualize_trajectories(path_in, path_out, det_bboxes):
+    """
+    """
+    # not assuming any order
+    start_frame = int(min(det_bboxes.keys()))
+    num_frames = int(max(det_bboxes.keys())) - start_frame + 1
+
+    id_ocurrence = {}
+    # Count ocurrences and compute centers 
+    for i in range(start_frame, num_frames):
+        for detection in det_bboxes[frame_id(i)]:
+            objt_id = detection['obj_id']
+            if objt_id in id_ocurrence:
+                id_ocurrence[objt_id].append((i,compute_centroid(detection['bbox'])))
+            else:
+                id_ocurrence[objt_id] = [(i,compute_centroid(detection['bbox']))] 
+    # plot
+    num_colors = 1000
+    colours = np.random.rand(num_colors,3) 
+    for f_id, frame in tqdm(det_bboxes.items(),"saving tracking img"):
+        colors = []
+        detections = []
+        id_list = []
+        for detection in frame:
+            bb_id = detection['obj_id']
+            bbbox = detection['bbox']
+            detections.append(bbbox)
+            id_list.append(bb_id)
+
+        img = draw_frame_track(path_in, f_id, detections, colours, id_list, id_ocurrence) 
+        cv2.imshow('Tracking',img)
+        cv2.waitKey(1)
+        cv2.imwrite(join(path_out,'tracking',f_id)+'.png',img)
+        
+
+def draw_frame_track(path_in, frame, detections, colors, ids, id_ocurrence=[]):
     """
     :param path_in: path where the frames are saved
     :param frame: frame id
@@ -20,41 +56,47 @@ def draw_frame_track(path_in, frame, detections, colors, fill = True):
     :return: return the image created by the frame and its bboxes
     """
     img = cv2.imread(join(path_in,frame)+'.png')
-    for detection, color in zip(detections, colors):
-        color = color*255
-        if fill: 
-            img = cv2.rectangle(img, (int(detection[0]),int(detection[1])), (int(detection[2]),int(detection[3])), tuple(color), cv2.FILLED)
-        else:
-            img = cv2.rectangle(img, (int(detection[0]),int(detection[1])), (int(detection[2]),int(detection[3])), tuple(color))
-
+    for detection, bb_id in zip(detections, ids):
+        color = colors[bb_id%1000,:]*255
+        img = cv2.rectangle(img, (int(detection[0]),int(detection[1])), (int(detection[2]),int(detection[3])), tuple(color), 3)
+        img = cv2.putText(img, str(bb_id), (int(detection[0]),int(detection[1])-10),cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+        if id_ocurrence:
+            for track_id, tracking  in id_ocurrence.items():
+                c_start = 0
+                color = colors[track_id%1000,:]*255
+                for f_id, c_end in tracking:
+                    if f_id < int(frame):
+                        if c_start:
+                            img = cv2.line(img, c_start, c_end, color, 2)
+                        c_start = c_end
     return img
 
 
-def visualize_tracking(path_in, path_out, det_bboxes, gt_bboxes):
+def visualize_tracking(path_in, path_out, det_bboxes):
     """
     :param path_in: path where the frames are saved
     :param path_out: path where the images should be saved
     :param det_bboxes: dictionary with the information of the detections
     :param gt_bboxes: dictionary with the information of the gt
     """
-    colours = np.random.rand(32,3) 
-    for frame_id, frame in tqdm(det_bboxes.items(),"saving tracking img"):
+    num_colors = 1000
+    colours = np.random.rand(num_colors,3) 
+    for f_id, frame in tqdm(det_bboxes.items(),"saving tracking img"):
         colors = []
         detections = []
-        
+        id_list = []
         for detection in frame:
-            d = np.array([detection['bbox'][0],detection['bbox'][1],detection['bbox'][2],detection['bbox'][2],detection['obj_id']])
-            d = d.astype(np.uint32)
+            bb_id = detection['obj_id']
             bbbox = detection['bbox']
             detections.append(bbbox)
-
-            ec=colours[d[4]%32,:]
+            id_list.append(bb_id)
+            ec=colours[bb_id%num_colors,:]
             colors.append(ec)
 
-        img = draw_frame_track(path_in, frame_id, detections, colors) 
+        img = draw_frame_track(path_in, f_id, detections, colors, id_list) 
         cv2.imshow('Tracking',img)
         cv2.waitKey(1)
-        cv2.imwrite(join(path_out,'tracking',frame_id)+'.png',img)
+        cv2.imwrite(join(path_out,'tracking',f_id)+'.png',img)
 
 
 def draw_bboxes(img, bboxes, color):
