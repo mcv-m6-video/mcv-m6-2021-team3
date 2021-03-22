@@ -138,7 +138,11 @@ class AICity:
 
         # Load detections
         self.gt_bboxes = load_annot(args.gt_path, 'ai_challenge_s03_c010-full_annotation.xml')
-        infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework+'.json'))
+        if self.mode == 'inference':
+            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework+'.json'))
+        else:
+            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0]+'.json'))
+
         if exists(infer_path):
             self.det_bboxes = read_json_file(infer_path)
         else:
@@ -230,8 +234,8 @@ class AICity:
         :return: map of all estimated frames
         """
         if self.mode == 'eval':
-            mAP50 = voc_eval(self.gt_bboxes, self.data['val'], self.det_bboxes)[2]
-            mAP70 = voc_eval(self.gt_bboxes, self.data['val'], self.det_bboxes, use_07_metric=True)[2]
+            mAP50 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes)[2]
+            mAP70 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes, use_07_metric=True)[2]
         else:
             mAP50 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes)[2]
             mAP70 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, use_07_metric=True)[2]
@@ -258,7 +262,7 @@ class AICity:
         """
         Creates plots for a given frame and bbox estimation
         """
-        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework,
+        visualize_background_iou(self.data[0], None, self.gt_bboxes, self.det_bboxes, self.framework,
                                  self.model, self.options.output_path, self.mode)
     
     def return_bb(self, frame, bb_id):

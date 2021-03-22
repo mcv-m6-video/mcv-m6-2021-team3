@@ -11,7 +11,7 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
-        parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
+        parser.add_argument('--mode', type=str, default='eval', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
@@ -20,12 +20,12 @@ class Config:
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         
         parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
-        parser.add_argument('--split', nargs='+', default=['rand',1], help="Split mode and K-fold")
+        parser.add_argument('--split', nargs='+', default=['sort',1], help="Split mode and K-fold")
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
+        parser.add_argument('--model', type=str, default='yolov3-spp', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
                                                                             'yolov3-tiny','ssd'], help="Detection model used")
         parser.add_argument('--weights', type=str, default='runs/train/yolov3-tiny_rand/weights/best.pt')
 
@@ -42,7 +42,7 @@ class Config:
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")
         parser.add_argument('--save_json', type=bool, default=True, help="Save detection results to json")
         parser.add_argument('--view_img', type=bool, default=False, help="View detection results")
-        parser.add_argument('--save_img', type=bool, default=False, help="Save detection qualitative results")
+        parser.add_argument('--save_img', type=bool, default=True, help="Save detection qualitative results")
         parser.add_argument('--view_tracking', type=bool, default=True, help="Save detection qualitative results")
         
          # ================================ TENSORFLOW PARAMS ====================== #
