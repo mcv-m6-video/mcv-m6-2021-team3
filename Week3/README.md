@@ -1,25 +1,27 @@
-# Week 2
+# Week 3
 
 ## Introduction
 In this project the main goal was to get used to different background estimation methods. The project contains several source code files that implement the required functionality.
 
 * [main.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/main.py): Contains the pipeline to execute the different tasks.
 * [ai_city.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/ai_city.py): Contains the class AICity, where the data is processed in order to obtain the background estimation.
-* [grid_search.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week2/src/utils/gridd_search.py): Contains the function to do a grid search in order to find the best values for the different parameters.
 * [metrics.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/metrics.py): Contains functions related to get quantitative results.
-* [refinement.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/refinement.py): Contains the functions related to the post processing of the background and the bounding box generation.
-* [utils.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/utils.py): Contains functions other functions, such as the one to write a json or read one.
-* [visualize.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/visualize.py): Contains the functinos related to plot the different results(qualitative).
+* [utils.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/utils.py): Contains other functions, such as the one to write a json or read one.
+* [visualize.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/visualize.py): Contains the functinos related to plot the different (qualitative) results.
+* [detect2.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/detect2.py): Contains the class Detect2, which contains the function to predict the Detectron2 models.
+* [tf_models.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/tf_models.py): Contains the class TFModel, which contains the functions to predict and train the TensorFlows models.
+* [yolov3.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/yolov3.py): Contains the class UltralyricsYolo, which contains the funtion to predict and train the Ultralytics Yolo model. 
+* [sort.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/sort.py): Contains the class Sort, which is the one related to compute the Kalman tracking.
 
 
 ## Inference
 ### Available tasks
-* **Task 1.1**: Gaussian distribution.
-* **Task 1.2**: Evaluate results (mAP).
-* **Task 2.1**: Recursive Gaussian modeling.
-* **Task 2.2**: Evaluate and compare to non-recursive.
-* **Task 3**: Compare with state-of-the-art.
-* **Task 4**: Color sequences.
+* **Task 1.1**: Off-the-shelf
+* **Task 1.2**: Fine-tuning
+* **Task 1.3**: K-fold Cross validation
+* **Task 2.1**: Tracking by Overlap
+* **Task 2.2**: Tracking with a Kalman Filter
+* **Task 2.3**: IDF1 for Multiple Object Tracking
 
 
 Run the command below, from Week2/src folder, to obtain the desired task results.
@@ -32,59 +34,68 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 ### Directory structure
 
 ```bash
-├── data
+├── datasets
 │   ├── AICity
 │   │   ├── train
 │   │   │   ├── S03
 │   │   │   │   ├── c010
 │   │   │   │   │   ├── vdo
-├── Week2
+├── Week3
 │   ├── src
 │   │   ├── main.py
 │   │   ├── utils
 │   │   │   ├── ai_city.py
 │   │   │   ├── metrics.py
-│   │   │   ├── refinement.py
+│   │   │   ├── visualize.py
+|   |   |   ├── utils.py
+|   |   |   ├── detect2.py
+|   |   |   ├── tf_models.py
+|   |   |   ├── yolov3.py
+|   |   |   ├── sort.py
+│   │   ├── data
+│   │   ├── models
+│   │   ├── yolov3
+│   │   ├── runs
 │   │   ├── config
 │   │   │   ├── config.py
 ```
 
 ## Results
-### Task 1.1: Gaussian distribution
+### Task 1.1: Off-the-shelf
 
 
-### Task 1.2: Evaluate results (mAP)
+### Task 1.2: Fine-tuning
 
-The results obtained from the non-adaptive grayscale method using different alphas in order to fix the threshold.
+The results obtained after applying the fine-tuning
 
 | alpha | 1 | 1.5 | 2 | 3 | 4 | 5 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | AP50 250 frames | 0.119 | 0.168 | 0.240 | 0.409 | 0.171 | 0.100 |
 | AP50 all frames | 0.0146 | 0.1424 | 0.1426 | 0.1201 | 0.0166 | 0.0132 |
 
+### Task 1.3: K-fold Cross validation
 
-### Task 2.1: Recursive Gaussian modeling
-
-Results obtained by the best parameters (alpha and rho) using the adaptive grayscale method.
+Results obtained with the best method when applying K-fold Cross Validation.
 
 | AP50 | alpha | rho |
 | :---: | :---: | :---: |
 | 0.51 | 1.6 | 0.0025 | 
 
+### Task 2.1: Tracking by Overlap
 
-### Task 2.2: Evaluate and compare to non-recursive
-
-The comparisson between the best result in Task 1 and in Task 2.1.
-
-|  | AP50 | alpha | rho |
-| :---: | :---: | :---: | :---: |
-| Adaptive | 0.51 | 1.6 | 0.025 |
-| Non-adaptive | 0.36 | 2.6 | 0 |
+Tracking results when it is used the Overlap method.
 
 
-### Task 3: Compare with state-of-the-art
+### Task 2.2: Tracking with a Kalman Filter
 
-The results obtained from the different OpenCV background estimation methods in comparisson with the best result obtained by us.
+Tracking results when it is used the Kalman method.
+
+
+### Task 2.3: IDF1 for Multiple Object Tracking
+
+The IDF1 results obtained when using both tracking methods.
+
+
 
 <table>
     <thead>
@@ -185,4 +196,4 @@ The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-ad
 
 
 ## Report
-The report for week 2 is available [here](https://docs.google.com/presentation/d/1q8MU8wWAj79WdowlBbMnYNEO6wsHu3VKxZdveiHwr_s/edit?usp=sharing).
+The report for week 3 is available [here](https://docs.google.com/presentation/d/1M0Vw8quKhlRDudc1A5YYByKr7KclVOnSPspYGjmRxCo/edit?usp=sharing).
