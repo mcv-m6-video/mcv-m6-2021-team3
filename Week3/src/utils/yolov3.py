@@ -123,9 +123,9 @@ def gt_multi_txt(path, bboxes):
 def to_yolov3(data, gt_bboxes, mode, save_path='yolov3_data'):
     
     save_path = join(save_path,mode)
-
-    if len(data)==1:
-        data_path = join(os.getcwd(),save_path,'data')
+    data_path = join(os.getcwd(),save_path,'data')
+    
+    if len(data)==1:    
         if os.path.exists(data_path):
             if len(glob.glob(data_path+'/*.*')) == 2*sum([len(d) for _,d in data.items()]):
                 print('Data already in YOLOv3 format!')
