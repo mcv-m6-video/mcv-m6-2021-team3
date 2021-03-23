@@ -20,17 +20,23 @@ from yolov3.train import main as train_yolov3
 
 class UltralyricsYolo():
     def __init__(self,
-                 weights='yolov3',
-                 classes=[2],
+                 weights=None,
                  device='0',
                  agnostic_nms=False,
                  args=None):
 
         # Initialize
+        if weights is None:
+            weights=args.model
         set_logging()
         weights = get_weights(weights,'ultralytics')
 
         if args.mode in 'inference':
+            classes=[2]
+        elif args.mode in 'eval':
+            classes=[0]
+
+        if args.mode in 'inference' or args.mode in 'eval':
             self.device = select_device(device)
         
             # Load model
@@ -86,13 +92,16 @@ class UltralyricsYolo():
         pred = [d.cpu().detach().numpy() for d in pred if d is not None]
         pred = pred[0] if len(pred) else pred
         
-        pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss in pred if clss==2]
+        pred = [[[x1, y1, x2, y2],conf] for x1, y1, x2, y2, conf, clss in pred]
 
         return pred
 
-    def train(self):
-        train_yolov3(self.weights, self.args)
-        
+    def train(self, kfold=None):
+        if kfold > 1:
+            for k in range(kfold):
+                train_yolov3(self.weights, self.args, k)
+        else:
+            train_yolov3(self.weights, self.args)       
 
 
 def gt_multi_txt(path, bboxes):
@@ -117,28 +126,43 @@ def gt_multi_txt(path, bboxes):
 def to_yolov3(data, gt_bboxes, mode, save_path='yolov3_data'):
     
     save_path = join(save_path,mode)
-
     data_path = join(os.getcwd(),save_path,'data')
-    if os.path.exists(data_path):
-        if len(glob.glob(data_path+'/*.*')) == 2*sum([len(d) for _,d in data.items()]):
-            print('Data already in YOLOv3 format!')
-            return
+    
+    if len(data)==1:    
+        if os.path.exists(data_path):
+            if len(glob.glob(data_path+'/*.*')) == 2*sum([len(d) for _,d in data.items()]):
+                print('Data already in YOLOv3 format!')
+                return
 
-    os.makedirs(data_path,exist_ok=True)
+        os.makedirs(data_path,exist_ok=True)
 
-    for split, split_data in data.items():
-        files = []
-        for path in tqdm(split_data,'Preparing '+split+' data for YOLOv3'):
-            # Convert to yolov3 format
-            frame_id = basename(path).split('.')[0]
-            lines_out = gt_multi_txt(path, gt_bboxes[frame_id])
+        for split, split_data in data[0].items():
+            files = []
+            for path in tqdm(split_data,'Preparing '+split+' data for YOLOv3'):
+                # Convert to yolov3 format
+                frame_id = basename(path).split('.')[0]
+                lines_out = gt_multi_txt(path, gt_bboxes[frame_id])
 
-            # Write/save files
-            file_out = open(join(data_path,frame_id+'.txt'), 'w')
-            file_out.writelines(lines_out)
-            new_path = join(data_path,frame_id+'.jpg')
-            files.append(new_path+'\n')
-            copyfile(path, new_path)
+                # Write/save files
+                file_out = open(join(data_path,frame_id+'.txt'), 'w')
+                file_out.writelines(lines_out)
+                new_path = join(data_path,frame_id+'.jpg')
+                files.append(new_path+'\n')
+                copyfile(path, new_path)
 
-        split_txt = open(join(os.getcwd(),save_path,split+'.txt'), 'w')
-        split_txt.writelines(files)
+            split_txt = open(join(os.getcwd(),save_path,split+'.txt'), 'w')
+            split_txt.writelines(files)
+    else:
+        for k, fold in enumerate(data):
+            for split, split_data in fold.items():
+                files = []
+                for path in tqdm(split_data,'Preparing '+split+' data for YOLOv3'):
+                    # Convert to yolov3 format
+                    frame_id = basename(path).split('.')[0]
+                    new_path = join(data_path,frame_id+'.jpg')
+                    files.append(new_path+'\n')
+
+                os.makedirs(join(save_path,str(len(data))),exist_ok=True)
+                split_txt = open(join(save_path,str(len(data)),split+'_'+str(k)+'.txt'), 'w')
+                split_txt.writelines(files)
+
