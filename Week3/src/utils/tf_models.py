@@ -96,23 +96,13 @@ class TFModel():
 
         # running inference
         if not self.options.coco_model:
-            # with tf.io.gfile.GFile(filename, 'rb') as fid:
-            #     encoded_image = fid.read()
-            # image = Image.open(BytesIO(encoded_image))
-            # (width, height) = image.size
-            # image_np = np.array(image.getdata()).reshape((height, width, 3)).astype(np.uint8)
-            # input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
-
-            # detect_fn = self.get_model_detection_function(self.model)
-            # detections, _, _ = detect_fn(input_tensor)
-
-            # detection_boxes = detections['detection_boxes'][0].numpy()
-            # detection_scores = detections['detection_scores'][0].numpy()
-            # detection_classes = detections['detection_classes'][0].numpy()
-            image_np = cv2.imread(filename)
-            height, width, n_channels = image_np.shape
-            image = image_np.copy()
+            with tf.io.gfile.GFile(filename, 'rb') as fid:
+                encoded_image = fid.read()
+            image = Image.open(BytesIO(encoded_image))
+            (width, height) = image.size
+            image_np = np.array(image.getdata()).reshape((height, width, 3)).astype(np.uint8)
             input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
+
             detect_fn = self.get_model_detection_function(self.model)
             detections, _, _ = detect_fn(input_tensor)
 
