@@ -25,7 +25,7 @@ from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total
 from utils.utils import write_json_file, read_json_file, frame_id, dict_to_list_IDF1, dict_to_list_track
 from utils.visualize import visualize_background_iou
 
-from utils.detect2 import Detect2, to_detectron2
+#from utils.detect2 import Detect2, to_detectron2
 from utils.tf_models import TFModel
 from utils.yolov3 import UltralyricsYolo, to_yolov3
 
@@ -138,7 +138,11 @@ class AICity:
 
         # Load detections
         self.gt_bboxes = load_annot(args.gt_path, 'ai_challenge_s03_c010-full_annotation.xml')
-        infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework+'.json'))
+        if self.mode == 'inference':
+            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework+'.json'))
+        else:
+            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0]+'.json'))
+
         if exists(infer_path):
             self.det_bboxes = read_json_file(infer_path)
         else:
@@ -148,7 +152,7 @@ class AICity:
         self.frames_paths = glob.glob(join(self.data_path, "*." + args.extension))
         self.frames_paths = [path for frame_id,_ in self.gt_bboxes.items() for path in self.frames_paths if frame_id in path]
         self.frames_paths.sort()
-        self.data = [{'train':[], 'val':[]}]*self.split[1]
+        self.data = [{'train':[], 'val':[]}.copy() for _ in range(self.split[1])]
 
         # OUTPUT PARAMETERS
         self.output_path = args.output_path
@@ -170,14 +174,14 @@ class AICity:
         if self.split[1] == 1:
             # Strategy A
             if self.split[0] in 'sort':
-                self.data['train'] = self.frames_paths[:int(len(self)*.25)]
-                self.data['val'] = self.frames_paths[int(len(self)*.25):]
+                self.data[0]['train'] = self.frames_paths[:int(len(self)*.25)]
+                self.data[0]['val'] = self.frames_paths[int(len(self)*.25):]
 
             elif self.split[0] in 'rand':
                 train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
                                                     test_size=.75, random_state=0)
-                self.data['train'] = train.tolist()
-                self.data['val'] = val.tolist()
+                self.data[0]['train'] = train.tolist()
+                self.data[0]['val'] = val.tolist()
         else:
             frames_paths = np.array(self.frames_paths)
 
@@ -187,15 +191,15 @@ class AICity:
 
             kf = KFold(n_splits=self.split[1], shuffle=shuffle, random_state=random_state)
             for k, (val_index, train_index) in enumerate(kf.split(frames_paths)):
-                self.data[k]['train'] = frames_paths[train_index].tolist()
-                self.data[k]['val'] = frames_paths[val_index].tolist()
+                self.data[k]['train'] = (frames_paths[train_index]).tolist()
+                self.data[k]['val'] = (frames_paths[val_index]).tolist()
 
     def data_to_model(self):
         if self.framework in 'ultralytics':
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
-        elif self.framework in 'detectron2':
+        '''elif self.framework in 'detectron2':
             to_detectron2(self.data[0], self.gt_bboxes)
-        '''elif self.framework in 'tensorflow':
+        elif self.framework in 'tensorflow':
             to_tf_record(self.options, self.data[0], self.gt_bboxes)'''
     
     def inference(self, weights=None):
@@ -230,8 +234,8 @@ class AICity:
         :return: map of all estimated frames
         """
         if self.mode == 'eval':
-            mAP50 = voc_eval(self.gt_bboxes, self.data['val'], self.det_bboxes)[2]
-            mAP70 = voc_eval(self.gt_bboxes, self.data['val'], self.det_bboxes, use_07_metric=True)[2]
+            mAP50 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes)[2]
+            mAP70 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes, use_07_metric=True)[2]
         else:
             mAP50 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes)[2]
             mAP70 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, use_07_metric=True)[2]
@@ -258,7 +262,7 @@ class AICity:
         """
         Creates plots for a given frame and bbox estimation
         """
-        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework,
+        visualize_background_iou(self.data[0], None, self.gt_bboxes, self.det_bboxes, self.framework,
                                  self.model, self.options.output_path, self.mode)
     
     def return_bb(self, frame, bb_id):
@@ -350,30 +354,27 @@ class AICity:
 
         mot_tracker = Sort() #create instance of the SORT tracker
 
-        for idx, frame in tqdm(enumerate(self.det_bboxes),'Frames Kalman Tracking'): # all frames in the sequence
-            
-            idx = int(idx)
+        det_bboxes_new = {}
+
+        count = 0
+        for idx, frame in tqdm(self.det_bboxes.items(),'Frames Kalman Tracking'): # all frames in the sequence
             
             colors = []
 
-            dets = data_list[data_list[:,0]==idx,1:6]
-            im = io.imread(join(self.data_path,frame)+'.png')
+            dets = data_list[data_list[:,0]==count,1:6]
+            #im = io.imread(join(self.data_path,idx)+'.png')
 
             start_time = time.time()
             trackers = mot_tracker.update(dets)
             cycle_time = time.time() - start_time
             total_time += cycle_time
 
-            out.append(trackers)
-            
-            n_bboxes = len(out[idx])
-            for track in out[idx]:
-                self.det_bboxes[frame][n_bboxes-1]['obj_id'] = track[4]
-                n_bboxes = n_bboxes-1
+            for track in trackers:
+                det_bboxes_new = update_data(det_bboxes_new, idx, *track[:4], 1., track[4])
 
-        idx_frame.append(frame)
-        print("Total Tracking took: %.3f for %d frames or %.1f FPS"%(total_time,total_frames,total_frames/total_time))
-        return(self.det_bboxes)    
+            count+=1
+
+        self.det_bboxes = det_bboxes_new
 
 
         
