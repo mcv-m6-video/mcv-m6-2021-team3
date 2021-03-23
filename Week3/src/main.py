@@ -21,15 +21,15 @@ def main(args):
         map50, map70 = aicity.get_mAP()
         miou = aicity.get_mIoU()
         print('Inference ({}, {}): mAP50={}, mAP70={}, mIoU={}'.format(args.model, args.framework, map50, map70, miou))
-        
+
         if args.save_img:
             aicity.visualize_task()
-        
+
         if args.tracking_mode in 'overlapping':
             aicity.compute_tracking_overlapping()
             test=dict_to_list_tracking(aicity.det_bboxes)
-            
-    elif args.mode in 'train':C
+
+    elif args.mode in 'train':
         aicity.data_to_model()
         model = UltralyricsYolo(args=args)
         model.train()
