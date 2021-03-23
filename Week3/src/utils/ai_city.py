@@ -141,7 +141,7 @@ class AICity:
         if self.mode == 'inference':
             infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework+'.json'))
         else:
-            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0]+'.json'))
+            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0], str(args.conf_thres), str(args.iou_thres) +'.json'))
 
         if exists(infer_path):
             self.det_bboxes = read_json_file(infer_path)
@@ -224,7 +224,7 @@ class AICity:
             if self.mode == 'inference':
                 write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
             else:
-                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework, self.split[0]+'.json')))
+                write_json_file(self.det_bboxes,join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0], str(self.options.conf_thres), str(self.options.iou_thres) +'.json')))#save_path+'_'.join((self.model, self.framework, self.split[0]+'.json')))
 
 
     def get_mAP(self, test=False):

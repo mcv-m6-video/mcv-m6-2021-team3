@@ -46,7 +46,9 @@ def main(args):
             aicity.inference(args.weights)
         map50, map70 = aicity.get_mAP()
         miou = aicity.get_mIoU()
-        print('Evaluation of training for split {} ({}, {}): mAP50={}, mAP70={}, mIoU={}'.format(args.split[0], args.model, args.framework, map50, map70, miou))
+        print('Evaluation of training for split {} ({}, {}): mAP50={}, mAP70={}, mIoU={} | conf_thres={}, iou_thres={}'.format(args.split[0], args.model, args.framework, map50, map70, miou,
+                args.conf_thres, args.iou_thres))
+
         if args.save_img:
             aicity.visualize_task()
 
