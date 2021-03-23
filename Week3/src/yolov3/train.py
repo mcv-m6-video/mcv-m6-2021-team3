@@ -432,39 +432,42 @@ def train(hyp, opt, device, K, tb_writer=None, wandb=None):
     torch.cuda.empty_cache()
     return results
 
+class OPT():
+    def __init__(self):
+        self.empty=True
 
 def main(weights, args, K=None):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', type=str, default='yolov3.pt', help='initial weights path')
-    parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
-    parser.add_argument('--data', type=str, default='data/coco128.yaml', help='data.yaml path')
-    parser.add_argument('--hyp', type=str, default='data/hyp.scratch.yaml', help='hyperparameters path')
-    parser.add_argument('--epochs', type=int, default=300)
-    parser.add_argument('--batch-size', type=int, default=16, help='total batch size for all GPUs')
-    parser.add_argument('--img-size', nargs='+', type=int, default=[640, 640], help='[train, test] image sizes')
-    parser.add_argument('--rect', action='store_true', help='rectangular training')
-    parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
-    parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
-    parser.add_argument('--notest', action='store_true', help='only test final epoch')
-    parser.add_argument('--noautoanchor', action='store_true', help='disable autoanchor check')
-    parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
-    parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
-    parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
-    parser.add_argument('--image-weights', action='store_true', help='use weighted image selection for training')
-    parser.add_argument('--device', default="0", help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--multi-scale', action='store_true', help='vary img-size +/- 50%%')
-    parser.add_argument('--single-cls', action='store_true', help='train multi-class data as single-class')
-    parser.add_argument('--adam', action='store_true', help='use torch.optim.Adam() optimizer')
-    parser.add_argument('--sync-bn', action='store_true', help='use SyncBatchNorm, only available in DDP mode')
-    parser.add_argument('--local_rank', type=int, default=-1, help='DDP parameter, do not modify')
-    parser.add_argument('--log-imgs', type=int, default=16, help='number of images for W&B logging, max 100')
-    parser.add_argument('--log-artifacts', action='store_true', help='log artifacts, i.e. final trained model')
-    parser.add_argument('--workers', type=int, default=8, help='maximum number of dataloader workers')
-    parser.add_argument('--project', default='runs/train', help='save to project/name')
-    parser.add_argument('--name', default='exp', help='save to project/name')
-    parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
-    parser.add_argument('--quad', action='store_true', help='quad dataloader')
-    opt = parser.parse_args()
+    opt=OPT()
+    # opts
+    opt.weights='yolov3.pt'
+    opt.cfg=''
+    opt.data='data/coco128.yaml'
+    opt.hyp='data/hyp.scratch.yaml'
+    opt.epochs=300
+    opt.batch_size=16
+    opt.img_size=[640, 640]
+    opt.rect=False
+    opt.resume=False
+    opt.nosave=False
+    opt.notest=False
+    opt.noautoanchor=False
+    opt.evolve=False
+    opt.bucket=''
+    opt.cache_images=False
+    opt.image_weights=False
+    opt.device="0"
+    opt.multi_scale=False
+    opt.single_cls=False
+    opt.adam=False
+    opt.sync_bn=False
+    opt.local_rank=-1
+    opt.log_imgs=16
+    opt.log_artifacts=False
+    opt.workers=8
+    opt.project='runs/train'
+    opt.name='exp'
+    opt.exist_ok=False
+    opt.quad=False
 
     # Refine opt variables
     opt.weights = weights

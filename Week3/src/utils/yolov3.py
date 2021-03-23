@@ -97,9 +97,8 @@ class UltralyricsYolo():
         return pred
 
     def train(self, kfold=None):
-        if kfold > 1:
-            for k in range(kfold):
-                train_yolov3(self.weights, self.args, k)
+        if kfold is not None:
+            train_yolov3(self.weights, self.args, kfold)
         else:
             train_yolov3(self.weights, self.args)       
 

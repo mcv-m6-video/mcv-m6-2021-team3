@@ -43,11 +43,13 @@ def main(args):
         if args.view_tracking:
             visualize_trajectories(aicity.data_path, aicity.output_path, aicity.det_bboxes)
             
-            
     elif args.mode in 'train':
         aicity.data_to_model()
         model = UltralyricsYolo(args=args)
-        model.train(args.split[1])
+        if args.split[1]>1:
+            model.train(args.k)
+        else:
+            model.train()
 
     elif args.mode in 'eval':
         if len(aicity.det_bboxes)<1:

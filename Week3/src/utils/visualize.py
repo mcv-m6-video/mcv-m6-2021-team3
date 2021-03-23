@@ -168,3 +168,38 @@ def visualize_background_iou(data, segmen, gt, dets, framework, model, output_pa
 
             plt.savefig(join(save_path, frame_id + '.png'))
             plt.close()
+
+
+def update(i, fig, ax):
+    """
+    Update angle to create the animation effect on the gif plot
+    """
+    ax.view_init(elev=20., azim=i)
+    return fig, ax
+
+def plot_3d_surface(Xs, Ys, Zs, save_gif=False, Ztitle='mAP50'):
+    """
+    Plots a 3d surface from non-linear 3d-points 
+    :param Xs: list with X Coords
+    :param Ys: list with Y Coords
+    :param Zs: list with Z Coords
+    """
+    fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection='3d')
+    surf = ax.plot_trisurf(Xs, Ys, Zs, cmap=cm.jet, linewidth=0)
+    fig.colorbar(surf)
+
+    ax.xaxis.set_major_locator(MaxNLocator(5))
+    ax.yaxis.set_major_locator(MaxNLocator(6))
+    ax.zaxis.set_major_locator(MaxNLocator(5))
+
+    fig.tight_layout()
+
+    ax.set_xlabel('conf thres')
+    ax.set_ylabel('iou thres')
+    fig.savefig(Ztitle+'.png')
+
+    if save_gif:
+        anim = FuncAnimation(fig, update, frames=np.arange(0, 360, 2), repeat=True, fargs=(fig, ax))
+        anim.save(Ztitle+'.gif', dpi=80, writer='imagemagick', fps=10)

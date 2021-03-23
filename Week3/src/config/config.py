@@ -21,12 +21,13 @@ class Config:
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
         parser.add_argument('--split', nargs='+', default=['sort',1], help="Split mode and K-fold")
+        parser.add_argument('--k', type=int, default=0, help="k")
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         parser.add_argument('--task', type=int, default=24, help="Task to do")
         parser.add_argument('--model', type=str, default='resnet640', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
                                                                             'yolov3-tiny','mobilenet64', 'resnet640', 'efficientdetd1'], help="Detection model used")
-        parser.add_argument('--weights', type=str, default='runs/train/yolov3-tiny_rand/weights/best.pt')
+        parser.add_argument('--weights', type=str, default='runs/train/yolov3_sort/weights/best.pt')
 
         # =============================== FINETUNE =============================== #
         parser.add_argument('--conf_thres', type=float, default=0.2)
