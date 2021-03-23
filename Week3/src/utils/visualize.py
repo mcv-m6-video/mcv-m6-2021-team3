@@ -13,6 +13,11 @@ from itertools import compress
 
 def visualize_trajectories(path_in, path_out, det_bboxes):
     """
+    Computes the trajectories bboxes and center movement along the frames. 
+    Each object keeps an UI a color. 
+    :param path_in: path where the frames are grab
+    :param path_in: path where the frames are saved
+    :param det_bboxes: dictionary with the information of the detections
     """
     # not assuming any order
     start_frame = int(min(det_bboxes.keys()))
@@ -22,16 +27,18 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
     # Count ocurrences and compute centers 
     for i in range(start_frame, num_frames):
         for detection in det_bboxes[frame_id(i)]:
+            # Store story of obj_id along with their centroids
             objt_id = detection['obj_id']
             if objt_id in id_ocurrence:
                 id_ocurrence[objt_id].append((i,compute_centroid(detection['bbox'])))
             else:
                 id_ocurrence[objt_id] = [(i,compute_centroid(detection['bbox']))] 
-    # plot
+    # Ensure unique color for ID
     num_colors = 1000
     colours = np.random.rand(num_colors,3) 
-    for f_id, frame in tqdm(det_bboxes.items(),"saving tracking img"):
-        colors = []
+    for i in tqdm(range(start_frame, num_frames),"saving tracking img"):
+        f_id = frame_id(i)
+        frame = det_bboxes[f_id]
         detections = []
         id_list = []
         for detection in frame:
@@ -57,20 +64,23 @@ def draw_frame_track(path_in, frame, detections, colors, ids, id_ocurrence=[]):
     """
     img = cv2.imread(join(path_in,frame)+'.png')
     for detection, bb_id in zip(detections, ids):
+        #get color and draw bbox with id
         color = colors[bb_id%1000,:]*255
         img = cv2.rectangle(img, (int(detection[0]),int(detection[1])), (int(detection[2]),int(detection[3])), tuple(color), 3)
         img = cv2.putText(img, str(bb_id), (int(detection[0]),int(detection[1])-10),cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+        #draw trajectories while the id is on the frmame
         if id_ocurrence:
             for track_id, tracking  in id_ocurrence.items():
                 c_start = 0
                 color = colors[track_id%1000,:]*255
+                if (c_start == 0) and (tracking[-1][0] < int(frame)):
+                    continue
                 for f_id, c_end in tracking:
                     if f_id < int(frame):
                         if c_start:
                             img = cv2.line(img, c_start, c_end, color, 2)
                         c_start = c_end
     return img
-
 
 def visualize_tracking(path_in, path_out, det_bboxes):
     """
@@ -180,4 +190,3 @@ def visualize_background_iou(data, segmen, gt, dets, framework, model, output_pa
 
             plt.savefig(join(save_path, frame_id + '.png'))
             plt.close()
-
