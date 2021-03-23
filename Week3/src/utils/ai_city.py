@@ -3,6 +3,7 @@ import glob
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split, KFold
 import xml.etree.ElementTree as ET
+import random
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -25,8 +26,9 @@ from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total
 from utils.utils import write_json_file, read_json_file, frame_id, dict_to_list_IDF1, dict_to_list_track
 from utils.visualize import visualize_background_iou
 
-#from utils.detect2 import Detect2, to_detectron2
-from utils.tf_models import TFModel
+
+from utils.tf_models import TFModel, to_tf_record
+from utils.detect2 import Detect2, to_detectron2
 from utils.yolov3 import UltralyricsYolo, to_yolov3
 
 def load_text(text_dir, text_name):
@@ -197,10 +199,10 @@ class AICity:
     def data_to_model(self):
         if self.framework in 'ultralytics':
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
-        '''elif self.framework in 'detectron2':
+        elif self.framework in 'detectron2':
             to_detectron2(self.data[0], self.gt_bboxes)
         elif self.framework in 'tensorflow':
-            to_tf_record(self.options, self.data[0], self.gt_bboxes)'''
+            to_tf_record(self.options, self.data[0], self.gt_bboxes)
     
     def inference(self, weights=None):
         if self.framework in 'ultralytics':
@@ -211,7 +213,9 @@ class AICity:
 
         elif self.framework in 'detectron2':
             model = Detect2(self.model)
-                
+        
+        self.frames_paths = self.frames_paths[int(len(self.frames_paths)*0.25):]
+
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
             frame_id = file_name[-8:-4]
@@ -221,6 +225,13 @@ class AICity:
         if self.save_json:
             save_path = join(self.options.output_path, self.mode+'/')
             os.makedirs(save_path, exist_ok=True)
+
+
+            if self.options.mode == 'train':
+                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'_training.json')))
+            else:
+                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
+
             if self.mode == 'inference':
                 write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
             else:
@@ -231,8 +242,10 @@ class AICity:
         """
         Estimats the mAP using the VOC evaluation
 
+        :param mAP70: wheter tho use the VOC 70 evaluation. Default is False
         :return: map of all estimated frames
         """
+  
         if self.mode == 'eval':
             mAP50 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes)[2]
             mAP70 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes, use_07_metric=True)[2]
@@ -318,7 +331,7 @@ class AICity:
                     detection['obj_id'] = max(id_seq.keys())+1
 
                 id_seq.update({detection['obj_id']: True})
-
+                
         # filter by number of ocurrences
         if remove_noise:
             id_ocurrence = {}
@@ -375,8 +388,3 @@ class AICity:
 
         self.det_bboxes = det_bboxes_new
 
-
-        
-
-        
-        
