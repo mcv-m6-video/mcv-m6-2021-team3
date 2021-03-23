@@ -11,7 +11,7 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
 
-        parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
+        parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
         parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
@@ -24,8 +24,8 @@ class Config:
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
-                                                                            'yolov3-tiny','ssd'], help="Detection model used")
+        parser.add_argument('--model', type=str, default='yolov3-tiny', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
+                                                                            'yolov3-tiny','ssd', 'resnet640'], help="Detection model used")
         parser.add_argument('--weights', type=str, default='runs/train/yolov3-tiny_rand/weights/best.pt')
 
         # =============================== FINETUNE =============================== #
@@ -48,7 +48,7 @@ class Config:
         parser.add_argument('--tf_records_path', type=str, default='./data/finetune/tf_records', help='Path to store tfrecords')
         parser.add_argument('--model_conf_file', type=str, default='ssd_resnet152_v1_fpn_1024x1024_coco17_tpu-8.config')
         parser.add_argument('--coco_model', type=bool, default=False, help="Wether the model is trained on COCO or AICity")
-        parser.add_argument('--trained_model', type=str, defualt="resnet640", help="Folder containing the trained model")
+        parser.add_argument('--trained_model', type=str, default="resnet640", help="Folder containing the trained model")
         
         # ================================ TRACKING PARAMS ====================== #
         parser.add_argument('--track_thr', type=list, default=[0.1,0.3,0.5,0.7,0.9], help="Threshold to set FP or FN")
