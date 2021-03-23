@@ -1,20 +1,34 @@
-import numpy as np
-import cv2
-import os
 from os.path import join, basename, exists
 import glob
 from tqdm import tqdm
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 import xml.etree.ElementTree as ET
+import random
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+#matplotlib inline
+from IPython import display as dp
+
+import numpy as np
+import matplotlib.pyplot as plt
+import json
+import cv2
+
+import numpy as np
+from skimage import io
+import os
+import time
 
 from utils.sort import Sort
 
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
-from utils.utils import write_json_file, read_json_file, frame_id, dict_to_list_tracking
+from utils.utils import write_json_file, read_json_file, frame_id, dict_to_list_IDF1, dict_to_list_track
 from utils.visualize import visualize_background_iou
 
-#from utils.detect2 import Detect2, to_detectron2
-from utils.tf_models import TFModel
+
+from utils.tf_models import TFModel, to_tf_record
+from utils.detect2 import Detect2, to_detectron2
 from utils.yolov3 import UltralyricsYolo, to_yolov3
 
 def load_text(text_dir, text_name):
@@ -126,7 +140,11 @@ class AICity:
 
         # Load detections
         self.gt_bboxes = load_annot(args.gt_path, 'ai_challenge_s03_c010-full_annotation.xml')
-        infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework+'.json'))
+        if self.mode == 'inference':
+            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework+'.json'))
+        else:
+            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0], str(args.conf_thres), str(args.iou_thres) +'.json'))
+
         if exists(infer_path):
             self.det_bboxes = read_json_file(infer_path)
         else:
@@ -136,11 +154,7 @@ class AICity:
         self.frames_paths = glob.glob(join(self.data_path, "*." + args.extension))
         self.frames_paths = [path for frame_id,_ in self.gt_bboxes.items() for path in self.frames_paths if frame_id in path]
         self.frames_paths.sort()
-        '''
-        if args.test_mode:
-            self.frames_paths = self.frames_paths[0:int(len(self.frames_paths) / 10)]
-        '''
-        self.data = {'train':[], 'val':[]}
+        self.data = [{'train':[], 'val':[]}.copy() for _ in range(self.split[1])]
 
         # OUTPUT PARAMETERS
         self.output_path = args.output_path
@@ -154,25 +168,41 @@ class AICity:
 
     def train_val_split(self):
         """
-        Apply random split to specific propotion of the dataset (split).
-
+        Apply split to specific propotion of the dataset for each strategy (A, B, C).
+            A: First 25% frames for training, second 75% for test
+            B: K-Fold sorted frames
+            C: K-Fold random frames
         """
-        if self.split[0] in 'rand':
-            train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
-                                                test_size=1-self.split[1], random_state=0)
-            self.data['train'] = train.tolist()
-            self.data['val'] = val.tolist()
+        if self.split[1] == 1:
+            # Strategy A
+            if self.split[0] in 'sort':
+                self.data[0]['train'] = self.frames_paths[:int(len(self)*.25)]
+                self.data[0]['val'] = self.frames_paths[int(len(self)*.25):]
 
-        elif self.split[0] in 'first_frames':
-            self.data['train'] = self.frames_paths[:int(len(self)*self.split[1])]
-            self.data['val'] = self.frames_paths[int(len(self)*self.split[1]):]
-    
+            elif self.split[0] in 'rand':
+                train, val, _, _ = train_test_split(np.array(self.frames_paths), np.empty((len(self),)),
+                                                    test_size=.75, random_state=0)
+                self.data[0]['train'] = train.tolist()
+                self.data[0]['val'] = val.tolist()
+        else:
+            frames_paths = np.array(self.frames_paths)
+
+            shuffle, random_state = False, None
+            if self.split[0] in 'rand':
+                shuffle, random_state = True, 0
+
+            kf = KFold(n_splits=self.split[1], shuffle=shuffle, random_state=random_state)
+            for k, (val_index, train_index) in enumerate(kf.split(frames_paths)):
+                self.data[k]['train'] = (frames_paths[train_index]).tolist()
+                self.data[k]['val'] = (frames_paths[val_index]).tolist()
+
     def data_to_model(self):
         if self.framework in 'ultralytics':
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
-        '''elif self.framework in 'detectron2':
-            to_detectron2(self.data, self.gt_bboxes)'''
-
+        elif self.framework in 'detectron2':
+            to_detectron2(self.data[0], self.gt_bboxes)
+        elif self.framework in 'tensorflow':
+            to_tf_record(self.options, self.data[0], self.gt_bboxes)
     
     def inference(self, weights=None):
         if self.framework in 'ultralytics':
@@ -181,9 +211,11 @@ class AICity:
         elif self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
 
-        '''elif self.framework in 'detectron2':
-            model = Detect2(self.model)'''
-                
+        elif self.framework in 'detectron2':
+            model = Detect2(self.model)
+        
+        self.frames_paths = self.frames_paths[int(len(self.frames_paths)*0.25):]
+
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
             frame_id = file_name[-8:-4]
@@ -193,27 +225,30 @@ class AICity:
         if self.save_json:
             save_path = join(self.options.output_path, self.mode+'/')
             os.makedirs(save_path, exist_ok=True)
-            write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
 
-    def train_split(self, split=0):
-        """
-        Apply random split to specific propotion of the train set.
 
-        Args:
-            split (float): proportion of the train set that will be used.
-        """
-        self.train_dataset = random.choices(self.dataset_train,k=int(len(self.dataset_train)*split))
-   
+            if self.options.mode == 'train':
+                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'_training.json')))
+            else:
+                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
+
+            if self.mode == 'inference':
+                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
+            else:
+                write_json_file(self.det_bboxes,join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0], str(self.options.conf_thres), str(self.options.iou_thres) +'.json')))#save_path+'_'.join((self.model, self.framework, self.split[0]+'.json')))
+
 
     def get_mAP(self, test=False):
         """
         Estimats the mAP using the VOC evaluation
 
+        :param mAP70: wheter tho use the VOC 70 evaluation. Default is False
         :return: map of all estimated frames
         """
+  
         if self.mode == 'eval':
-            mAP50 = voc_eval(self.gt_bboxes, self.data['val'], self.det_bboxes)[2]
-            mAP70 = voc_eval(self.gt_bboxes, self.data['val'], self.det_bboxes, use_07_metric=True)[2]
+            mAP50 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes)[2]
+            mAP70 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes, use_07_metric=True)[2]
         else:
             mAP50 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes)[2]
             mAP70 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, use_07_metric=True)[2]
@@ -240,7 +275,7 @@ class AICity:
         """
         Creates plots for a given frame and bbox estimation
         """
-        visualize_background_iou(self.data, None, self.gt_bboxes, self.det_bboxes, self.framework,
+        visualize_background_iou(self.data[0], None, self.gt_bboxes, self.det_bboxes, self.framework,
                                  self.model, self.options.output_path, self.mode)
     
     def return_bb(self, frame, bb_id):
@@ -261,7 +296,7 @@ class AICity:
             detection['obj_id'] = value
             id_seq.update({value: True})
         #now, frame by frame, no assuming order nor continuity
-        for i in range(start_frame, num_frames):
+        for i in tqdm(range(start_frame, num_frames),'Frames Overlapping Tracking'):
             #init
             id_seq = {frame_id: False for frame_id in id_seq}
             
@@ -296,7 +331,7 @@ class AICity:
                     detection['obj_id'] = max(id_seq.keys())+1
 
                 id_seq.update({detection['obj_id']: True})
-
+                
         # filter by number of ocurrences
         if remove_noise:
             id_ocurrence = {}
@@ -315,9 +350,13 @@ class AICity:
                     if detection['obj_id'] in ids_to_remove:
                         self.det_bboxes[frame_id(i)].pop(idx)
 
-    def compute_tracking_kalman(self, display=False): 
+    def compute_tracking_kalman(self): 
+        '''
+        Funtion to compute the tracking using Kalman filter
+        :return: dictionary with the detections and the ids of each bbox computed by the tracking
+        '''
         
-        data_list = np.array(dict_to_list_tracking(self.det_bboxes))
+        data_list = dict_to_list_track(self.det_bboxes)
 
         total_time = 0.0
         total_frames = 0
@@ -327,47 +366,25 @@ class AICity:
 
         mot_tracker = Sort() #create instance of the SORT tracker
 
-        for idx, frame in enumerate(self.det_bboxes): # all frames in the sequence
-            
-            idx = int(idx)
+        det_bboxes_new = {}
+
+        count = 0
+        for idx, frame in tqdm(self.det_bboxes.items(),'Frames Kalman Tracking'): # all frames in the sequence
             
             colors = []
 
-            dets = data_list[data_list[:,0]==idx,1:6]
-            im = io.imread(join(self.data_path,frame)+'.png')
+            dets = data_list[data_list[:,0]==count,1:6]
+            #im = io.imread(join(self.data_path,idx)+'.png')
 
             start_time = time.time()
             trackers = mot_tracker.update(dets)
             cycle_time = time.time() - start_time
             total_time += cycle_time
 
-            out.append(trackers)
-            if display:
-                for d in trackers:
-                    d = d.astype(np.uint32)
-                    ec=colours[d[4]%32,:]
-                    colors.append(ec)
-                
-                image,centers = draw_bboxes(im,trackers,colors)
-                
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                cv2.imshow('Image', image)
-                cv2.waitKey(1)
-                cv2.imwrite('Tracking_'+frame+'.png',image)
-            
-            n_bboxes = len(out[idx])
-            for track in out[idx]:
-                self.det_bboxes[frame][n_bboxes-1]['obj_id'] = track[4]
-                print("frame:",frame)
-                print("index:",n_bboxes-1)
-                n_bboxes = n_bboxes-1
+            for track in trackers:
+                det_bboxes_new = update_data(det_bboxes_new, idx, *track[:4], 1., track[4])
 
-        idx_frame.append(frame)
-        print("Total Tracking took: %.3f for %d frames or %.1f FPS"%(total_time,total_frames,total_frames/total_time))
-        return(self.det_bboxes)    
+            count+=1
 
+        self.det_bboxes = det_bboxes_new
 
-        
-
-        
-        

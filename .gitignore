@@ -1,6 +1,7 @@
 .DS_Store
 .idea/
 .vscode/
+*.tfrecord
 Week1/results_opticalflow_kitti
 Week1/data_stereo_flow
 Week1/AICity_data/
@@ -9,6 +10,7 @@ results_opticalflow_kitti/
 datasets/
 Week2/src/outputs/
 Week3/src/yolov3_data
+Week3/models/research/object_detection/checkpoints
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

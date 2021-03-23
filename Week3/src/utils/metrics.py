@@ -1,7 +1,8 @@
 import os
 import numpy as np
-from utils.utils import dict_to_list
-
+import sys
+from scipy.optimize import linear_sum_assignment as linear_assignment
+from utils.utils import dict_to_list, bbox_overlap
 
 def interpolate_bb(bb_first, bb_last, distance):
     bb_first = np.array(bb_first)
@@ -39,7 +40,6 @@ def compute_iou(bb_gt, bb, resize_factor=1):
 
     return inters / uni
 
-
 def compute_miou(gt_frame, dets_frame, resize_factor=1):
     """
     Computes the mean iou by averaging the individual iou results.
@@ -60,13 +60,13 @@ def compute_centroid(bb, resize_factor=1):
     :return: Centroid [x,y] 
     """
     # intersection
-    bb = bb / resize_factor
+    bb = np.array(bb) / resize_factor
     # (xmax - xmin)  / 2  
     x = (bb[2] + bb[0]) / 2
     # (ymax - ymin)  / 2  
     y = (bb[3] + bb[1]) / 2
     
-    return [x, y]
+    return (int(x), int(y))
 
 def compute_total_miou(gt, dets, frames):
     """
@@ -91,7 +91,6 @@ def compute_total_miou(gt, dets, frames):
             miou = np.hstack((miou, compute_miou(gt_frame, dets_frame)[0]))
 
     return (np.sum(miou) / len(miou))
-
 
 def voc_ap(rec, prec, use_07_metric=False):
     """ ap = voc_ap(rec, prec, [use_07_metric])
@@ -125,7 +124,6 @@ def voc_ap(rec, prec, use_07_metric=False):
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
-
 
 def voc_eval(recs,
              imagenames,
@@ -221,9 +219,13 @@ def voc_eval(recs,
 
     return rec, prec, ap
 
-def IDF1(gtDB, stDB, threshold):
+def IDF1(gtDB, stDB, threshold = 0.5):
     """
     compute IDF1 metric
+    :param gtDB: list with the information of the detections in gt
+    :param stDB: list with the information of the detections predicted
+    :param threshold: thr to determine if the prediction is FP or FN
+    :return: IDF1 (in %)
     """
     st_ids = np.unique(stDB[:, 1])
     gt_ids = np.unique(gtDB[:, 1])
@@ -275,3 +277,96 @@ def IDF1(gtDB, stDB, threshold):
     IDF1 = 2 * IDTP / (nbox_gt + nbox_st) * 100
 
     return IDF1
+
+def corresponding_frame(traj1, len1, traj2, len2):
+    """
+    Find the matching position in traj2 regarding to traj1
+    Assume both trajectories in ascending frame ID
+    :param traj1, traj2: trajectories (gt and estimated, respectively)
+    :return: the location of the bbox in the new frame 
+    """
+    p1, p2 = 0, 0
+    loc = -1 * np.ones((len1, ), dtype=int)
+    while p1 < len1 and p2 < len2:
+        if traj1[p1] < traj2[p2]:
+            loc[p1] = -1
+            p1 += 1
+        elif traj1[p1] == traj2[p2]:
+            loc[p1] = p2
+            p1 += 1
+            p2 += 1
+        else:
+            p2 += 1
+    return loc
+
+def cost_between_trajectories(traj1, traj2, threshold):
+    """
+    Compute the FP and FN matchings
+    :param traj1, traj2: trajectories (gt and estimated, respectively)
+    :param threshold: threshold used to determine if it is FP or FN
+    :return: number of FP and FN
+    """
+    [npoints1, dim1] = traj1.shape
+    [npoints2, dim2] = traj2.shape
+    # find start and end frame of each trajectories
+    start1 = traj1[0, 0]
+    end1 = traj1[-1, 0]
+    start2 = traj2[0, 0]
+    end2 = traj2[-1, 0]
+
+    # check frame overlap
+    has_overlap = max(start1, start2) < min(end1, end2)
+    if not has_overlap:
+        fn = npoints1
+        fp = npoints2
+        return fp, fn
+
+    # gt trajectory mapping to st, check gt missed
+    matched_pos1 = corresponding_frame(
+        traj1[:, 0], npoints1, traj2[:, 0], npoints2)
+    # st trajectory mapping to gt, check computed one false alarms
+    matched_pos2 = corresponding_frame(
+        traj2[:, 0], npoints2, traj1[:, 0], npoints1)
+    dist1 = compute_distance(traj1, traj2, matched_pos1)
+    dist2 = compute_distance(traj2, traj1, matched_pos2)
+    # FN
+    fn = sum([1 for i in range(npoints1) if dist1[i] < threshold])
+    # FP
+    fp = sum([1 for i in range(npoints2) if dist2[i] < threshold])
+    return fp, fn
+
+def compute_distance(traj1, traj2, matched_pos):
+    """
+    Compute the loss hit in traj2 regarding to traj1
+    :param traj1, traj2: trajectories (gt and estimated, respectively)
+    :param matched_pos: positions matched
+    :return: the loss hit between both trajectories
+    """
+    distance = np.zeros((len(matched_pos), ), dtype=float)
+    for i in range(len(matched_pos)):
+        if matched_pos[i] == -1:
+            continue
+        else:
+            iou = bbox_overlap(traj1[i, 2:6], traj2[matched_pos[i], 2:6])
+            distance[i] = iou
+    return distance
+
+def cost_between_gt_pred(groundtruth, prediction, threshold):
+    """
+    Compute cost between detections in gt and in prediction
+    :param groundtruth: ft information
+    :param prediction: predicted information
+    :param threshold: thr used to determine if FP or FN
+    :return: the cost, FP and FN
+    """
+    n_gt = len(groundtruth)
+    n_st = len(prediction)
+    cost = np.zeros((n_gt, n_st), dtype=float)
+    fp = np.zeros((n_gt, n_st), dtype=float)
+    fn = np.zeros((n_gt, n_st), dtype=float)
+    for i in range(n_gt):
+        for j in range(n_st):
+            fp[i, j], fn[i, j] = cost_between_trajectories(
+                groundtruth[i], prediction[j], threshold)
+            cost[i, j] = fp[i, j] + fn[i, j]
+    return cost, fp, fn
