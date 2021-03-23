@@ -46,5 +46,7 @@ class Config:
         parser.add_argument('--threshold', type=float, default=0.5, help="Threshold to discard detections")
         parser.add_argument('--tf_records_path', type=str, default='./data/finetune/tf_records', help='Path to store tfrecords')
         parser.add_argument('--model_conf_file', type=str, default='ssd_resnet152_v1_fpn_1024x1024_coco17_tpu-8.config')
+        parser.add_argument('--coco_model', type=bool, default=False, help="Wether the model is trained on COCO or AICity")
+        parser.add_argument('--trained_model', type=str, defualt="resnet640", help="Folder containing the trained model")
 
         return parser.parse_args()

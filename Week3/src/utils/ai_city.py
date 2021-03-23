@@ -6,12 +6,12 @@ import glob
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import xml.etree.ElementTree as ET
+import random
 
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou
 from utils.utils import write_json_file, read_json_file, frame_id
 from utils.visualize import visualize_background_iou
 
-from utils.detect2 import Detect2, to_detectron2
 from utils.tf_models import TFModel, to_tf_record
 from utils.yolov3 import UltralyricsYolo, to_yolov3
 
@@ -167,8 +167,8 @@ class AICity:
     def data_to_model(self):
         if self.framework in 'ultralytics':
             to_yolov3(self.data, self.gt_bboxes, self.split[0])
-        elif self.framework in 'detectron2':
-            to_detectron2(self.data, self.gt_bboxes)
+        # elif self.framework in 'detectron2':
+        #     to_detectron2(self.data, self.gt_bboxes)
         elif self.framework in 'tensorflow':
             to_tf_record(self.options, self.data, self.gt_bboxes)
 
@@ -180,9 +180,11 @@ class AICity:
         elif self.framework in 'tensorflow':
             model = TFModel(self.options, self.model)
 
-        elif self.framework in 'detectron2':
-            model = Detect2(self.model)
-                
+        # elif self.framework in 'detectron2':
+        #     model = Detect2(self.model)
+        
+        self.frames_paths = self.frames_paths[int(len(self.frames_paths)*0.25):]
+
         for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
             pred = model.predict(file_name)
             frame_id = file_name[-8:-4]
@@ -213,14 +215,15 @@ class AICity:
         self.train_dataset = random.choices(self.dataset_train,k=int(len(self.dataset_train)*split))
    
 
-    def get_mAP(self, map_70=False):
+    def get_mAP(self, mAP70=False):
         """
         Estimats the mAP using the VOC evaluation
 
+        :param mAP70: wheter tho use the VOC 70 evaluation. Default is False
         :return: map of all estimated frames
         """
         return \
-        voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, resize_factor=1, use_07_metric=map_70)[2]
+        voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, resize_factor=1, use_07_metric=mAP70)[2]
 
     def get_mIoU(self):
         """
@@ -286,10 +289,3 @@ class AICity:
                     print("New object", detection['obj_id']," at:",compute_centroid(np.array(self.det_bboxes[frame_id(i)][np.argmax(iou)]['bbox'])))
 
                 id_seq.update({detection['obj_id']: True})
-            
-
-
-        
-
-        
-        
