@@ -141,7 +141,7 @@ class AICity:
         if self.mode == 'inference':
             infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework+'.json'))
         else:
-            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0]+'.json'))
+            infer_path = join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0], str(args.conf_thres), str(args.iou_thres) +'.json'))
 
         if exists(infer_path):
             self.det_bboxes = read_json_file(infer_path)
@@ -224,7 +224,7 @@ class AICity:
             if self.mode == 'inference':
                 write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
             else:
-                write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework, self.split[0]+'.json')))
+                write_json_file(self.det_bboxes,join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0], str(self.options.conf_thres), str(self.options.iou_thres) +'.json')))#save_path+'_'.join((self.model, self.framework, self.split[0]+'.json')))
 
 
     def get_mAP(self, test=False):
@@ -271,7 +271,7 @@ class AICity:
                 return bbox['bbox']
         return None
 
-    def compute_tracking_overlapping(self, threshold = 0.4, interpolate = True, remove_noise = True):
+    def compute_tracking_overlapping(self, threshold = 0.5, interpolate = True, remove_noise = True):
 
         id_seq = {}
         #not assuming any order
@@ -333,10 +333,9 @@ class AICity:
             # detectiosn to be removed
             ids_to_remove = [id_obj for id_obj in id_ocurrence if id_ocurrence[id_obj]<4]
             for i in range(start_frame, num_frames):
-                for idx, detection in reversed(list(enumerate(self.det_bboxes[frame_id(i)]))):
+                for idx, detection in enumerate(self.det_bboxes[frame_id(i)]):
                     if detection['obj_id'] in ids_to_remove:
-                        bb_rem = self.det_bboxes[frame_id(i)].pop(idx)
-        None
+                        self.det_bboxes[frame_id(i)].pop(idx)
 
     def compute_tracking_kalman(self): 
         '''

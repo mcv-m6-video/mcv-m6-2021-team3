@@ -60,13 +60,13 @@ def compute_centroid(bb, resize_factor=1):
     :return: Centroid [x,y] 
     """
     # intersection
-    bb = np.array(bb) / resize_factor
+    bb = bb / resize_factor
     # (xmax - xmin)  / 2  
     x = (bb[2] + bb[0]) / 2
     # (ymax - ymin)  / 2  
     y = (bb[3] + bb[1]) / 2
     
-    return (int(x), int(y))
+    return [x, y]
 
 def compute_total_miou(gt, dets, frames):
     """
@@ -219,7 +219,7 @@ def voc_eval(recs,
 
     return rec, prec, ap
 
-def IDF1(gtDB, stDB, threshold = 0.5):
+def IDF1(gtDB, stDB, threshold):
     """
     compute IDF1 metric
     :param gtDB: list with the information of the detections in gt
