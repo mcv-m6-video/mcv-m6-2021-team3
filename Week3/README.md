@@ -76,7 +76,7 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
     </thead>
     <tbody>
         <tr>
-            <td>Yolo V3</td>
+            <td>Yolo V3 640x640</td>
             <td rowspan=3>&nbsp;Ultralytics</td>
             <td>0.7456</td>
             <td>0.5247</td>
@@ -84,18 +84,18 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;61.9M</td>
         </tr>
         <tr>
-            <td>Yolo V3 - SPP</td>
+            <td>Yolo V3 SPP 640x640</td>
             <td>0.7262</td>
             <td>0.5532</td>
             <td>0.5339</td>
             <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;63.0M</td>
         </tr>
         <tr>
-            <td>Yolo V3 - Tiny</td>
+            <td>Yolo V3 Tiny 640x640</td>
             <td>0.7476</td>
             <td>0.5738</td>
             <td>0.5409</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8.9M&</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8.9M</td>
         </tr>
         <tr>
             <td>SSD MN V1 FPN 640x640</td>
@@ -244,7 +244,7 @@ Tracking results when it is used the Kalman method.
 
 | Threshold | 0.3 | 0.5 | 0.7 |
 | :---: | :---: | :---: | :---: |
-| IDF1 |  |  |  | 
+| IDF1 | 63.05 | 62.82 | 61.61 | 
 
 
 ## Report
