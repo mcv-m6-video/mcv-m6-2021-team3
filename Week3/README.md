@@ -77,25 +77,25 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
     <tbody>
         <tr>
             <td>Yolo V3</td>
-            <td rowspan=3>Ultralytics</td>
-            <td>0.8050</td>
-            <td>0.4483</td>
-            <td>0.4495</td>
-            <td>61.9M</td>
+            <td rowspan=3>&nbsp;Ultralytics</td>
+            <td>0.7456</td>
+            <td>0.5247</td>
+            <td>0.5188</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;61.9M</td>
         </tr>
         <tr>
             <td>Yolo V3 - SPP</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>63.0M</td>
+            <td>0.7262</td>
+            <td>0.5532</td>
+            <td>0.5339</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;63.0M</td>
         </tr>
         <tr>
             <td>Yolo V3 - Tiny</td>
-            <td></td>
-            <td>&nbsp;</td>
-            <td></td>
-            <td>8.9M</td>
+            <td>0.7476</td>
+            <td>0.5738</td>
+            <td>0.5409</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8.9M&</td>
         </tr>
         <tr>
             <td>SSD MN V1 FPN 640x640</td>
@@ -108,50 +108,50 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
         <tr>
             <td>SSD MN V2 FPNLite 640x640</td>
             <td>0.3022</td>
-            <td>&nbsp;0.6152</td>
+            <td>0.6152</td>
             <td>0.5943</td>
             <td></td>
         </tr>
         <tr>
             <td>SSD RN101 V1 FPN 640x640</td>
             <td>0.2267</td>
-            <td>&nbsp;0.3753</td>
+            <td>0.3753</td>
             <td>0.3687</td>
             <td></td>
         </tr>
         <tr>
             <td>SSD RN152 V1 FPN 640x640</td>
             <td>0.2365</td>
-            <td>&nbsp;0.4724</td>
+            <td>0.4724</td>
             <td>0.4683</td>
             <td></td>
         </tr>
         <tr>
             <td>EfficientDet D1 640x640</td>
             <td>0.2184</td>
-            <td>&nbsp;0.4995</td>
+            <td>0.4995</td>
             <td>0.5069</td>
             <td></td>
         </tr>
         <tr>
             <td>FR-CNN RN101 V1 640x640</td>
             <td>0.256</td>
-            <td>&nbsp;0.443</td>
+            <td>0.443</td>
             <td>0.4366</td>
             <td></td>
         </tr>
         <tr>
             <td>CN RN101 V1 FPN 512x512</td>
             <td>0.2412</td>
-            <td>&nbsp;0.4377</td>
+            <td>0.4377</td>
             <td>0.4254</td>
             <td></td>
         </tr>
         <tr>
             <td>MR-CNN Inception RN V2 1024x1024</td>
-            <td></td>
-            <td>&nbsp;</td>
-            <td></td>
+            <td>0.2943</td>
+            <td>0.4405</td>
+            <td>0.4499</td>
             <td></td>
         </tr>
     </tbody>
