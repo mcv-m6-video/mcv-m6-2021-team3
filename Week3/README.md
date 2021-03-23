@@ -47,11 +47,11 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 │   │   │   ├── ai_city.py
 │   │   │   ├── metrics.py
 │   │   │   ├── visualize.py
-|   |   |   ├── utils.py
-|   |   |   ├── detect2.py
-|   |   |   ├── tf_models.py
-|   |   |   ├── yolov3.py
-|   |   |   ├── sort.py
+│   │   │   ├── utils.py
+│   │   │   ├── detect2.py
+│   │   │   ├── tf_models.py
+│   │   │   ├── yolov3.py
+│   │   │   ├── sort.py
 │   │   ├── data
 │   │   ├── models
 │   │   ├── yolov3
@@ -61,17 +61,165 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 ```
 
 ## Results
-### Task 1.1: Off-the-shelf
+### Task 1.1: Object Detection: Off-the-shelf
 
+<table>
+    <thead>
+        <tr>
+            <th>Network</th>
+            <th>Framework</th>
+            <th>mIoU</th>
+            <th>mAP50</th>
+            <th>mAP70</th>
+            <th>#Parameters</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Yolo V3</td>
+            <td rowspan=3>Ultralytics</td>
+            <td>0.8050</td>
+            <td>0.4483</td>
+            <td>0.4495</td>
+            <td>61.9M</td>
+        </tr>
+        <tr>
+            <td>Yolo V3 - SPP</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>63.0M</td>
+        </tr>
+        <tr>
+            <td>Yolo V3 - Tiny</td>
+            <td></td>
+            <td>&nbsp;</td>
+            <td></td>
+            <td>8.9M</td>
+        </tr>
+        <tr>
+            <td>SSD MN V1 FPN 640x640</td>
+            <td rowspan=8>TensorFlow</td>
+            <td>0.3911</td>
+            <td>0.5782</td>
+            <td>0.5655</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>SSD MN V2 FPNLite 640x640</td>
+            <td>0.3022</td>
+            <td>&nbsp;0.6152</td>
+            <td>0.5943</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>SSD RN101 V1 FPN 640x640</td>
+            <td>0.2267</td>
+            <td>&nbsp;0.3753</td>
+            <td>0.3687</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>SSD RN152 V1 FPN 640x640</td>
+            <td>0.2365</td>
+            <td>&nbsp;0.4724</td>
+            <td>0.4683</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>EfficientDet D1 640x640</td>
+            <td>0.2184</td>
+            <td>&nbsp;0.4995</td>
+            <td>0.5069</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>FR-CNN RN101 V1 640x640</td>
+            <td>0.256</td>
+            <td>&nbsp;0.443</td>
+            <td>0.4366</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>CN RN101 V1 FPN 512x512</td>
+            <td>0.2412</td>
+            <td>&nbsp;0.4377</td>
+            <td>0.4254</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>MR-CNN Inception RN V2 1024x1024</td>
+            <td></td>
+            <td>&nbsp;</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
 
-### Task 1.2: Fine-tuning
+### Task 1.2: Object Detection: Fine-tuning
 
 The results obtained after applying the fine-tuning
 
-| alpha | 1 | 1.5 | 2 | 3 | 4 | 5 |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| AP50 250 frames | 0.119 | 0.168 | 0.240 | 0.409 | 0.171 | 0.100 |
-| AP50 all frames | 0.0146 | 0.1424 | 0.1426 | 0.1201 | 0.0166 | 0.0132 |
+<table>
+    <thead>
+        <tr>
+            <th>Network</th>
+            <th>Framework</th>
+            <th>mIoU</th>
+            <th>mAP50</th>
+            <th>mAP70</th>
+            <th>#Parameters</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Yolo V3</td>
+            <td rowspan=3>Ultralytics</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Yolo V3 - SPP</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Yolo V3 - Tiny</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>SSD MN V1 FPN 640x640</td>
+            <td rowspan=3>TensorFlow</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>SSD RN101 V1 FPN 640x640</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>FR-CNN RN101 V1 640x640</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+
 
 ### Task 1.3: K-fold Cross validation
 
@@ -83,116 +231,20 @@ Results obtained with the best method when applying K-fold Cross Validation.
 
 ### Task 2.1: Tracking by Overlap
 
-Tracking results when it is used the Overlap method.
+Tracking results when it is used the Overlapping method.
+
+| Threshold | 0.3 | 0.5 | 0.7 |
+| :---: | :---: | :---: | :---: |
+| IDF1 |  |  |  | 
 
 
 ### Task 2.2: Tracking with a Kalman Filter
 
 Tracking results when it is used the Kalman method.
 
-
-### Task 2.3: IDF1 for Multiple Object Tracking
-
-The IDF1 results obtained when using both tracking methods.
-
-
-
-<table>
-    <thead>
-        <tr>
-            <th colspan=2></th>
-            <th>KNN</th>
-            <th>MOG2</th>
-            <th>GMG</th>
-            <th>LSBP</th>
-            <th>Ours</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan=2>AP50</td>
-            <td>250 frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.3577</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.3937</td>
-            <td>&nbsp;0.1554</td>
-            <td>&nbsp;0.0013</td>
-            <td>&nbsp;&nbsp;0.51</td>
-        </tr>
-        <tr>
-            <td>&nbsp;All frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.3307</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2544</td>
-            <td>&nbsp;0.0018</td>
-            <td>&nbsp;0.0210</td>
-            <td>&nbsp;&nbsp;0.23</td>
-        </tr>
-        <tr>
-            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Configuration</td>
-            <td>&nbsp;Shadows detector <br> &nbsp;&nbsp;&nbsp;threshold = 60</td>
-            <td>&nbsp;Shadows detector <br> &nbsp;&nbsp;&nbsp;threshold = 12</td>
-            <td>Default</td>
-            <td>Default</td>
-            <td>Task 2</td>
-        </tr>
-    </tbody>
-</table>
-
-
-### Task 4: Color sequences
-
-The results obtained using different color spaces (HSV,LAB,YCbCr) for the non-adaptive and the adaptive methods.
-
-<table>
-    <thead>
-        <tr>
-            <th colspan=3></th>
-            <th>LAB</th>
-            <th>HSV</th>
-            <th>YCbCr</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan=6>AP50</td>
-            <td rowspan=2>&nbsp;&nbsp;&nbsp;&nbsp;Adaptive</td>
-            <td>150 frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.291</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.015</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.334</td>
-        </tr>
-        <tr>
-            <td>&nbsp;All frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.112</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.004</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.114</td>
-        </tr>
-        <tr>
-            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameters</td>
-            <td>alpha = 1.43 <br> &nbsp;rho = 0.001</td>
-            <td>alpha = 1.71 <br> &nbsp;rho = 0.001</td>
-            <td>alpha = 1.75 <br> &nbsp;rho = 0.03</td>
-        </tr>
-        <tr>
-            <td rowspan=2>Non-adaptive</td>
-            <td>150 frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.488</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.027</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.400</td>
-        </tr>
-        <tr>
-            <td>&nbsp;All frames</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.193</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.014</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.212</td>
-        </tr>
-        <tr>
-            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameters</td>
-            <td>alpha = 1.43</td>
-            <td>alpha = 1.71</td>
-            <td>alpha = 1.75</td>
-        </tr>
-    </tbody>
-</table>
+| Threshold | 0.3 | 0.5 | 0.7 |
+| :---: | :---: | :---: | :---: |
+| IDF1 |  |  |  | 
 
 
 ## Report
