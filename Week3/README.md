@@ -314,6 +314,9 @@ Tracking results when it is used the Overlapping method using a Threshold of 0.5
 | IDF1 | 61.22 | 61.67 | 61.81 | 63.61 | 
 
 
+<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/4c2e0306c7a1e52557fe0b9abf984e0885bd8eef/Week3/m6w3.gif" width="700">
+
+
 ### Task 2.2: Tracking with a Kalman Filter
 
 Tracking results when it is used the Kalman method. These results are computed using the detections achieved by YOLOv3.
@@ -322,7 +325,10 @@ Tracking results when it is used the Kalman method. These results are computed u
 | :---: | :---: | :---: | :---: |
 | IDF1 | 63.05 | 62.82 | 61.61 | 
 
-<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/be83276ec1d00bf487dac148199e9d530abbae13/Week3/Task22.jpg" width="700">
+<p>
+    <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/be83276ec1d00bf487dac148199e9d530abbae13/Week3/Task22.jpg" width="700">
+    <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/4c2e0306c7a1e52557fe0b9abf984e0885bd8eef/Week3/m6w3_clara.gif" width="700">
+</p>
 
 ## Report
 The report for week 3 is available [here](https://docs.google.com/presentation/d/1M0Vw8quKhlRDudc1A5YYByKr7KclVOnSPspYGjmRxCo/edit?usp=sharing).
