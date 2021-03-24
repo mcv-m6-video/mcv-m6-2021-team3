@@ -146,7 +146,7 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 </table>
  
 
-![Image of Task 1.1](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week3/Task11.jpg)
+![Image of Task 1.1](Week3/Task11.jpg)
 
 ### Task 1.2: Object Detection: Fine-tuning
 
