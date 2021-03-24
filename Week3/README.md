@@ -146,7 +146,7 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 </table>
  
 
-![alt text](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week3/Task11.jpg)
+![Image of Task 1.1](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week3/Task11.jpg)
 
 ### Task 1.2: Object Detection: Fine-tuning
 
@@ -198,6 +198,7 @@ The results obtained after applying the fine-tuning
     </tbody>
 </table>
 
+![Image of Task 1.2](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week3/Task12.jpg)
 
 ### Task 1.3: K-fold Cross validation
 
@@ -319,6 +320,8 @@ Tracking results when it is used the Kalman method.
 | Threshold | 0.3 | 0.5 | 0.7 |
 | :---: | :---: | :---: | :---: |
 | IDF1 | 63.05 | 62.82 | 61.61 | 
+
+![Image of Task 2.2](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week3/Task22.jpg)
 
 
 ## Report
