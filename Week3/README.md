@@ -146,9 +146,8 @@ Quantitative results obtained after applying inference on different models.
         </tr>
     </tbody>
 </table>
- 
 
-![Image of Task 1.1](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/1a79886f4f0ec76c4f1315e6c3ca072040812fc8/Week3/Task11.jpg)
+<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task11.jpg" width="700">
 
 ### Task 1.2: Object Detection: Fine-tuning
 
@@ -200,7 +199,7 @@ Quantitative results obtained after doing fine-tuning on differents models.
     </tbody>
 </table>
 
-![Image of Task 1.2](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task12.jpg)
+<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task12.jpg" width="700">
 
 ### Task 1.3: K-fold Cross validation
 
@@ -323,8 +322,7 @@ Tracking results when it is used the Kalman method. These results are computed u
 | :---: | :---: | :---: | :---: |
 | IDF1 | 63.05 | 62.82 | 61.61 | 
 
-![Image of Task 2.2](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/be83276ec1d00bf487dac148199e9d530abbae13/Week3/Task22.jpg)
-
+<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/be83276ec1d00bf487dac148199e9d530abbae13/Week3/Task22.jpg" width="700">
 
 ## Report
 The report for week 3 is available [here](https://docs.google.com/presentation/d/1M0Vw8quKhlRDudc1A5YYByKr7KclVOnSPspYGjmRxCo/edit?usp=sharing).
