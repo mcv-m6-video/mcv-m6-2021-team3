@@ -54,7 +54,7 @@ def main(args):
     elif args.mode in 'eval':
         if len(aicity.det_bboxes)<1:
             aicity.inference(args.weights)
-        map50, map70 = aicity.get_mAP()
+        map50, map70 = aicity.get_mAP(args.k)
         miou = aicity.get_mIoU()
         print('Evaluation of training for split {} ({}, {}): mAP50={}, mAP70={}, mIoU={} | conf_thres={}, iou_thres={}'.format(args.split[0], args.model, args.framework, map50, map70, miou,
                 args.conf_thres, args.iou_thres))

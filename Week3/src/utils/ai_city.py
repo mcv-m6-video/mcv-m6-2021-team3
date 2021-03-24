@@ -238,17 +238,19 @@ class AICity:
                 write_json_file(self.det_bboxes,join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0], str(self.options.conf_thres), str(self.options.iou_thres) +'.json')))#save_path+'_'.join((self.model, self.framework, self.split[0]+'.json')))
 
 
-    def get_mAP(self, test=False):
+   def get_mAP(self, k=None):
         """
         Estimats the mAP using the VOC evaluation
 
-        :param mAP70: wheter tho use the VOC 70 evaluation. Default is False
         :return: map of all estimated frames
         """
-  
         if self.mode == 'eval':
-            mAP50 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes)[2]
-            mAP70 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes, use_07_metric=True)[2]
+            if k is None:
+                mAP50 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes)[2]
+                mAP70 = voc_eval(self.gt_bboxes, self.data[0]['val'], self.det_bboxes, use_07_metric=True)[2]
+            else:
+                mAP50 = voc_eval(self.gt_bboxes, self.data[k]['val'], self.det_bboxes)[2]
+                mAP70 = voc_eval(self.gt_bboxes, self.data[k]['val'], self.det_bboxes, use_07_metric=True)[2]
         else:
             mAP50 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes)[2]
             mAP70 = voc_eval(self.gt_bboxes, self.frames_paths, self.det_bboxes, use_07_metric=True)[2]
