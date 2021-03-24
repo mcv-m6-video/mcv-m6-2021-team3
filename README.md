@@ -21,3 +21,5 @@ $ pip install -r requirements.txt
 ### [Week 1: Datasets and metrics implementations](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week1)
 
 ### [Week 2: Background Estimation](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2)
+
+### [Week 3: Oject Detection and Tracking](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week3)
