@@ -24,13 +24,21 @@ class UltralyricsYolo():
                  device='0',
                  agnostic_nms=False,
                  args=None):
+        """ 
+        Class initializer
+        :param weights: path to weights in .pt
+        :param device: device to execute model (cpu or num of gpu)
+        :param args: argsparse of options
+        :param agnostic_nms: agnostic non-maximum suppresion
+        """
 
         # Initialize
         if weights is None:
             weights=args.model
         set_logging()
         weights = get_weights(weights,'ultralytics')
-
+        
+        # Define class position for car
         if args.mode in 'inference':
             classes=[2]
         elif args.mode in 'eval':
@@ -58,6 +66,12 @@ class UltralyricsYolo():
             self.args = args
 
     def predict(self, img_path):
+        """
+            Passes the image either through a pre-trained net on the COCO network or a fine-tuned
+            image on the AICity dataset.
+            :param img_path: image path
+            :return list of bboxes [(xmin, ymin, xmax, ymax), confidence]
+        """
 
         img = cv2.imread(img_path)
         img0 = img.copy()
@@ -97,6 +111,10 @@ class UltralyricsYolo():
         return pred
 
     def train(self, kfold=None):
+        """
+            Train model.
+            :param kfold: number of folder used for training. If None, no cross-validation.
+        """        
         if kfold is not None:
             train_yolov3(self.weights, self.args, kfold)
         else:
@@ -104,6 +122,10 @@ class UltralyricsYolo():
 
 
 def gt_multi_txt(path, bboxes):
+    """
+        Convert bboxes in AICity format to YOLOv3 utralytics format.
+        :param bboxes: list of bboxes in format (xmin, ymin, xmax, ymax)
+    """    
     
     W, H = Image.open(path).size
 
@@ -123,7 +145,13 @@ def gt_multi_txt(path, bboxes):
 
 
 def to_yolov3(data, gt_bboxes, mode, save_path='yolov3_data'):
-    
+    """
+        Convert AICity data format to YOLOv3 utralytics format.
+        :param data: paths to train and validation files
+        :param gt_bboxes: dict of ground truth detections
+        :param mode: sorted or shuffled data
+        :param save_path: path to store yolov3 ultralytic data format
+    """        
     save_path = join(save_path,mode)
     data_path = join(os.getcwd(),save_path,'data')
     
@@ -160,7 +188,8 @@ def to_yolov3(data, gt_bboxes, mode, save_path='yolov3_data'):
                     frame_id = basename(path).split('.')[0]
                     new_path = join(data_path,frame_id+'.jpg')
                     files.append(new_path+'\n')
-
+                    
+                # Write files
                 os.makedirs(join(save_path,str(len(data))),exist_ok=True)
                 split_txt = open(join(save_path,str(len(data)),split+'_'+str(k)+'.txt'), 'w')
                 split_txt.writelines(files)
