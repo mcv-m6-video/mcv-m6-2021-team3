@@ -63,6 +63,8 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 ## Results
 ### Task 1.1: Object Detection: Off-the-shelf
 
+Quantitative results obtained after applying inference on different models.
+
 <table>
     <thead>
         <tr>
@@ -150,7 +152,7 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 
 ### Task 1.2: Object Detection: Fine-tuning
 
-The results obtained after applying the fine-tuning
+Quantitative results obtained after doing fine-tuning on differents models.
 
 <table>
     <thead>
@@ -306,7 +308,7 @@ Results obtained with the best method when applying K-fold Cross Validation usin
 
 ### Task 2.1: Tracking by Overlap
 
-Tracking results when it is used the Overlapping method using a Threshold of 0.5.
+Tracking results when it is used the Overlapping method using a Threshold of 0.5. These results are computed using the detections achieved by YOLOv3.
 
 | Parameters| Interpolation = Off  Denoise = Off | Interpolation = True  Denoise = Off | Interpolation = Off  Denoise = True | Interpolation = True Denoise = True |
 | :---: | :---: | :---: | :---: | :---: |
@@ -315,7 +317,7 @@ Tracking results when it is used the Overlapping method using a Threshold of 0.5
 
 ### Task 2.2: Tracking with a Kalman Filter
 
-Tracking results when it is used the Kalman method.
+Tracking results when it is used the Kalman method. These results are computed using the detections achieved by YOLOv3.
 
 | Threshold | 0.3 | 0.5 | 0.7 |
 | :---: | :---: | :---: | :---: |
