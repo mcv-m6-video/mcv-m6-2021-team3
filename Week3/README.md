@@ -71,7 +71,6 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
             <th>mIoU</th>
             <th>mAP50</th>
             <th>mAP70</th>
-            <th>#Parameters</th>
         </tr>
     </thead>
     <tbody>
@@ -81,21 +80,18 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
             <td>0.7456</td>
             <td>0.5247</td>
             <td>0.5188</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;61.9M</td>
         </tr>
         <tr>
             <td>Yolo V3 SPP 640x640</td>
             <td>0.7262</td>
             <td>0.5532</td>
             <td>0.5339</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;63.0M</td>
         </tr>
         <tr>
             <td>Yolo V3 Tiny 640x640</td>
             <td>0.7476</td>
             <td>0.5738</td>
             <td>0.5409</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8.9M</td>
         </tr>
         <tr>
             <td>SSD MN V1 FPN 640x640</td>
@@ -103,56 +99,48 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
             <td>0.3911</td>
             <td>0.5782</td>
             <td>0.5655</td>
-            <td></td>
         </tr>
         <tr>
             <td>SSD MN V2 FPNLite 640x640</td>
             <td>0.3022</td>
             <td>0.6152</td>
             <td>0.5943</td>
-            <td></td>
         </tr>
         <tr>
             <td>SSD RN101 V1 FPN 640x640</td>
             <td>0.2267</td>
             <td>0.3753</td>
             <td>0.3687</td>
-            <td></td>
         </tr>
         <tr>
             <td>SSD RN152 V1 FPN 640x640</td>
             <td>0.2365</td>
             <td>0.4724</td>
             <td>0.4683</td>
-            <td></td>
         </tr>
         <tr>
             <td>EfficientDet D1 640x640</td>
             <td>0.2184</td>
             <td>0.4995</td>
             <td>0.5069</td>
-            <td></td>
         </tr>
         <tr>
             <td>FR-CNN RN101 V1 640x640</td>
             <td>0.256</td>
             <td>0.443</td>
             <td>0.4366</td>
-            <td></td>
         </tr>
         <tr>
             <td>CN RN101 V1 FPN 512x512</td>
             <td>0.2412</td>
             <td>0.4377</td>
             <td>0.4254</td>
-            <td></td>
         </tr>
         <tr>
             <td>MR-CNN Inception RN V2 1024x1024</td>
             <td>0.2943</td>
             <td>0.4405</td>
             <td>0.4499</td>
-            <td></td>
         </tr>
     </tbody>
 </table>
@@ -169,53 +157,40 @@ The results obtained after applying the fine-tuning
             <th>mIoU</th>
             <th>mAP50</th>
             <th>mAP70</th>
-            <th>#Parameters</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td>Yolo V3</td>
             <td rowspan=3>Ultralytics</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td>0.8866</td>
+            <td>0.9445</td>
+            <td>0.9065</td>
         </tr>
         <tr>
             <td>Yolo V3 - SPP</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td>0.8435</td>
+            <td>0.8083</td>
+            <td>0.8148</td>
         </tr>
         <tr>
             <td>Yolo V3 - Tiny</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td>0.8436</td>
+            <td>0.8096</td>
+            <td>0.8148</td>
         </tr>
         <tr>
             <td>SSD MN V1 FPN 640x640</td>
-            <td rowspan=3>TensorFlow</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td rowspan=2>TensorFlow</td>
+            <td>0.4929</td>
+            <td>0.7842</td>
+            <td>0.7585</td>
         </tr>
         <tr>
-            <td>SSD RN101 V1 FPN 640x640</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>FR-CNN RN101 V1 640x640</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td>EfficientDet D1 640x640</td>
+            <td>0.6914</td>
+            <td>0.7965</td>
+            <td>0.7899</td>
         </tr>
     </tbody>
 </table>
@@ -223,19 +198,115 @@ The results obtained after applying the fine-tuning
 
 ### Task 1.3: K-fold Cross validation
 
-Results obtained with the best method when applying K-fold Cross Validation.
+Results obtained with the best method when applying K-fold Cross Validation using as a model YOLOv3.
 
-| AP50 | alpha | rho |
-| :---: | :---: | :---: |
-| 0.51 | 1.6 | 0.0025 | 
+<table>
+    <thead>
+        <tr>
+            <th colspan=4>Sorted</th>
+            <th>mIoU</th>
+            <th>mAP50</th>
+            <th>mAP70</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>train</td>
+            <td colspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
+            <td>0.8866</td>
+            <td>0.9445</td>
+            <td>0.9065</td>
+        </tr>
+        <tr>
+            <td>test</td>
+            <td>train</td>
+            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
+            <td>0.9056</td>
+            <td>0.9458</td>
+            <td>0.9073</td>
+        </tr>
+        <tr>
+            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
+            <td>train</td>
+            <td>test</td>
+            <td>0.8899</td>
+            <td>0.9474</td>
+            <td>0.9069</td>
+        </tr>
+        <tr>
+            <td colspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
+            <td>train</td>
+            <td>0.8921</td>
+            <td>0.9558</td>
+            <td>0.9075</td>
+        </tr>
+        <tr>
+            <td colspan=4></td>
+            <td>0.8935 <br> ±7e-3</td>
+            <td>0.9484 <br> ±4e-3</td>
+            <td>0.9070 <br> ±3e-4</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<table>
+    <thead>
+        <tr>
+            <th colspan=4>Shuffle</th>
+            <th>mIoU</th>
+            <th>mAP50</th>
+            <th>mAP70</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>train</td>
+            <td colspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
+            <td>0.9001</td>
+            <td>0.9520</td>
+            <td>0.9079</td>
+        </tr>
+        <tr>
+            <td>test</td>
+            <td>train</td>
+            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
+            <td>0.9038</td>
+            <td>0.9555</td>
+            <td>0.9079</td>
+        </tr>
+        <tr>
+            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
+            <td>train</td>
+            <td>test</td>
+            <td>0.9021</td>
+            <td>0.9587</td>
+            <td>0.9082</td>
+        </tr>
+        <tr>
+            <td colspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
+            <td>train</td>
+            <td>0.9038</td>
+            <td>0.9512</td>
+            <td>0.9081</td>
+        </tr>
+        <tr>
+            <td colspan=4></td>
+            <td>0.9025 <br> ±1e-3</td>
+            <td>0.9543 <br> ±3e-3</td>
+            <td>0.9080 <br> ±1e-4</td>
+        </tr>
+    </tbody>
+</table>
+
 
 ### Task 2.1: Tracking by Overlap
 
-Tracking results when it is used the Overlapping method.
+Tracking results when it is used the Overlapping method using a Threshold of 0.5.
 
-| Threshold | 0.3 | 0.5 | 0.7 |
-| :---: | :---: | :---: | :---: |
-| IDF1 |  |  |  | 
+| Parameters| Interpolation = Off  Denoise = Off | Interpolation = True  Denoise = Off | Interpolation = Off  Denoise = True | Interpolation = True Denoise = True |
+| :---: | :---: | :---: | :---: | :---: |
+| IDF1 | 61.22 | 61.67 | 61.81 | 63.61 | 
 
 
 ### Task 2.2: Tracking with a Kalman Filter
