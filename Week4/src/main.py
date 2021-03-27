@@ -10,6 +10,9 @@ def main(args):
     kitti = KITTI(args.data_path, args.OF_mode, args)
 
     kitti.estimate_OF()
+    msen, pepn = kitti.get_MSEN_PEPN()
+    print('MSEN:', msen)
+    print('PEPN:', pepn)
     
 
 if __name__ == "__main__":

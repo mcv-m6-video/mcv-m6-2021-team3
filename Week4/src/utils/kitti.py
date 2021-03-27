@@ -1,6 +1,7 @@
 import cv2
 import png
 import numpy as np
+#import pyflow
 from os.path import join
 from models.optical_flow import block_matching
 from utils.metrics import compute_MSEN_PEPN
@@ -54,6 +55,19 @@ class KITTI():
         img1, img2 = [cv2.imread(img_path) for img_path in self.seq_paths]
         if self.mode in 'block_matching':
             self.det_OF = block_matching(img1, img2, self.window_size, self.shift, self.stride)
+        elif self.mode in 'pyflow':
+            # Flow Options:
+            alpha = 0.012
+            ratio = 0.75
+            minWidth = 20
+            nOuterFPIterations = 7
+            nInnerFPIterations = 1
+            nSORIterations = 30
+            colType = 0  # 0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))
+
+            u, v, im2W = pyflow.coarse2fine_flow(img1, img2, alpha, ratio, minWidth, 
+                                                nOuterFPIterations, nInnerFPIterations, nSORIterations, colType)
+            self.det_OF = np.concatenate((u[..., None], v[..., None]), axis=2)
     
     def get_MSEN_PEPN(self):
         return compute_MSEN_PEPN(self.GTOF,self.det_OF)
