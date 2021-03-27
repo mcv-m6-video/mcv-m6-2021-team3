@@ -130,7 +130,6 @@ class AICity:
         self.data_path = args.data_path
         self.img_size = args.img_size
         self.split = args.split
-        self.task = args.task
         self.model = args.model
         self.framework = args.framework
         self.mode = args.mode
@@ -246,7 +245,7 @@ class AICity:
         """
         write_json_file(self.det_bboxes, name_json)
 
-    def visualize_task(self):
+    def visualize(self):
         """
         Creates plots for a given frame and bbox estimation
         """

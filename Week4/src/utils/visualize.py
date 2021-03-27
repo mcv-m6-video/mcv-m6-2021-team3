@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from utils.metrics import compute_miou, compute_centroid
-from utils.utils import dict_to_list, read_json_file, frame_id
+from utils.utils import dict_to_list, read_json_file, str_frame_id
 from itertools import compress
 
 def plot_idf1_thr(path_out ,idf1, thrs):
@@ -31,7 +31,7 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
     id_ocurrence = {}
     # Count ocurrences and compute centers 
     for i in range(start_frame, num_frames):
-        for detection in det_bboxes[frame_id(i)]:
+        for detection in det_bboxes[str_frame_id(i)]:
             # Store story of obj_id along with their centroids
             objt_id = detection['obj_id']
             if objt_id in id_ocurrence:
@@ -42,7 +42,7 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
     num_colors = 1000
     colours = np.random.rand(num_colors,3) 
     for i in tqdm(range(start_frame, num_frames),"saving tracking img"):
-        f_id = frame_id(i)
+        f_id = str_frame_id(i)
         frame = det_bboxes[f_id]
         detections = []
         id_list = []
@@ -269,7 +269,7 @@ def OF_quiver_visualize(img, flow, step, fname_output='flow_quiver.png'):
     plt.figure()
     plt.imshow(img, cmap='gray')
     plt.quiver(x[::step, ::step], y[::step, ::step], U[::step, ::step], V[::step, ::step],
-               M[::step, ::step], scale_units='xy', angles='xy', scale=.05, color=(1, 0, 0, 1))
+               M[::step, ::step], scale_units='xy', angles='xy', scale=.2, color=(1, 0, 0, 1))
     plt.axis('off')
     plt.savefig(fname_output)
 

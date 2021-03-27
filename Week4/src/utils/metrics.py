@@ -4,12 +4,20 @@ import sys
 from scipy.optimize import linear_sum_assignment as linear_assignment
 from utils.utils import dict_to_list, bbox_overlap
 
+def ssd(vec1, vec2):
+    """
+    Compute Sum of Squared Distances between two vectors
+    :param vec1, vec2: Two vectors
+    :return: Computed SSD distance
+    """
+    assert len(vec1) == len(vec2)
+    return sum((vec1 - vec2) ** 2)
 
-def vec_error(gt, det, nchannel=3):
+def vec_error(gt, det, nchannel=2):
     """
     Computes vectorial distance  
-    :param gt: Ground truth values
-    :param det: Detection values
+    :param gt: Ground truth vectors
+    :param det: Detection vectors
     :return: Computed error
     """
     dist = det[:, :, :nchannel] - gt[:, :, :nchannel]
@@ -21,9 +29,9 @@ def vec_error(gt, det, nchannel=3):
     return error[non_occluded_idx], error
 
 
-def compute_error(gt=None, det=None, error=None, nchannel=3, op='mse', th=3):
+def compute_MSEN_PEPN(gt=None, det=None, error=None, nchannel=2, th=3):
     """
-    Computes the erroor using the vectorial distance between gt and det
+    Computes the error using the vectorial distance between gt and det
     :param gt: Ground truth values
     :param det: Detection values
     :param nchannel: Number of channels per frame
@@ -36,10 +44,10 @@ def compute_error(gt=None, det=None, error=None, nchannel=3, op='mse', th=3):
         assert det is None, 'img2 is None'
         error = vec_error(gt, det, nchannel)[0]
 
-    if op == 'mse':
-        return np.mean(error)
-    elif op == 'pep':
-        return np.sum(error > th) / len(error)
+    msen = np.mean(error)
+    pepn = np.sum(error > th) / len(error)
+
+    return msen, pepn
 
 def interpolate_bb(bb_first, bb_last, distance):
     bb_first = np.array(bb_first)

@@ -14,9 +14,10 @@ class Config:
         parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
         parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
+        parser.add_argument('--OF_mode', type=str, default='block_matching', help='What type of optical flow to perform')
 
         # ================================ INPUT ================================ #
-        parser.add_argument('--data_path', type=str, default='../../datasets/AICity/train/S03/c010/vdo',
+        parser.add_argument('--data_path', type=str, default='../../datasets',#AICity/train/S03/c010/vdo
                             help="Path where the AICity data is located")
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
@@ -34,6 +35,11 @@ class Config:
         parser.add_argument('--hyp', type=str, default='data/finetune/yolov3/hyp.finetune.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=150)
         parser.add_argument('--batch_size', type=int, default=32, help='total batch size for all GPUs')
+
+        # ============================ BLOCK MATCHING ============================ #
+        parser.add_argument('--window_size', type=int, default=25)
+        parser.add_argument('--shift', type=int, default=3)
+        parser.add_argument('--stride', type=int, default=5)
 
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")

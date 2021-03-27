@@ -3,47 +3,41 @@ import sys
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+from utils.metrics import ssd
+from tqdm.auto import tqdm
 
-#
-# Compute the Sum of Squared Distances between two equally sized vectors.
-#
-# Input : The two vectors (both numpy arrays).
-# Output: SSD (float).
-#
-def ssd(arr1, arr2):
-    assert len(arr1) == len(arr2)
-    return sum((arr1 - arr2) ** 2)
-
-#
-# Perform block matching optical flow for two consecutive frames.
-#
-# Input : The two frames (both numpy arrays), the window size, the area around
-#         the window in the previous frame, and the stride between two
-#         estimations (all integers).
-# Output: The x- and y-velocities (both numpy arrays).
-#
-def block_matching(im1, im2, window_size, shift, stride):
+def block_matching(img1, img2, window_size, shift, stride):
+    """
+    Block matching method to compute Optical Flow for two consecutive frames.
+    :params img1, img2: First and second consecutive frames
+    :param window_size: Size of the window to consider around each pixel
+    :param shift: Displacement of the window in the other frame
+    :param stride: Step size between two estimations
+    :return: Optical flow for each direction x,y
+    """
     
     # Initialize the matrices.
-    vx = np.zeros(((im2.shape[0] - window_size)/float(stride)+1, \
-            (im2.shape[1] - window_size)/float(stride)+1))
-    vy = np.zeros(((im2.shape[0] - window_size)/float(stride)+1, \
-            (im2.shape[1] - window_size)/float(stride)+1))
-    wh = window_size / 2
+    vx = np.zeros((img2.shape[:2]))
+    '''np.zeros((int((img2.shape[0] - window_size)/stride+1), 
+                int((img2.shape[1] - window_size)/stride+1)))'''
+    vy = np.zeros((img2.shape[:2]))
+    '''np.zeros((int((img2.shape[0] - window_size)/stride+1), 
+                int((img2.shape[1] - window_size)/stride+1)))'''
+    wh = int(window_size / 2)
     
     # Go through all the blocks.
     tx, ty = 0, 0
-    for x in xrange(wh, im2.shape[0] - wh - 1, stride):
-        for y in xrange(wh, im2.shape[1] - wh - 1, stride):
-            nm = im2[x-wh:x+wh+1, y-wh:y+wh+1].flatten()
+    for x in tqdm(np.arange(wh, img2.shape[0] - wh - 1, stride), 'Computing pixel Optical Flow'):
+        for y in np.arange(wh, img2.shape[1] - wh - 1, stride):
+            nm = img2[x-wh:x+wh+1, y-wh:y+wh+1].flatten()
             
             min_dist = None
-            flox, flowy = 0, 0
+            flowx, flowy = 0, 0
             # Compare each block of the next frame to each block from a greater
             # region with the same center in the previous frame.
-            for i in xrange(max(x - shift, wh), min(x + shift + 1, im1.shape[0] - wh - 1)):
-                for j in xrange(max(y - shift, wh), min(y + shift + 1, im1.shape[1] - wh - 1)):
-                    om = im1[i-wh:i+wh+1, j-wh:j+wh+1].flatten()
+            for i in np.arange(max(x - shift, wh), min(x + shift + 1, img1.shape[0] - wh - 1)):
+                for j in np.arange(max(y - shift, wh), min(y + shift + 1, img1.shape[1] - wh - 1)):
+                    om = img1[i-wh:i+wh+1, j-wh:j+wh+1].flatten()
                     
                     # Compute the distance and update minimum.
                     dist = ssd(nm, om)
@@ -54,8 +48,10 @@ def block_matching(im1, im2, window_size, shift, stride):
             # Update the flow field. Note the negative tx and the reversal of
             # flowx and flowy. This is done to provide proper quiver plots, but
             # should be reconsidered when using it.
-            vx[-tx,ty] = flowy
-            vy[-tx,ty] = flowx
+            #vx[-tx,ty] = flowy
+            #vy[-tx,ty] = flowx
+            vx[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowx
+            vy[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowy
             
             ty += 1
         tx += 1
