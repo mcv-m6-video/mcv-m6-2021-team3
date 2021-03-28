@@ -1,10 +1,12 @@
 import cv2
 import png
 import numpy as np
-#import pyflow
+from PIL import Image
 from os.path import join
 from models.optical_flow import block_matching
 from utils.metrics import compute_MSEN_PEPN
+from utils.visualize import OF_hsv_visualize
+import pyflow.pyflow as pyflow
 
 def read_kitti_OF(flow_file):
     """
@@ -51,11 +53,14 @@ class KITTI():
         self.shift = args.shift
         self.stride = args.stride
 
-    def estimate_OF(self):
-        img1, img2 = [cv2.imread(img_path) for img_path in self.seq_paths]
+    def estimate_OF(self):        
         if self.mode in 'block_matching':
+            img1, img2 = [cv2.imread(img_path) for img_path in self.seq_paths]
             self.det_OF = block_matching(img1, img2, self.window_size, self.shift, self.stride)
         elif self.mode in 'pyflow':
+            img1, img2 = [np.array(Image.open(img_path.replace('image','colored'))) for img_path in self.seq_paths]
+            img1 = img1.astype(float) / 255.
+            img2 = img2.astype(float) / 255.
             # Flow Options:
             alpha = 0.012
             ratio = 0.75
@@ -67,7 +72,10 @@ class KITTI():
 
             u, v, im2W = pyflow.coarse2fine_flow(img1, img2, alpha, ratio, minWidth, 
                                                 nOuterFPIterations, nInnerFPIterations, nSORIterations, colType)
-            self.det_OF = np.concatenate((u[..., None], v[..., None]), axis=2)
+            self.det_OF = np.concatenate((u[..., None], v[..., None], np.ones((u.shape[0],u.shape[1],1))), axis=2)
     
     def get_MSEN_PEPN(self):
         return compute_MSEN_PEPN(self.GTOF,self.det_OF)
+    
+    def visualize(self):
+        OF_hsv_visualize(self.det_OF)

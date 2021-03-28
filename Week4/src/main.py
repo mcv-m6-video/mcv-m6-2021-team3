@@ -11,6 +11,7 @@ def main(args):
 
     kitti.estimate_OF()
     msen, pepn = kitti.get_MSEN_PEPN()
+    kitti.visualize()
     print('MSEN:', msen)
     print('PEPN:', pepn)
     

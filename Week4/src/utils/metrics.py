@@ -40,8 +40,8 @@ def compute_MSEN_PEPN(gt=None, det=None, error=None, nchannel=2, th=3):
     """
 
     if error is None:
-        assert gt is None, 'img1 is None'
-        assert det is None, 'img2 is None'
+        assert gt is not None, 'gt is None'
+        assert det is not None, 'det is None'
         error = vec_error(gt, det, nchannel)[0]
 
     msen = np.mean(error)
