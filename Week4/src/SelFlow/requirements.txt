@@ -1,0 +1,5 @@
+pillow
+scipy
+opencv-python
+matplotlib
+tensorflow-cpu==1.15
