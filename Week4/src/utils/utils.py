@@ -10,6 +10,17 @@ from termcolor import colored
 import imageio
 import cv2
 import subprocess
+from numpngw import write_png
+
+def write_png_flow(flow, png_file):
+    flow = flow[:,:,:2]
+    flow16 = (64*flow + 2**15).astype(np.uint16)
+    imgdata = np.concatenate((flow16, np.ones(flow16.shape[:2] + (1,), dtype=flow16.dtype)), axis=2)
+    
+    write_png(png_file, imgdata)
+
+    if exists(png_file):
+        print('PNG file ' + colored('\'' + png_file + '\'', 'blue') + ' written successfully!')
 
 def write_json_file(data_dict, json_file):
     """
