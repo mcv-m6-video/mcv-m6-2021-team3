@@ -14,7 +14,7 @@ class Config:
         parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
         parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
-        parser.add_argument('--OF_mode', type=str, default='block_matching', choices = ['block_matching', 'pyflow'], help='What type of optical flow to perform')
+        parser.add_argument('--OF_mode', type=str, default='pyflow', choices = ['block_matching', 'pyflow'], help='What type of optical flow to perform')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../datasets',#AICity/train/S03/c010/vdo
@@ -36,10 +36,19 @@ class Config:
         parser.add_argument('--epochs', type=int, default=150)
         parser.add_argument('--batch_size', type=int, default=32, help='total batch size for all GPUs')
 
-        # ============================ BLOCK MATCHING ============================ #
+        # ============================= OPTICAL FLOW ============================= #
+        # Block matching
         parser.add_argument('--window_size', type=int, default=25)
         parser.add_argument('--shift', type=int, default=3)
         parser.add_argument('--stride', type=int, default=5)
+        # pyflow
+        parser.add_argument('--alpha', type=float, default=0.012)
+        parser.add_argument('--ratio', type=float, default=0.75)
+        parser.add_argument('--minWidth', type=int, default=20)
+        parser.add_argument('--nOuterFPIterations', type=int, default=7)
+        parser.add_argument('--nInnerFPIterations', type=int, default=1)
+        parser.add_argument('--nSORIterations', type=int, default=30)
+        parser.add_argument('--colType', type=int, default=0, help='0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))')
 
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")

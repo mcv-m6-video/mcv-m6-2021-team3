@@ -6,11 +6,11 @@ from config.config import Config
 
 def main(args):
 
-    os.makedirs(join(args.output_path, str(args.task)), exist_ok=True)
     kitti = KITTI(args.data_path, args.OF_mode, args)
 
     kitti.estimate_OF()
     msen, pepn = kitti.get_MSEN_PEPN()
+    kitti.visualize()
     print('MSEN:', msen)
     print('PEPN:', pepn)
     
