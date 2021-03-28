@@ -65,33 +65,29 @@ class KITTI():
             nSORIterations=args.nSORIterations,
             colType=args.colType)
 
+        # Output path to results
+        save_path = join(args.output_path,mode)
+        os.makedirs(save_path,exist_ok=True)
+        if self.mode in 'block_matching':
+            self.png_name = join(save_path,'_'.join(('ws-'+str(args.window_size),
+                                                'shift-'+str(args.shift),
+                                                'stride-'+str(args.stride)+'.png')))
+        elif self.mode in 'pyflow':
+            self.png_name = join(save_path,'_'.join((str(args.alpha), str(args.ratio), str(args.minWidth), 
+                                                     str(args.nOuterFPIterations), str(args.nInnerFPIterations), 
+                                                     str(args.nSORIterations), str(args.colType)+'.png')))
 
-        self.save_path = join(args.output_path,mode)
-        os.makedirs(self.save_path,exist_ok=True)
 
     def estimate_OF(self):
-        
-        if self.mode in 'block_matching':
-            png_name = join(self.save_path,'_'.join(('ws-'+str(self.block_matching['window_size']),
-                                                    'shift-'+str(self.block_matching['shift']),
-                                                    'stride-'+str(self.block_matching['stride'])+'.png')))
-
-            if exists(png_name):
-                self.pred_OF = read_kitti_OF(png_name)
-            else:
+        if exists(self.png_name):
+            self.pred_OF = read_kitti_OF(self.png_name)
+        else:
+            if self.mode in 'block_matching':
                 img1, img2 = [cv2.imread(img_path) for img_path in self.seq_paths]
                 self.pred_OF = block_matching(img1, img2, self.block_matching['window_size'], 
-                                             self.block_matching['shift'], self.block_matching['stride'])
-            
-        elif self.mode in 'pyflow':
-
-            png_name = join(self.save_path,'_'.join((str(self.pyflow['alpha']), str(self.pyflow['ratio']), str(self.pyflow['minWidth']), 
-                                                    str(self.pyflow['nOuterFPIterations']), str(self.pyflow['nInnerFPIterations']), 
-                                                    str(self.pyflow['nSORIterations']), str(self.pyflow['colType'])+'.png')))
-            
-            if exists(png_name):
-                self.pred_OF = read_kitti_OF(png_name)
-            else:
+                                            self.block_matching['shift'], self.block_matching['stride'])
+                
+            elif self.mode in 'pyflow':
                 img1, img2 = [np.array(Image.open(img_path.replace('image','colored'))) for img_path in self.seq_paths]
                 img1 = img1.astype(float) / 255.
                 img2 = img2.astype(float) / 255.
@@ -101,12 +97,11 @@ class KITTI():
                                                     self.pyflow['nSORIterations'], self.pyflow['colType'])
                 self.pred_OF = np.concatenate((u[..., None], v[..., None], np.ones((u.shape[0],u.shape[1],1))), axis=2)
         
-        if not exists(png_name):
-            write_png_flow(self.pred_OF,png_name)
+            write_png_flow(self.pred_OF,self.png_name)
     
     def get_MSEN_PEPN(self):
         return compute_MSEN_PEPN(self.GTOF,self.pred_OF)
     
     def visualize(self):
-        OF_hsv_visualize(self.pred_OF)
-        OF_quiver_visualize(cv2.imread(self.seq_paths[1]),self.pred_OF,5)
+        OF_hsv_visualize(self.pred_OF, self.png_name.replace('.png','_hsv.png'))
+        OF_quiver_visualize(cv2.imread(self.seq_paths[1]),self.pred_OF,15,self.png_name.replace('.png','_quiver.png'))
