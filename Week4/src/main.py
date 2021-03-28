@@ -8,12 +8,14 @@ def main(args):
 
     kitti = KITTI(args.data_path, args.OF_mode, args)
 
-    kitti.estimate_OF()
-    msen, pepn = kitti.get_MSEN_PEPN()
-    kitti.visualize()
-    print('MSEN:', msen)
-    print('PEPN:', pepn)
-    
+    #kitti.estimate_OF()
+    #msen, pepn = kitti.get_MSEN_PEPN()
+    #kitti.visualize()
+    #print('MSEN:', msen)
+    #print('PEPN:', pepn)
+    # task2
+    kitti.seq_stabilization_BM()
+
 
 if __name__ == "__main__":
     main(Config().get_args())

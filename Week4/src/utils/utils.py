@@ -206,3 +206,9 @@ def return_bb(det_bboxes, frame, bb_id):
         if bbox['obj_id'] == bb_id:
             return bbox['bbox']
     return None
+
+def pol2cart(rho, phi):
+    x = rho * np.cos(phi)
+    y = rho * np.sin(phi)
+
+    return(x, y)

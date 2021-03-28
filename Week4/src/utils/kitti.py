@@ -1,13 +1,15 @@
 import cv2
 import png
 import numpy as np
+import glob
+from tqdm.auto import tqdm
 from PIL import Image
 import os
 from os.path import join, exists
 from models.optical_flow import block_matching
 from utils.metrics import compute_MSEN_PEPN
 from utils.visualize import OF_hsv_visualize, OF_quiver_visualize
-from utils.utils import write_png_flow
+from utils.utils import write_png_flow, pol2cart
 import pyflow.pyflow as pyflow
 
 def read_kitti_OF(flow_file):
@@ -64,8 +66,13 @@ class KITTI():
             nInnerFPIterations=args.nInnerFPIterations,
             nSORIterations=args.nSORIterations,
             colType=args.colType)
+       
+        # Stabilization BM
+        self.frames_paths = glob.glob(join(self.data_path,'video_stabilization','flowers','flowers_01',"*." + args.extension))
+        self.frames_paths.sort()
 
         # Output path to results
+        self.output_path = args.output_path
         save_path = join(args.output_path,mode)
         os.makedirs(save_path,exist_ok=True)
         if self.mode in 'block_matching':
@@ -99,6 +106,33 @@ class KITTI():
         
             write_png_flow(self.pred_OF,self.png_name)
     
+    def seq_stabilization_BM(self):
+        
+        #resize to sped up OF
+        H, W, C = cv2.imread(self.frames_paths[0]).shape
+        dsize = (int(W*0.25), int(H*0.25))
+
+        for f_id, path in enumerate(tqdm(self.frames_paths[0:-1], 'Stabilization in progress')):
+            #load pair of frames
+            img1 = cv2.imread(self.frames_paths[f_id])
+            img1 = cv2.resize(img1, dsize)
+            img2 = cv2.imread(self.frames_paths[f_id+1]) 
+            img2 = cv2.resize(img2, dsize)
+            #OF
+            pred_OF = block_matching(img1, img2, self.block_matching['window_size'], self.block_matching['shift'], self.block_matching['stride'])
+            mag, ang = cv2.cartToPolar(np.array(pred_OF[0]), np.array(pred_OF[1]))
+            #keep the values which is foudn the most for mag and ang
+            uniques, counts = np.unique(mag, return_counts=True)
+            mc_mag = uniques[counts.argmax()]
+            uniques, counts = np.unique(ang, return_counts=True)
+            mc_ang = uniques[counts.argmax()]
+            u, v = pol2cart(mc_mag, mc_ang)
+            #Create an affine transformation for v and u
+            affine_H = np.float32([[1, 0, -v],[0,1,-u]])
+            #Compute affine transforamtion
+            img2_stabilized = cv2.warpAffine(img2,affine_H,(img2.shape[1],img2.shape[0]))
+            cv2.imwrite(join(self.output_path,'seq_stabilization','%04d' % f_id +'.png'),img2_stabilized)
+
     def get_MSEN_PEPN(self):
         return compute_MSEN_PEPN(self.GTOF,self.pred_OF)
     
