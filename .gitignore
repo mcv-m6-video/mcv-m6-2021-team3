@@ -11,6 +11,10 @@ datasets/
 Week2/src/outputs/
 Week3/src/yolov3_data
 Week3/models/research/object_detection/checkpoints
+Week4/src/DUTCode/ckpt
+Week4/src/DUTCode/images
+Week4/src/DUTCode/demo
+Week4/src/DUTCode/results
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -153,6 +157,9 @@ cython_debug/
 
 # models
 *.pkl
+*.pth
 *.pth.tar
 *.pt
 *.png
+Week4/src/DUTCode/images/14.jpg
+Week4/src/DUTCode/images/1.jpg
