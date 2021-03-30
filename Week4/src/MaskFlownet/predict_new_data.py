@@ -1,5 +1,6 @@
 import os
 import sys
+import pickle
 
 # ======== PLEASE MODIFY ========
 # where is the repo
@@ -88,6 +89,12 @@ def load_checkpoint(pipe, config, checkpoint):
 def predict_image_pair_flow(img1, img2, pipe, resize=None):
     for result in pipe.predict([img1], [img2], batch_size = 1, resize=resize):
         flow, occ_mask, warped = result
+        print(type(flow))
+        print(flow.shape)
+
+        with open('./flow_output/u_v.pkl', 'wb') as f:
+            pickle.dump(flow, f)
+
     return flow, occ_mask, warped
     
 
@@ -122,13 +129,13 @@ def predict_video_flow(video_filename, batch_size, resize=None):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--flow_filepath', default="./flow_output/flow.png", type=str, help='destination filepath of the flow image/video')
-    parser.add_argument('--config', default="MaskFlownet.yaml", type=str, nargs='?')
-    parser.add_argument('--image_1', default="./images/000045_10.png", type=str, help='filepath of the first image')
-    parser.add_argument('--image_2', default="./images/000045_11.png", type=str, help='filepath of the second image')
+    parser.add_argument('flow_filepath', type=str, help='destination filepath of the flow image/video')
+    parser.add_argument('config', type=str, nargs='?', default=None)
+    parser.add_argument('--image_1', type=str, help='filepath of the first image')
+    parser.add_argument('--image_2', type=str, help='filepath of the second image')
     parser.add_argument('--video_filepath', type=str, help='filepath of the input video')
     parser.add_argument('-g', '--gpu_device', type=str, default='', help='Specify gpu device(s)')
-    parser.add_argument('-c', '--checkpoint', type=str, default='8caNov12', 
+    parser.add_argument('-c', '--checkpoint', type=str, default=None, 
     	help='model checkpoint to load; by default, the latest one.'
     	'You can use checkpoint:steps to load to a specific steps')
     parser.add_argument('--clear_steps', action='store_true')
