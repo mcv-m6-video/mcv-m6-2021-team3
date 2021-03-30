@@ -7,7 +7,7 @@ Week1/data_stereo_flow
 Week1/AICity_data/
 data_stereo_flow/
 results_opticalflow_kitti/
-datasets/
+raw_data/
 Week2/src/outputs/
 Week3/src/yolov3_data
 Week3/models/research/object_detection/checkpoints

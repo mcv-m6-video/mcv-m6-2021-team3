@@ -1,0 +1,1 @@
+python main.py --window_size 25 --shift 50 --stride 10

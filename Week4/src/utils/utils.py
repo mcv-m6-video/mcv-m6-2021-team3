@@ -9,8 +9,35 @@ import json
 from termcolor import colored
 import imageio
 import cv2
+import png
 import subprocess
 from numpngw import write_png
+
+def read_kitti_OF(flow_file):
+    """
+    Read from KITTI .png file
+    :param flow_file: name of the flow file
+    :return: optical flow data in matrix
+    """
+    
+    flow_object = png.Reader(filename=flow_file)
+    flow_direct = flow_object.asDirect()
+    flow_data = list(flow_direct[2])
+    (w, h) = flow_direct[3]['size']
+    print("Reading %d x %d flow file in .png format" % (h, w))
+    flow = np.zeros((h, w, 3), dtype=np.float64)
+
+    for i in range(len(flow_data)):
+        flow[i, :, 0] = flow_data[i][0::3]
+        flow[i, :, 1] = flow_data[i][1::3]
+        flow[i, :, 2] = flow_data[i][2::3]
+
+    invalid_idx = (flow[:, :, 2] == 0)
+    flow[:, :, 0:2] = (flow[:, :, 0:2] - 2 ** 15) / 64.0
+    flow[invalid_idx, 0] = 0
+    flow[invalid_idx, 1] = 0
+
+    return flow
 
 def write_png_flow(flow, png_file):
     flow = flow[:,:,:2]

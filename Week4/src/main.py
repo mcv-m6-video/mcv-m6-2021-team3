@@ -1,20 +1,23 @@
 import os
 from os.path import join
-from utils.ai_city import AICity
-from utils.kitti import KITTI
+from datasets.ai_city import AICity
+from datasets.kitti import KITTI
+from datasets.load_seq import LoadSeq
 from config.config import Config
 
 def main(args):
 
-    kitti = KITTI(args.data_path, args.OF_mode, args)
-
+    # task 1
+    #kitti = KITTI(args.data_path, args.OF_mode, args)
     #kitti.estimate_OF()
     #msen, pepn = kitti.get_MSEN_PEPN()
     #kitti.visualize()
     #print('MSEN:', msen)
     #print('PEPN:', pepn)
-    # task2
-    kitti.seq_stabilization_BM()
+
+    # task 2
+    seq = LoadSeq(args.data_path, args)
+    seq.stabilize_seq()
 
 
 if __name__ == "__main__":

@@ -14,12 +14,13 @@ class Config:
         parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
         parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
-        parser.add_argument('--OF_mode', type=str, default='pyflow', choices = ['block_matching', 'pyflow'], help='What type of optical flow to perform')
+        parser.add_argument('--OF_mode', type=str, default='block_matching', choices = ['block_matching', 'pyflow'], help='What type of optical flow to perform')
 
         # ================================ INPUT ================================ #
-        parser.add_argument('--data_path', type=str, default='../../datasets',#AICity/train/S03/c010/vdo
+        parser.add_argument('--data_path', type=str, default='../../raw_data',#AICity/train/S03/c010/vdo
                             help="Path where the AICity data is located")
-        parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
+        parser.add_argument('--gt_path', type=str, default='../../raw_data', help="Folder where the annotations are stored")
+        parser.add_argument('--seq_path', type=str, default='video_stabilization/flowers/flowers_01')
         parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
@@ -50,7 +51,7 @@ class Config:
         parser.add_argument('--nSORIterations', type=int, default=30)
         parser.add_argument('--colType', type=int, default=0, help='0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))')
         # stabilization
-        parser.add_argument('--modelStab', type=str, default='task22', choices=['task21', 'task22'])
+        parser.add_argument('--modelStab', type=str, default='opencv2', choices=['ours', 'opencv2'])
 
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")
