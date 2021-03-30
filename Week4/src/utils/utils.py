@@ -239,3 +239,31 @@ def pol2cart(rho, phi):
     y = rho * np.sin(phi)
 
     return(x, y)
+
+def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf, obj_id=0):
+    """
+    Updates the annotations dict with by adding the desired data to it
+    :param annot: annotation dict
+    :param frame_id: id of the framed added
+    :param xmin: min position on the x axis of the bbox
+    :param ymin: min position on the y axis of the bbox
+    :param xmax: max position on the x axis of the bbox
+    :param ymax: max position on the y axis of the bbox
+    :param conf: confidence
+    :return: the updated dictionary
+    """
+
+    frame_name = '%04d' % int(frame_id)
+    obj_info = dict(
+        name='car',
+        obj_id=obj_id,
+        bbox=list(map(float, [xmin, ymin, xmax, ymax])),
+        confidence=float(conf)
+    )
+
+    if frame_name not in annot.keys():
+        annot.update({frame_name: [obj_info]})
+    else:
+        annot[frame_name].append(obj_info)
+
+    return annot
