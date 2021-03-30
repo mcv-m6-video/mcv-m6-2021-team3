@@ -1,9 +1,15 @@
+import numpy as np
+import cv2
 from tqdm import tqdm
 from models.sort import Sort
-from utils.utils import return_bb, str_frame_id
+from utils.utils import return_bb, str_frame_id, update_data
+from utils.metrics import compute_iou, interpolate_bb
+from models.optical_flow import block_matching
+import pyflow.pyflow as pyflow
 
-
-def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True, remove_noise = True):
+def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidth, nOuterFPIterations, 
+                                nInnerFPIterations, nSORIterations, colType, threshold = 0.5, 
+                                interpolate = True, remove_noise = True):
 
     id_seq = {}
     #not assuming any order
@@ -16,6 +22,15 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True
         id_seq.update({value: True})
     #now, frame by frame, no assuming order nor continuity
     for i in tqdm(range(start_frame, num_frames),'Frames Overlapping Tracking'):
+        img1 = cv2.imread(frames_paths[i-1])
+        img2 = cv2.imread(frames_paths[i])
+        img1 = img1.astype(float) / 255.
+        img2 = img2.astype(float) / 255.
+        #pred_OF = block_matching(img1, img2, window_size, shift, stride)
+        u, v, _ = pyflow.coarse2fine_flow(img1, img2, alpha[0], ratio[0], minWidth[0], 
+                                        nOuterFPIterations[0], nInnerFPIterations[0], 
+                                        nSORIterations[0], colType)
+
         #init
         id_seq = {frame_id: False for frame_id in id_seq}
         
