@@ -49,6 +49,8 @@ class Config:
         parser.add_argument('--nInnerFPIterations', type=int, default=1)
         parser.add_argument('--nSORIterations', type=int, default=30)
         parser.add_argument('--colType', type=int, default=0, help='0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))')
+        # stabilization
+        parser.add_argument('--modelStab', type=str, default='task22', choices=['task21', 'task22'])
 
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")

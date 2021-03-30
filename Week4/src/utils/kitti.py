@@ -107,31 +107,99 @@ class KITTI():
             write_png_flow(self.pred_OF,self.png_name)
     
     def seq_stabilization_BM(self):
-        
-        #resize to sped up OF
-        H, W, C = cv2.imread(self.frames_paths[0]).shape
-        dsize = (int(W*0.25), int(H*0.25))
 
-        for f_id, path in enumerate(tqdm(self.frames_paths[0:-1], 'Stabilization in progress')):
-            #load pair of frames
-            img1 = cv2.imread(self.frames_paths[f_id])
-            img1 = cv2.resize(img1, dsize)
-            img2 = cv2.imread(self.frames_paths[f_id+1]) 
-            img2 = cv2.resize(img2, dsize)
-            #OF
-            pred_OF = block_matching(img1, img2, self.block_matching['window_size'], self.block_matching['shift'], self.block_matching['stride'])
-            mag, ang = cv2.cartToPolar(np.array(pred_OF[0]), np.array(pred_OF[1]))
-            #keep the values which is foudn the most for mag and ang
-            uniques, counts = np.unique(mag, return_counts=True)
-            mc_mag = uniques[counts.argmax()]
-            uniques, counts = np.unique(ang, return_counts=True)
-            mc_ang = uniques[counts.argmax()]
-            u, v = pol2cart(mc_mag, mc_ang)
-            #Create an affine transformation for v and u
-            affine_H = np.float32([[1, 0, -v],[0,1,-u]])
-            #Compute affine transforamtion
-            img2_stabilized = cv2.warpAffine(img2,affine_H,(img2.shape[1],img2.shape[0]))
-            cv2.imwrite(join(self.output_path,'seq_stabilization','%04d' % f_id +'.png'),img2_stabilized)
+        if self.stabilizationBM in 'task21':
+        
+            #resize to sped up OF
+            H, W, C = cv2.imread(self.frames_paths[0]).shape
+            dsize = (int(W*0.25), int(H*0.25))
+
+            for f_id, path in enumerate(tqdm(self.frames_paths[0:-1], 'Stabilization in progress')):
+                #load pair of frames
+                img1 = cv2.imread(self.frames_paths[f_id])
+                img1 = cv2.resize(img1, dsize)
+                img2 = cv2.imread(self.frames_paths[f_id+1]) 
+                img2 = cv2.resize(img2, dsize)
+                #OF
+                pred_OF = block_matching(img1, img2, self.block_matching['window_size'], self.block_matching['shift'], self.block_matching['stride'])
+                mag, ang = cv2.cartToPolar(np.array(pred_OF[0]), np.array(pred_OF[1]))
+                #keep the values which is foudn the most for mag and ang
+                uniques, counts = np.unique(mag, return_counts=True)
+                mc_mag = uniques[counts.argmax()]
+                uniques, counts = np.unique(ang, return_counts=True)
+                mc_ang = uniques[counts.argmax()]
+                u, v = pol2cart(mc_mag, mc_ang)
+                #Create an affine transformation for v and u
+                affine_H = np.float32([[1, 0, -v],[0,1,-u]])
+                #Compute affine transforamtion
+                img2_stabilized = cv2.warpAffine(img2,affine_H,(img2.shape[1],img2.shape[0]))
+                cv2.imwrite(join(self.output_path,'seq_stabilization','%04d' % f_id +'.png'),img2_stabilized)
+
+        elif self.stabilizationBM in 'task22':
+                
+            n_frames = int(len(self.frames_paths))
+            H, W, C = cv2.imread(self.frames_paths[0]).shape
+            dsize = (int(W*0.25), int(H*0.25))
+            transforms = np.zeros((n_frames-1, 3), np.float32) 
+            prev = cv2.imread(self.frames_paths[0])
+            prev = cv2.resize(prev, dsize)
+            prev = cv2.cvtColor(prev, cv2.COLOR_BGR2GRAY)
+
+            for f_id, path in enumerate(tqdm(self.frames_paths[0:-1], 'OF and transformation computation')):
+
+                #load pair of frames
+                curr = cv2.imread(self.frames_paths[f_id+1]) 
+                curr = cv2.resize(curr, dsize) 
+                curr = cv2.cvtColor(curr, cv2.COLOR_BGR2GRAY)
+                #OF computation
+                prev_pts = cv2.goodFeaturesToTrack(prev, maxCorners=200, qualityLevel=0.01, minDistance=30, blockSize=3)
+                curr_pts, status, err = cv2.calcOpticalFlowPyrLK(prev, curr, prev_pts, None)
+                idx = np.where(status==1)[0]
+                prev_pts = prev_pts[idx]
+                curr_pts = curr_pts[idx]
+                assert prev_pts.shape == curr_pts.shape
+                    
+                #Tranformation estimation
+                m = cv2.estimateRigidTransform(prev_pts, curr_pts, fullAffine=False) 
+                dx = m[0,2]
+                dy = m[1,2]
+                da = np.arctan2(m[1,0], m[0,0]) # Extract rotation angle
+                transforms[f_id] = [dx,dy,da] 
+
+                prev = curr
+                
+            # Find the cumulative sum of tranform matrix for each dx,dy and da
+            trajectory = np.cumsum(transforms, axis=0) 
+
+            smoothed_trajectory = smoothing(trajectory, 50)
+            difference = smoothed_trajectory - trajectory
+            transforms_smooth = transforms + difference
+
+            for f_id, path in enumerate(tqdm(self.frames_paths[0:-1], 'Stabilization in process')):
+
+                frame = cv2.imread(self.frames_paths[f_id]) 
+                frame = cv2.resize(frame, dsize)
+                # Extract transformations from the new transformation array
+                dx = transforms_smooth[f_id,0]
+                dy = transforms_smooth[f_id,1]
+                da = transforms_smooth[f_id,2]
+                # Reconstruct transformation matrix accordingly to new values
+                m = np.zeros((2,3), np.float32)
+                m[0,0] = np.cos(da)
+                m[0,1] = -np.sin(da)
+                m[1,0] = np.sin(da)
+                m[1,1] = np.cos(da)
+                m[0,2] = dx
+                m[1,2] = dy
+                # Apply affine wrapping to the given frame
+                frame_stabilized = cv2.warpAffine(frame, m, (H,W))
+
+                # Fix border artifacts
+                frame_stabilized = fixBorder(frame_stabilized) 
+                cv2.imshow('Frame', frame_stabilized)
+                cv2.waitKey(1)
+                cv2.imwrite(join(self.output_path,'seq_stabilization','%04d' % f_id +'.png'),frame_stabilized)
+
 
     def get_MSEN_PEPN(self):
         return compute_MSEN_PEPN(self.GTOF,self.pred_OF)
