@@ -21,10 +21,10 @@ import os
 import time
 
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
-from utils.utils import write_json_file, read_json_file, str_frame_id, dict_to_list_IDF1, dict_to_list_track
+from utils.utils import write_json_file, read_json_file, str_frame_id, dict_to_list_IDF1, dict_to_list_track, update_data
 from utils.visualize import visualize_background_iou
 
-from models.yolov3 import UltralyricsYolo, to_yolov3
+#from models.yolov3 import UltralyricsYolo, to_yolov3
 from models.tracking import compute_tracking_overlapping, compute_tracking_kalman
 
 
@@ -85,34 +85,6 @@ def load_annot(annot_dir, name, ignore_parked=True):
 
     return annot
 
-def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf, obj_id=0):
-    """
-    Updates the annotations dict with by adding the desired data to it
-    :param annot: annotation dict
-    :param frame_id: id of the framed added
-    :param xmin: min position on the x axis of the bbox
-    :param ymin: min position on the y axis of the bbox
-    :param xmax: max position on the x axis of the bbox
-    :param ymax: max position on the y axis of the bbox
-    :param conf: confidence
-    :return: the updated dictionary
-    """
-
-    frame_name = '%04d' % int(frame_id)
-    obj_info = dict(
-        name='car',
-        obj_id=obj_id,
-        bbox=list(map(float, [xmin, ymin, xmax, ymax])),
-        confidence=float(conf)
-    )
-
-    if frame_name not in annot.keys():
-        annot.update({frame_name: [obj_info]})
-    else:
-        annot[frame_name].append(obj_info)
-
-    return annot
-
 class AICity:
     """
     This class contains all the logic of the background estimation process for the AICity dataset
@@ -136,7 +108,7 @@ class AICity:
 
         # Load detections
         self.gt_bboxes = load_annot(args.gt_path, 'ai_challenge_s03_c010-full_annotation.xml')
-        self.det_bboxes = {}
+        self.det_bboxes = read_json_file('yolov3_ultralytics.json')
 
         # Load frame paths and filter by gt
         self.frames_paths = glob.glob(join(self.data_path,'AICity/train/S03/c010/vdo', "*." + args.extension))
@@ -149,6 +121,20 @@ class AICity:
         self.save_json = args.save_json
         self.view_img = args.view_img
         self.save_img = args.save_img
+
+        # OF_BM PARAMETERS
+        self.window_size = args.window_size
+        self.shift = args.shift
+        self.stride = args.stride
+
+        # PYFLOW PARAMETERS
+        self.alpha = args.alpha, 
+        self.ratio = args.ratio, 
+        self.minWidth = args.minWidth, 
+        self.nOuterFPIterations = args.nOuterFPIterations,
+        self.nInnerFPIterations = args.nInnerFPIterations,
+        self.nSORIterations = args.nSORIterations,
+        self.colType = args.colType
 
         
     def __len__(self):
@@ -187,26 +173,12 @@ class AICity:
     def data_to_model(self):
         to_yolov3(self.data, self.gt_bboxes, self.split[0])
     
-    def inference(self, weights=None):
-        model = UltralyricsYolo(weights, args=self.options)
-        
-        self.frames_paths = self.frames_paths[int(len(self.frames_paths)*0.25):]
-
-        for file_name in tqdm(self.frames_paths, 'Model predictions ({}, {})'.format(self.model, self.framework)):
-            pred = model.predict(file_name)
-            frame_id = file_name[-8:-4]
-            for (bbox), conf in pred:
-                self.det_bboxes = update_data(self.det_bboxes, frame_id, *bbox, conf)
-        
-        if self.save_json:
-            save_path = join(self.options.output_path, self.mode+'/')
-            os.makedirs(save_path, exist_ok=True)
-
-            write_json_file(self.det_bboxes,save_path+'_'.join((self.model, self.framework+'.json')))
-    
     def tracking(self):
         if self.options.tracking_mode in 'overlapping':
-            self.det_bboxes = compute_tracking_overlapping(self.det_bboxes)
+            self.det_bboxes = compute_tracking_overlapping(self.det_bboxes, self.frames_paths,
+                                                            self.alpha, self.ratio, self.minWidth, 
+                                                            self.nOuterFPIterations, self.nInnerFPIterations, 
+                                                            self.nSORIterations, self.colType)
         elif self.options.tracking_mode in 'kalman':
             self.det_bboxes = compute_tracking_kalman(self.det_bboxes)
 
