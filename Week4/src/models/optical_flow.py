@@ -58,3 +58,31 @@ def block_matching(img1, img2, window_size, shift, stride):
         ty = 0
     
     return vx, vy
+
+def movingAverage(curve, radius): 
+    window_size = 2 * radius + 1
+    # Define the filter 
+    f = np.ones(window_size)/window_size 
+    # Add padding to the boundaries 
+    curve_pad = np.lib.pad(curve, (radius, radius), 'edge') 
+    # Apply convolution 
+    curve_smoothed = np.convolve(curve_pad, f, mode='same') 
+    # Remove padding 
+    curve_smoothed = curve_smoothed[radius:-radius]
+    # return smoothed curve
+    return curve_smoothed
+
+def smoothing(trajectory, smoothing_radius): 
+    smoothed_trajectory = np.copy(trajectory) 
+    # Filter the x, y and angle curves
+    for i in range(3):
+        smoothed_trajectory[:,i] = movingAverage(trajectory[:,i], radius=smoothing_radius)
+
+    return smoothed_trajectory
+
+def fixBorder(frame):
+    s = frame.shape
+    # Scale the image 4% without moving the center
+    T = cv2.getRotationMatrix2D((s[1]/2, s[0]/2), 0, 1.04)
+    frame = cv2.warpAffine(frame, T, (s[1], s[0]))
+    return frame
