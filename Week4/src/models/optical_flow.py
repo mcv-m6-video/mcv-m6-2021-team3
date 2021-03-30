@@ -50,14 +50,14 @@ def block_matching(img1, img2, window_size, shift, stride):
             # should be reconsidered when using it.
             #vx[-tx,ty] = flowy
             #vy[-tx,ty] = flowx
-            vx[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowx
-            vy[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowy
+            vx[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowy
+            vy[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowx
             
             ty += 1
         tx += 1
         ty = 0
     
-    return vx, vy
+    return np.concatenate((vx[..., None], vy[..., None], np.ones((vx.shape[0],vx.shape[1],1))), axis=2)
 
 def movingAverage(curve, radius): 
     window_size = 2 * radius + 1

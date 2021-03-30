@@ -6,7 +6,7 @@ from tqdm.auto import tqdm
 from PIL import Image
 import os
 from os.path import join, exists
-from models.optical_flow import block_matching
+from models.optical_flow import block_matching, smoothing, fixBorder
 from utils.metrics import compute_MSEN_PEPN
 from utils.visualize import OF_hsv_visualize, OF_quiver_visualize
 from utils.utils import write_png_flow, pol2cart
@@ -70,6 +70,7 @@ class KITTI():
         # Stabilization BM
         self.frames_paths = glob.glob(join(self.data_path,'video_stabilization','flowers','flowers_01',"*." + args.extension))
         self.frames_paths.sort()
+        self.stabilizationBM = args.modelStab
 
         # Output path to results
         self.output_path = args.output_path
@@ -195,7 +196,7 @@ class KITTI():
                 frame_stabilized = cv2.warpAffine(frame, m, (H,W))
 
                 # Fix border artifacts
-                frame_stabilized = fixBorder(frame_stabilized) 
+                frame_stabilized = fixBorder(frame_stabilized)
                 cv2.imshow('Frame', frame_stabilized)
                 cv2.waitKey(1)
                 cv2.imwrite(join(self.output_path,'seq_stabilization','%04d' % f_id +'.png'),frame_stabilized)
