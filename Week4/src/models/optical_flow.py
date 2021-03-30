@@ -3,18 +3,24 @@ import sys
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.metrics import dist_func
+from utils.metrics import dist_func, bilateral_weights
 from tqdm.auto import tqdm
 
-def block_matching(img1, img2, window_size, shift, stride, metric='ssd'):
+def block_matching(img1, img2, window_size, shift, stride, metric='ssd', fw_bw='fw', bilateral=None):
     """
     Block matching method to compute Optical Flow for two consecutive frames.
     :params img1, img2: First and second consecutive frames
     :param window_size: Size of the window to consider around each pixel
     :param shift: Displacement of the window in the other frame
     :param stride: Step size between two estimations
+    :param metric: Metric measurement of difference between windows
+    :param fw_bw: Forward or backward computation ('fw', 'bw')
     :return: Optical flow for each direction x,y
     """
+    if fw_bw in 'bw':
+        img1, img2 = img2, img1
+    if bilateral is None:
+        weights = None
     
     # Initialize the matrices.
     vx = np.zeros((img2.shape[:2]))
@@ -24,12 +30,14 @@ def block_matching(img1, img2, window_size, shift, stride, metric='ssd'):
     # Go through all the blocks.
     for x in tqdm(np.arange(wh, img2.shape[0] - wh - 1, stride), 'Computing pixel Optical Flow'):
         for y in np.arange(wh, img2.shape[1] - wh - 1, stride):
-            nm = img2[x-wh:x+wh+1, y-wh:y+wh+1].flatten()
+            nm = img2[x-wh:x+wh+1, y-wh:y+wh+1]
+            if bilateral is not None:
+                weights = bilateral_weights(nm,bilateral['gamma_col'],bilateral['gamma_pos'])
+            nm = nm.flatten()
             
+            min_dist = np.inf
             if metric in 'ncc':
                 min_dist=0
-            else:
-                min_dist = np.inf
             flowx, flowy = 0, 0
             # Compare each block of the next frame to each block from a greater
             # region with the same center in the previous frame.
@@ -38,7 +46,7 @@ def block_matching(img1, img2, window_size, shift, stride, metric='ssd'):
                     om = img1[i-wh:i+wh+1, j-wh:j+wh+1].flatten()
                     
                     # Compute the distance and update minimum.
-                    dist = dist_func(nm, om, metric)
+                    dist = dist_func(nm, om, metric, weights)
                     if (dist > min_dist if metric in 'ncc' else dist < min_dist):
                         min_dist = dist
                         flowx, flowy = x - i, y - j
@@ -47,7 +55,10 @@ def block_matching(img1, img2, window_size, shift, stride, metric='ssd'):
             vx[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowy
             vy[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowx
     
-    return np.concatenate((vx[..., None], vy[..., None], np.ones((vx.shape[0],vx.shape[1],1))), axis=2)
+    if fw_bw in 'fw':
+        return np.concatenate((vx[..., None], vy[..., None], np.ones((vx.shape[0],vx.shape[1],1))), axis=2)
+    elif fw_bw in 'bw':
+        return np.concatenate((vx[..., None]*-1, vy[..., None]*-1, np.ones((vx.shape[0],vx.shape[1],1))), axis=2)
 
 def movingAverage(curve, radius): 
     window_size = 2 * radius + 1

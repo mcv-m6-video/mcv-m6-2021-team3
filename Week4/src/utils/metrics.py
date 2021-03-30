@@ -4,6 +4,16 @@ import sys
 from scipy.optimize import linear_sum_assignment as linear_assignment
 from utils.utils import dict_to_list, bbox_overlap
 
+def bilateral_weights(arr, gamma_col=12, gamma_pos=17):
+    
+    w_step = int(arr.shape[0]/2)
+    delta_c = abs(arr[w_step*2,w_step*2] - arr)/3
+    coordx, coordy = np.meshgrid(np.arange(-w_step,w_step+1),np.arange(-w_step,w_step+1))
+    delta_g = np.sqrt(coordx ** 2 + coordy ** 2)
+    weights = np.exp(-(delta_c)/gamma_col) * np.exp(-(delta_g)/gamma_pos)
+
+    return weights.flatten()
+
 def dist_func(vec1, vec2, metric='ssd', weights=None):
     """
     Compute global distance between two vectors
@@ -12,7 +22,8 @@ def dist_func(vec1, vec2, metric='ssd', weights=None):
     """
     assert len(vec1) == len(vec2)
     if weights is None:
-        weights = np.ones(vec1.shape)*(1/(vec1.shape[0]**2))
+        weights = np.ones(vec1.shape)*(1/vec1.size)
+
     if metric in 'ssd':
         # Sum of Squared Distances
         return sum(weights*(vec1 - vec2) ** 2)
@@ -20,7 +31,7 @@ def dist_func(vec1, vec2, metric='ssd', weights=None):
     elif metric in 'sad':
         # Sum of Absolute Distances
         return sum(np.abs(weights*(vec1 - vec2)))
-        
+
     elif metric in 'ncc':
         #Normalized Cross Correlation
         mean1 = np.sum(weights * vec1)

@@ -30,6 +30,14 @@ class KITTI():
             window_size = args.window_size,
             shift = args.shift,
             stride = args.stride)
+        self.metric = args.dist_func
+        if args.bilateral is not None:
+            self.bilateral = dict(
+                gamma_col = args.bilateral[0],
+                gamma_pos = args.bilateral[1])
+        else:
+            self.bilateral = None
+
         # For pyflow
         self.pyflow = dict(
             alpha=args.alpha, 
@@ -45,9 +53,10 @@ class KITTI():
         save_path = join(args.output_path,mode)
         os.makedirs(save_path,exist_ok=True)
         if self.mode in 'block_matching':
-            self.png_name = join(save_path,'_'.join(('ws-'+str(args.window_size),
-                                                'shift-'+str(args.shift),
-                                                'stride-'+str(args.stride)+'.png')))
+            self.png_name = join(save_path,'_'.join((args.dist_func,
+                                                     'ws-'+str(args.window_size),
+                                                     'shift-'+str(args.shift),
+                                                     'stride-'+str(args.stride)+'.png')))
         elif self.mode in 'pyflow':
             self.png_name = join(save_path,'_'.join((str(args.alpha), str(args.ratio), str(args.minWidth), 
                                                      str(args.nOuterFPIterations), str(args.nInnerFPIterations), 
@@ -59,9 +68,10 @@ class KITTI():
             self.pred_OF = read_kitti_OF(self.png_name)
         else:
             if self.mode in 'block_matching':
-                img1, img2 = [cv2.imread(img_path) for img_path in self.seq_paths]
+                img1, img2 = [cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY) for img_path in self.seq_paths]
                 self.pred_OF = block_matching(img1, img2, self.block_matching['window_size'], 
-                                            self.block_matching['shift'], self.block_matching['stride'])
+                                            self.block_matching['shift'], self.block_matching['stride'],
+                                            metric=self.metric,bilateral=self.bilateral)
                 
             elif self.mode in 'pyflow':
                 img1, img2 = [np.array(Image.open(img_path.replace('image','colored'))) for img_path in self.seq_paths]
