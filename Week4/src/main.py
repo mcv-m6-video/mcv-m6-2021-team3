@@ -16,9 +16,9 @@ def main(args):
     #print('PEPN:', pepn)
 
     # task 2
-    seq = LoadSeq(args.data_path, args)
-    seq.stabilize_seq()
-
+    #seq = LoadSeq(args.data_path, args)
+    #seq.stabilize_seq()
+    ai_city = AICity(args)
 
 if __name__ == "__main__":
     main(Config().get_args())

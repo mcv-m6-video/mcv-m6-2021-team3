@@ -35,7 +35,7 @@ def seq_stabilization_BM(frames_paths, output_path, bm_opts):
         u = pred_OF[:, :, 0] * occ
         v = pred_OF[:, :, 1] * occ
         mag, ang = cv2.cartToPolar(u.astype(np.float32), v.astype(np.float32))
-        #keep the values which is foudn the most for mag and ang
+        #keep the values which is found the most for mag and ang
         uniques, counts = np.unique(mag, return_counts=True)
         mc_mag = uniques[counts.argmax()]
         uniques, counts = np.unique(ang, return_counts=True)
@@ -54,7 +54,7 @@ def seq_stabilization_LK(frames_paths, output_path):
 
     n_frames = int(len(frames_paths))
     H, W, C = cv2.imread(frames_paths[0]).shape
-    dsize = (int(W*0.25), int(H*0.25))
+    dsize = (W,H)#(int(W*0.25), int(H*0.25))
     transforms = np.zeros((n_frames-1, 3), np.float32) 
     prev = cv2.imread(frames_paths[0])
     prev = cv2.resize(prev, dsize)
@@ -75,7 +75,7 @@ def seq_stabilization_LK(frames_paths, output_path):
         assert prev_pts.shape == curr_pts.shape
             
         #Tranformation estimation
-        m, _ = cv2.estimateAffinePartial2D(prev_pts, curr_pts) 
+        m, _ = cv2.estimateAffine2D(prev_pts, curr_pts) 
         dx = m[0,2]
         dy = m[1,2]
         da = np.arctan2(m[1,0], m[0,0]) # Extract rotation angle
@@ -107,7 +107,7 @@ def seq_stabilization_LK(frames_paths, output_path):
         m[0,2] = dx
         m[1,2] = dy
         # Apply affine wrapping to the given frame
-        frame_stabilized = cv2.warpAffine(frame, m, (W,H))
+        frame_stabilized = cv2.warpAffine(frame, m, dsize)
 
         # Fix border artifacts
         frame_stabilized = fixBorder(frame_stabilized)

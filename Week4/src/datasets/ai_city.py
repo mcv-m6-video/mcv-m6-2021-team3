@@ -139,7 +139,7 @@ class AICity:
         self.det_bboxes = {}
 
         # Load frame paths and filter by gt
-        self.frames_paths = glob.glob(join(self.data_path, "*." + args.extension))
+        self.frames_paths = glob.glob(join(self.data_path,'AICity/train/S03/c010/vdo', "*." + args.extension))
         self.frames_paths = [path for frame_id,_ in self.gt_bboxes.items() for path in self.frames_paths if frame_id in path]
         self.frames_paths.sort()
         self.data = [{'train':[], 'val':[]}.copy() for _ in range(self.split[1])]

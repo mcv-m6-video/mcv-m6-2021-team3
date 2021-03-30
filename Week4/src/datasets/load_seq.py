@@ -8,6 +8,12 @@ from models.stabilize import seq_stabilization_BM, seq_stabilization_LK
 
 class LoadSeq():
     def __init__(self, data_path, args):
+        """
+        Init of the Load Sequence class
+
+        :param data_path: path to data
+        :param args: configuration for the current estimation
+        """
         
         # INPUT PARAMETERS
         self.data_path = data_path

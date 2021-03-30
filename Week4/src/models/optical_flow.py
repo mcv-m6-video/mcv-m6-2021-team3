@@ -18,20 +18,15 @@ def block_matching(img1, img2, window_size, shift, stride):
     
     # Initialize the matrices.
     vx = np.zeros((img2.shape[:2]))
-    '''np.zeros((int((img2.shape[0] - window_size)/stride+1), 
-                int((img2.shape[1] - window_size)/stride+1)))'''
     vy = np.zeros((img2.shape[:2]))
-    '''np.zeros((int((img2.shape[0] - window_size)/stride+1), 
-                int((img2.shape[1] - window_size)/stride+1)))'''
     wh = int(window_size / 2)
     
     # Go through all the blocks.
-    tx, ty = 0, 0
     for x in tqdm(np.arange(wh, img2.shape[0] - wh - 1, stride), 'Computing pixel Optical Flow'):
         for y in np.arange(wh, img2.shape[1] - wh - 1, stride):
             nm = img2[x-wh:x+wh+1, y-wh:y+wh+1].flatten()
             
-            min_dist = None
+            min_dist = np.inf
             flowx, flowy = 0, 0
             # Compare each block of the next frame to each block from a greater
             # region with the same center in the previous frame.
@@ -41,21 +36,13 @@ def block_matching(img1, img2, window_size, shift, stride):
                     
                     # Compute the distance and update minimum.
                     dist = ssd(nm, om)
-                    if not min_dist or dist < min_dist:
+                    if dist < min_dist:
                         min_dist = dist
                         flowx, flowy = x - i, y - j
             
-            # Update the flow field. Note the negative tx and the reversal of
-            # flowx and flowy. This is done to provide proper quiver plots, but
-            # should be reconsidered when using it.
-            #vx[-tx,ty] = flowy
-            #vy[-tx,ty] = flowx
+            # Update the flow field.
             vx[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowy
             vy[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowx
-            
-            ty += 1
-        tx += 1
-        ty = 0
     
     return np.concatenate((vx[..., None], vy[..., None], np.ones((vx.shape[0],vx.shape[1],1))), axis=2)
 
