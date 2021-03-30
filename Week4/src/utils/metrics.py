@@ -4,14 +4,30 @@ import sys
 from scipy.optimize import linear_sum_assignment as linear_assignment
 from utils.utils import dict_to_list, bbox_overlap
 
-def ssd(vec1, vec2):
+def dist_func(vec1, vec2, metric='ssd', weights=None):
     """
-    Compute Sum of Squared Distances between two vectors
+    Compute global distance between two vectors
     :param vec1, vec2: Two vectors
-    :return: Computed SSD distance
+    :return: Computed distance
     """
     assert len(vec1) == len(vec2)
-    return sum((vec1 - vec2) ** 2)
+    if weights is None:
+        weights = np.ones(vec1.shape)*(1/(vec1.shape[0]**2))
+    if metric in 'ssd':
+        # Sum of Squared Distances
+        return sum(weights*(vec1 - vec2) ** 2)
+
+    elif metric in 'sad':
+        # Sum of Absolute Distances
+        return sum(np.abs(weights*(vec1 - vec2)))
+        
+    elif metric in 'ncc':
+        #Normalized Cross Correlation
+        mean1 = np.sum(weights * vec1)
+        mean2 = np.sum(weights * vec2)
+        std1 = np.sqrt(np.sum(weights * (vec1 - mean1) ** 2))+(1e-15)
+        std2 = np.sqrt(np.sum(weights * (vec2 - mean2) ** 2))+(1e-15)
+        return np.sum(weights*(vec1-mean1)*(vec2-mean2))/(std1*std2)
 
 def vec_error(gt, det, nchannel=2):
     """
