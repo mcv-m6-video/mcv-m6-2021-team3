@@ -37,6 +37,12 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
         for detection in det_bboxes[str_frame_id(i+1)]:
             active_frame = i 
             bbox_matched = False
+            OF_x = u[int(detection['bbox'][1]):int(detection['bbox'][3]),int(detection['bbox'][0]):int(detection['bbox'][2])]
+            OF_y = v[int(detection['bbox'][1]):int(detection['bbox'][3]),int(detection['bbox'][0]):int(detection['bbox'][2])]
+            mean_OF_x = np.mean(OF_x)
+            mean_OF_y = np.mean(OF_y) 
+            detection['bbox'] = [detection['bbox'][0]+mean_OF_x, detection['bbox'][1]+mean_OF_y, 
+                        detection['bbox'][2]+mean_OF_x, detection['bbox'][3]+mean_OF_y]           
             #if there is no good match on previous frame, check n-1 up to n=5
             while (bbox_matched == False) and (active_frame >= start_frame) and ((i - active_frame)<5):
                 candidates = [candidate['bbox'] for candidate in det_bboxes[str_frame_id(active_frame)]]
