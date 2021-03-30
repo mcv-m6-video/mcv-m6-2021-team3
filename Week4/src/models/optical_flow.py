@@ -3,10 +3,10 @@ import sys
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.metrics import ssd
+from utils.metrics import dist_func
 from tqdm.auto import tqdm
 
-def block_matching(img1, img2, window_size, shift, stride):
+def block_matching(img1, img2, window_size, shift, stride, metric='ssd'):
     """
     Block matching method to compute Optical Flow for two consecutive frames.
     :params img1, img2: First and second consecutive frames
@@ -26,7 +26,10 @@ def block_matching(img1, img2, window_size, shift, stride):
         for y in np.arange(wh, img2.shape[1] - wh - 1, stride):
             nm = img2[x-wh:x+wh+1, y-wh:y+wh+1].flatten()
             
-            min_dist = np.inf
+            if metric in 'ncc':
+                min_dist=0
+            else:
+                min_dist = np.inf
             flowx, flowy = 0, 0
             # Compare each block of the next frame to each block from a greater
             # region with the same center in the previous frame.
@@ -35,8 +38,8 @@ def block_matching(img1, img2, window_size, shift, stride):
                     om = img1[i-wh:i+wh+1, j-wh:j+wh+1].flatten()
                     
                     # Compute the distance and update minimum.
-                    dist = ssd(nm, om)
-                    if dist < min_dist:
+                    dist = dist_func(nm, om, metric)
+                    if (dist > min_dist if metric in 'ncc' else dist < min_dist):
                         min_dist = dist
                         flowx, flowy = x - i, y - j
             

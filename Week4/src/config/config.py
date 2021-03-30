@@ -41,8 +41,9 @@ class Config:
         # ============================= OPTICAL FLOW ============================= #
         # Block matching
         parser.add_argument('--window_size', type=int, default=25)
-        parser.add_argument('--shift', type=int, default=3)
+        parser.add_argument('--shift', type=int, default=2)
         parser.add_argument('--stride', type=int, default=5)
+        parser.add_argument('--dist_func', type=str, default='ssd', choices=['ssd', 'sad', 'ncc'])
         # pyflow
         parser.add_argument('--alpha', type=float, default=0.012)
         parser.add_argument('--ratio', type=float, default=0.75)
