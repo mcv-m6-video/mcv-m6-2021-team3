@@ -31,7 +31,7 @@ class KITTI():
             shift = args.shift,
             stride = args.stride)
         self.metric = args.dist_func
-        if args.bilateral is not None:
+        if args.bilateral[0] is not None:
             self.bilateral = dict(
                 gamma_col = args.bilateral[0],
                 gamma_pos = args.bilateral[1])
@@ -53,7 +53,7 @@ class KITTI():
         save_path = join(args.output_path,mode)
         os.makedirs(save_path,exist_ok=True)
         if self.mode in 'block_matching':
-            self.png_name = join(save_path,'_'.join((args.dist_func,
+            self.png_name = join(save_path,'_'.join((args.dist_func, str(args.bilateral[0]), str(args.bilateral[1]),
                                                      'ws-'+str(args.window_size),
                                                      'shift-'+str(args.shift),
                                                      'stride-'+str(args.stride)+'.png')))
