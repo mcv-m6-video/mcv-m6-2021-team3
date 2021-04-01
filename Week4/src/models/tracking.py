@@ -1,15 +1,18 @@
+import sys
+sys.path.insert(1, '../')
+
 import numpy as np
 import cv2
 from tqdm import tqdm
 from models.sort import Sort
 from utils.utils import return_bb, str_frame_id, update_data
 from utils.metrics import compute_iou, interpolate_bb
-from models.optical_flow import block_matching
+from models.optical_flow import block_matching, MaskFlownetOF
 import pyflow.pyflow as pyflow
 
 def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidth, nOuterFPIterations, 
                                 nInnerFPIterations, nSORIterations, colType, threshold = 0.5, 
-                                interpolate = True, remove_noise = True):
+                                interpolate = False, remove_noise = False, flow_method='pyflow'):
 
     id_seq = {}
     #not assuming any order
@@ -20,16 +23,32 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
     for value, detection in enumerate(det_bboxes[str_frame_id(start_frame)]):
         detection['obj_id'] = value
         id_seq.update({value: True})
+
+    if flow_method == 'mask_flownet':
+        flownet = MaskFlownetOF()
+
     #now, frame by frame, no assuming order nor continuity
-    for i in tqdm(range(start_frame, num_frames),'Frames Overlapping Tracking'):
+    for i in tqdm(range(start_frame, num_frames - 1),'Frames Overlapping Tracking'):
         img1 = cv2.imread(frames_paths[i-1])
         img2 = cv2.imread(frames_paths[i])
-        img1 = img1.astype(float) / 255.
-        img2 = img2.astype(float) / 255.
-        #pred_OF = block_matching(img1, img2, window_size, shift, stride)
-        u, v, _ = pyflow.coarse2fine_flow(img1, img2, alpha[0], ratio[0], minWidth[0], 
-                                        nOuterFPIterations[0], nInnerFPIterations[0], 
-                                        nSORIterations[0], colType)
+        # img1 = cv2.resize(img1, (int(img1.shape[1]*0.5), int(img1.shape[0]*0.5)))
+        # img2 = cv2.resize(img2, (int(img2.shape[1]*0.5), int(img2.shape[0]*0.5)))
+        
+        if flow_method == 'pyflow':
+            img1 = img1.astype(float) / 255.
+            img2 = img2.astype(float) / 255.
+            u, v, _ = pyflow.coarse2fine_flow(img1, img2, alpha[0], ratio[0], minWidth[0], 
+                                            nOuterFPIterations[0], nInnerFPIterations[0], 
+                                            nSORIterations[0], colType)
+
+        elif flow_method == 'mask_flownet':
+            flow = flownet.get_optical_flow(img1, img2)
+            u = flow[:, :, 0]
+            v = flow[:, :, 1]
+
+        elif flow_method == 'block_matching':
+            #pred_OF = block_matching(img1, img2, window_size, shift, stride)
+            pass
 
         #init
         id_seq = {frame_id: False for frame_id in id_seq}
@@ -68,7 +87,7 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
             
             if not bbox_matched:
                 #new object
-                detection['obj_id'] = max(id_seq.keys())+1
+                detection['obj_id'] = max(id_seq.keys()) + 1
 
             id_seq.update({detection['obj_id']: True})
             

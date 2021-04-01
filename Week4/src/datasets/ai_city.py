@@ -178,7 +178,8 @@ class AICity:
             self.det_bboxes = compute_tracking_overlapping(self.det_bboxes, self.frames_paths,
                                                             self.alpha, self.ratio, self.minWidth, 
                                                             self.nOuterFPIterations, self.nInnerFPIterations, 
-                                                            self.nSORIterations, self.colType)
+                                                            self.nSORIterations, self.colType,
+                                                            flow_method=self.options.OF_mode)
         elif self.options.tracking_mode in 'kalman':
             self.det_bboxes = compute_tracking_kalman(self.det_bboxes)
 

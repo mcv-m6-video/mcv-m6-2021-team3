@@ -14,7 +14,7 @@ class Config:
         parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
         parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
-        parser.add_argument('--OF_mode', type=str, default='block_matching', choices = ['block_matching', 'pyflow'], help='What type of optical flow to perform')
+        parser.add_argument('--OF_mode', type=str, default='mask_flownet', choices = ['block_matching', 'pyflow', 'mask_flownet'], help='What type of optical flow to perform')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../raw_data',#AICity/train/S03/c010/vdo

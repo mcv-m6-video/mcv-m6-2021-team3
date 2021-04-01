@@ -58,6 +58,7 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
         img = draw_frame_track(path_in, f_id, detections, colours, id_list, id_ocurrence) 
         cv2.imshow('Tracking',img)
         cv2.waitKey(1)
+        os.makedirs(join(path_out, 'tracking'), exist_ok=True)
         cv2.imwrite(join(path_out,'tracking',f_id)+'.png',img)
         
 
@@ -301,5 +302,3 @@ def OF_colorwheel_visualize(flow, fname_output='flow_colorwheel.png', enhance=Fa
         flow_color = cv2.cvtColor(flow_hsv, cv2.COLOR_HSV2RGB)
 
     cv2.imwrite(fname_output, flow_color)
-
-    
