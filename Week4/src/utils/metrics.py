@@ -56,7 +56,7 @@ def vec_error(gt, det, nchannel=2):
     return error[non_occluded_idx], error
 
 
-def compute_MSEN_PEPN(gt=None, det=None, error=None, nchannel=2, th=3):
+def compute_MSEN_PEPN(gt=None, det=None, error_noc=None, nchannel=2, th=3):
     """
     Computes the error using the vectorial distance between gt and det
     :param gt: Ground truth values
@@ -66,15 +66,15 @@ def compute_MSEN_PEPN(gt=None, det=None, error=None, nchannel=2, th=3):
     :param th: threshold value to consider a distance as an error. 
     """
 
-    if error is None:
+    if error_noc is None:
         assert gt is not None, 'gt is None'
         assert det is not None, 'det is None'
-        error = vec_error(gt, det, nchannel)[0]
+        error_noc, error = vec_error(gt, det, nchannel)
 
-    msen = np.mean(error)
-    pepn = np.sum(error > th) / len(error)
+    msen = np.mean(error_noc)
+    pepn = np.sum(error_noc > th) / len(error_noc)
 
-    return msen, pepn
+    return msen, pepn, error
 
 def interpolate_bb(bb_first, bb_last, distance):
     bb_first = np.array(bb_first)

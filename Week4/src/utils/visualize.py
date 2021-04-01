@@ -9,6 +9,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from utils.metrics import compute_miou, compute_centroid
 from utils.utils import dict_to_list, read_json_file, str_frame_id
 from itertools import compress
+from matplotlib import cm
+from matplotlib.ticker import MaxNLocator
+from matplotlib.animation import FuncAnimation
 
 def plot_idf1_thr(path_out ,idf1, thrs):
     plt.plot(thrs, idf1, color='paleturquoise')
@@ -204,45 +207,21 @@ def plot_3d_surface(Xs, Ys, Zs, save_gif=False, Ztitle='mAP50'):
         anim = FuncAnimation(fig, update, frames=np.arange(0, 360, 2), repeat=True, fargs=(fig, ax))
         anim.save(Ztitle+'.gif', dpi=80, writer='imagemagick', fps=10)
 
-def plot_metrics_OF(seq, gt_of, det_of, dif, mu, sigma):
+def OF_plot_metrics(dif, fig_name):
     """
-    Plot the Optical Flow from the GT, the Estimated, the 
-    difference between both and a histogram of the error
-    :param seq: name of the sequence used
-    :param gt_of: Optical Flow GT 
-    :param det_of: Optical Flow Estimated
+    Plot the difference between Optical Flow from the GT and the Estimated.
+
     :param dif: difference between the GT and the estimated OF
-    :param mu: mean error
-    :param sigma: std error
     """
-    fig = plt.figure(figsize=(16, 8))
-    plt.subplot(2, 2, 1)
-    plt.imshow(gt_of[seq])
-    plt.title('Ground Truth Optical Flow')
-
-    plt.subplot(2, 2, 3)
-    plt.imshow(det_of[seq])
-    plt.title('Estimated Optical Flow')
-
-    plt.subplot(2, 2, 2)
     ax = plt.gca()
-    im = ax.imshow(dif[seq][1])
+    im = ax.imshow(dif)
     plt.title('Optical Flow Error')
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(im, cax=cax)
 
-    plt.subplot(2, 2, 4)
-    plt.hist(dif[seq][0], bins=100)
-    xmin, xmax = plt.xlim()
-    _, ymax = plt.ylim()
-    x = np.linspace(xmin, xmax, 100)
-    y = ymax * np.exp(- (x - mu) ** 2 / (2 * sigma ** 2))
-    plt.plot(x, y, 'c', linewidth=2, alpha=0.5)
-    plt.xlabel('Optical Flow Error')
-    plt.ylabel('Num of pixels')
-    plt.title('Optical Flow Histogram Error')
-    plt.savefig(seq + '.png')
+    plt.savefig(fig_name)
+    plt.close()
 
 
 def OF_quiver_visualize(img, flow, step, fname_output='flow_quiver.png'):
@@ -272,6 +251,7 @@ def OF_quiver_visualize(img, flow, step, fname_output='flow_quiver.png'):
                M[::step, ::step], scale_units='xy', angles='xy', scale=.2, color=(1, 0, 0, 1))
     plt.axis('off')
     plt.savefig(fname_output)
+    plt.close()
 
 
 def OF_hsv_visualize(flow, fname_output='flow_hsv.png', enhance=False):

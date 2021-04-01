@@ -40,11 +40,14 @@ class Config:
 
         # ============================= OPTICAL FLOW ============================= #
         # Block matching
-        parser.add_argument('--window_size', type=int, default=50)
-        parser.add_argument('--shift', type=int, default=3)
-        parser.add_argument('--stride', type=int, default=5)
+        parser.add_argument('--window_size', type=int, default=45)
+        parser.add_argument('--shift', type=int, default=5)
+        parser.add_argument('--stride', type=int, default=1)
         parser.add_argument('--dist_func', type=str, default='ssd', choices=['ssd', 'sad', 'ncc'])
         parser.add_argument('--bilateral',  nargs='+', type=int, default=[None,None])#[12,17])
+        parser.add_argument('--cv2_method', type=str, default='cv2.TM_CCOEFF_NORMED', choices=['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
+                           'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED'])
+
         # pyflow
         parser.add_argument('--alpha', type=float, default=0.012)
         parser.add_argument('--ratio', type=float, default=0.75)
@@ -54,7 +57,7 @@ class Config:
         parser.add_argument('--nSORIterations', type=int, default=30)
         parser.add_argument('--colType', type=int, default=0, help='0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))')
         # stabilization
-        parser.add_argument('--modelStab', type=str, default='opencv2', choices=['ours', 'opencv2'])
+        parser.add_argument('--modelStab', type=str, default='ours', choices=['ours', 'opencv2'])
 
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")

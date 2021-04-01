@@ -7,7 +7,7 @@ import os
 from os.path import join, exists
 from models.optical_flow import block_matching, smoothing, fixBorder
 from utils.metrics import compute_MSEN_PEPN
-from utils.visualize import OF_hsv_visualize, OF_quiver_visualize
+from utils.visualize import OF_hsv_visualize, OF_quiver_visualize, OF_plot_metrics
 from utils.utils import write_png_flow, pol2cart, read_kitti_OF
 import pyflow.pyflow as pyflow
 
@@ -29,7 +29,8 @@ class KITTI():
         self.block_matching = dict(
             window_size = args.window_size,
             shift = args.shift,
-            stride = args.stride)
+            stride = args.stride,
+            cv2_method = args.cv2_method)
         self.metric = args.dist_func
         if args.bilateral[0] is not None:
             self.bilateral = dict(
@@ -56,7 +57,8 @@ class KITTI():
             self.png_name = join(save_path,'_'.join((args.dist_func, str(args.bilateral[0]), str(args.bilateral[1]),
                                                      'ws-'+str(args.window_size),
                                                      'shift-'+str(args.shift),
-                                                     'stride-'+str(args.stride)+'.png')))
+                                                     'stride-'+str(args.stride),
+                                                     str(args.cv2_method)+'.png')))
         elif self.mode in 'pyflow':
             self.png_name = join(save_path,'_'.join((str(args.alpha), str(args.ratio), str(args.minWidth), 
                                                      str(args.nOuterFPIterations), str(args.nInnerFPIterations), 
@@ -66,12 +68,13 @@ class KITTI():
     def estimate_OF(self):
         if exists(self.png_name):
             self.pred_OF = read_kitti_OF(self.png_name)
+            self.pred_OF[:,:,:2] = self.pred_OF[:,:,:2]
         else:
             if self.mode in 'block_matching':
                 img1, img2 = [cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY) for img_path in self.seq_paths]
                 self.pred_OF = block_matching(img1, img2, self.block_matching['window_size'], 
                                             self.block_matching['shift'], self.block_matching['stride'],
-                                            metric=self.metric,bilateral=self.bilateral)
+                                            metric=self.metric,bilateral=self.bilateral, cv2_method=self.block_matching['cv2_method'])
                 
             elif self.mode in 'pyflow':
                 img1, img2 = [np.array(Image.open(img_path.replace('image','colored'))) for img_path in self.seq_paths]
@@ -82,12 +85,17 @@ class KITTI():
                                                     self.pyflow['nOuterFPIterations'], self.pyflow['nInnerFPIterations'], 
                                                     self.pyflow['nSORIterations'], self.pyflow['colType'])
                 self.pred_OF = np.concatenate((u[..., None], v[..., None], np.ones((u.shape[0],u.shape[1],1))), axis=2)
-        
+            
             write_png_flow(self.pred_OF,self.png_name)
 
     def get_MSEN_PEPN(self):
-        return compute_MSEN_PEPN(self.GTOF,self.pred_OF)
+        msen, pepn, error = compute_MSEN_PEPN(self.GTOF,self.pred_OF)
+        self.vec_error = error
+        return msen, pepn
     
     def visualize(self):
+        occluded_idx = self.GTOF[:, :, 2] == 0
+        self.GTOF[occluded_idx, :] = 0
         OF_hsv_visualize(self.pred_OF, self.png_name.replace('.png','_hsv.png'))
-        OF_quiver_visualize(cv2.imread(self.seq_paths[1]),self.pred_OF,15,self.png_name.replace('.png','_quiver.png'))
+        OF_quiver_visualize(cv2.imread(self.seq_paths[0]),self.pred_OF,15,self.png_name.replace('.png','_quiver.png'))
+        OF_plot_metrics(self.vec_error,self.png_name.replace('.png','_error.png'))
