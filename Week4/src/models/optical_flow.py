@@ -93,25 +93,22 @@ def fixBorder(frame):
 
 
 import os
-import sys
 import yaml
 import numpy as np
 import mxnet as mx
 
-from config.config import Config
-args = Config().get_args()
-
-sys.path.insert(1, args.mask_flownet_path)
+from config.mask_flownet_config import MaskFlownetConfig
+sys.path.insert(1, './MaskFlownet')
 from MaskFlownet.network import get_pipeline
 from MaskFlownet import path, network
 from MaskFlownet.network import config
 
-del args
-
 # Functions from predict_new_data.py on MaskFlownet folder
-def find_checkpoint(checkpoint_str):
+def find_checkpoint(args):
     # find checkpoint
     steps = 0
+    checkpoint_str = args.checkpoint
+
     if checkpoint_str is not None:
     	if ':' in checkpoint_str:
     		prefix, steps = checkpoint_str.split(':')
@@ -146,12 +143,12 @@ def find_checkpoint(checkpoint_str):
 
 def load_model(config_str):
     # load network configuration
-    with open(os.path.join('../MaskFlownet', 'network', 'config', config_str)) as f:
+    with open(os.path.join('./MaskFlownet', 'network', 'config', config_str)) as f:
     	config =  network.config.Reader(yaml.load(f))
     return config
 
 
-def instantiate_model(gpu_device, config):
+def instantiate_model(args, gpu_device, config):
     ctx = [mx.cpu()] if gpu_device == '' else [mx.gpu(gpu_id) for gpu_id in map(int, gpu_device.split(','))]
     # initiate
     pipe = get_pipeline(args.network, ctx=ctx, config=config)
@@ -173,13 +170,8 @@ def load_checkpoint(pipe, config, checkpoint):
 
 
 def predict_image_pair_flow(img1, img2, pipe, resize=None):
-    for result in pipe.predict([img1], [img2], batch_size = 1, resize=resize):
+    for result in pipe.predict([img1], [img2], batch_size = 1, resize=None):
         flow, occ_mask, warped = result
-        print(type(flow))
-        print(flow.shape)
-
-        with open('./flow_output/u_v.pkl', 'wb') as f:
-            pickle.dump(flow, f)
 
     return flow, occ_mask, warped
     
@@ -213,10 +205,12 @@ def predict_video_flow(video_filename, batch_size, resize=None):
 
 class MaskFlownetOF:
 
-    def __init__(self, args):
-        checkpoint, steps = find_checkpoint(args.checkpoint)
+    def __init__(self):
+        args = MaskFlownetConfig().get_args()
+
+        checkpoint, steps = find_checkpoint(args)
         config = load_model(args.config)
-        pipe = instantiate_model(args.gpu_device, config)
+        pipe = instantiate_model(args, args.gpu_device, config)
         pipe = load_checkpoint(pipe, config, checkpoint)
 
         self.config = config
@@ -230,7 +224,7 @@ class MaskFlownetOF:
 
         """
         
-        for result in self.pipe.predict([img1], [img2], batch_size = 1, resize=resize):
+        for result in self.pipe.predict([img1], [img2], batch_size = 1, resize=None):
             flow, occ_mask, warped = result
 
         if get_only_flow:
@@ -242,6 +236,4 @@ class MaskFlownetOF:
 # For testing purposes
 if __name__ == '__main__':
     sys.path.insert(1, '../')
-    from config.config import Config
-    args = Config().get_args()
-    flownet = MaskFlownetOF(args)
+    flownet = MaskFlownetOF()
