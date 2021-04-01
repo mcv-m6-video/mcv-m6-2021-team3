@@ -53,6 +53,18 @@ class Config:
         parser.add_argument('--nInnerFPIterations', type=int, default=1)
         parser.add_argument('--nSORIterations', type=int, default=30)
         parser.add_argument('--colType', type=int, default=0, help='0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))')
+        # MaskFlownet
+        parser.add_argument('--mask_flownet_path', type=str, default='./MaskFlownet', help="Path of the MaskFlownet git repo")
+        parser.add_argument('--config', type=str, nargs='?', default='MaskFlownet.yaml')
+        parser.add_argument('--video_filepath', type=str, help='filepath of the input video')
+        parser.add_argument('--gpu_device', type=str, default='', help='Specify gpu device(s)')
+        parser.add_argument('--checkpoint', type=str, default='8caNov12', help='model checkpoint to load; by default, the latest one.'
+                            'You can use checkpoint:steps to load to a specific steps')
+        parser.add_argument('--clear_steps', action='store_true')
+        parser.add_argument('-n', '--network', type=str, default='MaskFlownet', help='The choice of network')
+        parser.add_argument('--batch', type=int, default=8, help='minibatch size of samples per device')
+        parser.add_argument('--resize', type=str, default='', help='shape to resize image frames before inference')
+        parser.add_argument('--threads', type=str, default=8, help='Number of threads to use when writing flow video to file')
         # stabilization
         parser.add_argument('--modelStab', type=str, default='opencv2', choices=['ours', 'opencv2'])
 
