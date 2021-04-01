@@ -158,7 +158,10 @@ if __name__ == "__main__":
     if args.image_1 is not None:
         image_1 = cv2.imread(args.image_1)
         image_2 = cv2.imread(args.image_2)
+        import time
+        print(time.time())
         flow, occ_mask, warped = predict_image_pair_flow(image_1, image_2, pipe)
+        print(time.time())
         cv2.imwrite(args.flow_filepath, flow_vis.flow_to_color(flow, convert_to_bgr=False))
     else:
         flow_video, fps = predict_video_flow(args.video_filepath, batch_size=args.batch)

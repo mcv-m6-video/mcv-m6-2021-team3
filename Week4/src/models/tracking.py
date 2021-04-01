@@ -12,7 +12,7 @@ import pyflow.pyflow as pyflow
 
 def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidth, nOuterFPIterations, 
                                 nInnerFPIterations, nSORIterations, colType, threshold = 0.5, 
-                                interpolate = True, remove_noise = True, flow_method='pyflow'):
+                                interpolate = False, remove_noise = False, flow_method='pyflow'):
 
     id_seq = {}
     #not assuming any order
@@ -28,9 +28,11 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
         flownet = MaskFlownetOF()
 
     #now, frame by frame, no assuming order nor continuity
-    for i in tqdm(range(start_frame, num_frames),'Frames Overlapping Tracking'):
+    for i in tqdm(range(start_frame, num_frames - 1),'Frames Overlapping Tracking'):
         img1 = cv2.imread(frames_paths[i-1])
         img2 = cv2.imread(frames_paths[i])
+        # img1 = cv2.resize(img1, (int(img1.shape[1]*0.5), int(img1.shape[0]*0.5)))
+        # img2 = cv2.resize(img2, (int(img2.shape[1]*0.5), int(img2.shape[0]*0.5)))
         
         if flow_method == 'pyflow':
             img1 = img1.astype(float) / 255.
@@ -85,7 +87,7 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
             
             if not bbox_matched:
                 #new object
-                detection['obj_id'] = max(id_seq.keys())+1
+                detection['obj_id'] = max(id_seq.keys()) + 1
 
             id_seq.update({detection['obj_id']: True})
             
