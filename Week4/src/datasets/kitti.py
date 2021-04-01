@@ -71,7 +71,6 @@ class KITTI():
     def estimate_OF(self):
         if exists(self.png_name):
             self.pred_OF = read_kitti_OF(self.png_name)
-            self.pred_OF[:,:,:2] = self.pred_OF[:,:,:2]
         else:
             if self.mode in 'block_matching':
                 img1, img2 = [cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY) for img_path in self.seq_paths]
