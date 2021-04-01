@@ -31,7 +31,9 @@ class LoadSeq():
         self.block_matching = dict(
             window_size = args.window_size,
             shift = args.shift,
-            stride = args.stride)
+            stride = args.stride,
+            cv2_method = args.cv2_method,
+            metric = args.dist_func)
     
     def stabilize_seq(self):
         if self.stabilization in 'ours':

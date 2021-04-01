@@ -26,7 +26,8 @@ def seq_stabilization_BM(frames_paths, output_path, bm_opts):
 
         #OF
         if not exists(png_name.replace('f_id',str(f_id))):
-            pred_OF = block_matching(img1, img2, bm_opts['window_size'], bm_opts['shift'], bm_opts['stride'])
+            pred_OF = block_matching(img1, img2, bm_opts['window_size'], bm_opts['shift'], bm_opts['stride'], 
+                                     bm_opts['metric'], cv2_method=bm_opts['cv2_method'])
             write_png_flow(pred_OF, png_name.replace('f_id',str(f_id)))
         else:
             pred_OF = read_kitti_OF(png_name.replace('f_id',str(f_id)))

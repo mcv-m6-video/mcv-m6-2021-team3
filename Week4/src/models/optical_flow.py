@@ -8,7 +8,7 @@ from tqdm.auto import tqdm
 sys.path.insert(1, '../')
 from utils.metrics import dist_func, bilateral_weights
 
-def block_matching(img1, img2, window_size, shift, stride, metric='ssd', fw_bw='fw', bilateral=None, cv2_method=True):
+def block_matching(img1, img2, window_size, shift, stride, metric='ssd', fw_bw='fw', bilateral=None, cv2_method=None):
     """
     Block matching method to compute Optical Flow for two consecutive frames.
     :params img1, img2: First and second consecutive frames
