@@ -62,6 +62,9 @@ class KITTI():
                                                      str(args.nOuterFPIterations), str(args.nInnerFPIterations), 
                                                      str(args.nSORIterations), str(args.colType)+'.png')))
 
+        elif self.mode in 'mask_flownet':
+            self.png_name = join(save_path,'_mask_flownet_'+'.png')
+
 
     def estimate_OF(self):
         if exists(self.png_name):
