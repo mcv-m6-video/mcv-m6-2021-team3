@@ -56,8 +56,8 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
             id_list.append(bb_id)
 
         img = draw_frame_track(path_in, f_id, detections, colours, id_list, id_ocurrence) 
-        cv2.imshow('Tracking',img)
-        cv2.waitKey(1)
+        #cv2.imshow('Tracking',img)
+        #cv2.waitKey(1)
         os.makedirs(join(path_out, 'tracking'), exist_ok=True)
         cv2.imwrite(join(path_out,'tracking',f_id)+'.png',img)
         

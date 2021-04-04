@@ -1,0 +1,23 @@
+FROM nvcr.io/nvidia/mxnet:21.03-py3
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+ca-certificates apt-transport-https 
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Run installers. (root level installs)
+COPY installers /tmp/installers
+#COPY archive /tmp/archive
+
+RUN bash /tmp/installers/install_all.sh
+RUN bash /tmp/installers/install_user.sh
+
+# Define environment variables
+ENV USERNAME josep
+
+# Change user
+USER $USERNAME
+WORKDIR /home/$USERNAME
+
+# User level commands
+RUN bash /tmp/installers/post_install.sh

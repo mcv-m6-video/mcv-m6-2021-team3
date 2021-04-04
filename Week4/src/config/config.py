@@ -14,7 +14,7 @@ class Config:
         parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
         parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
-        parser.add_argument('--OF_mode', type=str, default='mask_flownet', choices = ['block_matching', 'pyflow', 'mask_flownet'], help='What type of optical flow to perform')
+        parser.add_argument('--OF_mode', type=str, default='block_matching', choices = ['block_matching', 'pyflow', 'mask_flownet'], help='What type of optical flow to perform')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../raw_data',#AICity/train/S03/c010/vdo
@@ -41,8 +41,8 @@ class Config:
         # ============================= OPTICAL FLOW ============================= #
         # Block matching
         parser.add_argument('--window_size', type=int, default=45)
-        parser.add_argument('--shift', type=int, default=5)
-        parser.add_argument('--stride', type=int, default=1)
+        parser.add_argument('--shift', type=int, default=3)
+        parser.add_argument('--stride', type=int, default=3)
         parser.add_argument('--dist_func', type=str, default='ssd', choices=['ssd', 'sad', 'ncc'])
         parser.add_argument('--bilateral',  nargs='+', type=int, default=[None,None])#[12,17])
         parser.add_argument('--cv2_method', type=str, default='cv2.TM_CCOEFF_NORMED', choices=['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
@@ -55,7 +55,7 @@ class Config:
         parser.add_argument('--nOuterFPIterations', type=int, default=7)
         parser.add_argument('--nInnerFPIterations', type=int, default=1)
         parser.add_argument('--nSORIterations', type=int, default=30)
-        parser.add_argument('--colType', type=int, default=0, help='0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))')
+        parser.add_argument('--colType', type=int, default=1, help='0 or default:RGB, 1:GRAY (but pass gray image with shape (h,w,1))')
         # stabilization
         parser.add_argument('--modelStab', type=str, default='ours', choices=['ours', 'opencv2'])
 
@@ -66,7 +66,7 @@ class Config:
         parser.add_argument('--save_img', type=bool, default=False, help="Save detection qualitative results")
         parser.add_argument('--view_tracking', type=bool, default=True, help="Save detection qualitative results")
         
-         # ================================ TENSORFLOW PARAMS ====================== #
+         # ================================ TENSORFLOW PARAMS ===================== #
         parser.add_argument('--iou_threshold', type=float, default=0.5, help="Threshold to discard detections")
         parser.add_argument('--tf_records_path', type=str, default='./data/finetune/tf_records', help='Path to store tfrecords')
         parser.add_argument('--model_conf_file', type=str, default='ssd_resnet152_v1_fpn_1024x1024_coco17_tpu-8.config')

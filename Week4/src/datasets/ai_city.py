@@ -179,7 +179,10 @@ class AICity:
                                                             self.alpha, self.ratio, self.minWidth, 
                                                             self.nOuterFPIterations, self.nInnerFPIterations, 
                                                             self.nSORIterations, self.colType,
-                                                            flow_method=self.options.OF_mode)
+                                                            flow_method=self.options.OF_mode,
+                                                            window_size=self.window_size,
+                                                            stride=self.stride,
+                                                            shift=self.shift)
         elif self.options.tracking_mode in 'kalman':
             self.det_bboxes = compute_tracking_kalman(self.det_bboxes)
 
