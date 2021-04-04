@@ -1,27 +1,27 @@
-# Week 3
+# Week 4
 
 ## Introduction
-In this project the main goal was to get used to different background estimation methods. The project contains several source code files that implement the required functionality.
+In this project the main goal was to get used to different Optical Flow methods, use this method and others to stabilize a video and finally use OF to improve the tracking method. The project contains several source code files that implement the required functionality.
 
-* [main.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/main.py): Contains the pipeline to execute the different tasks.
-* [ai_city.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/ai_city.py): Contains the class AICity, where the data is processed in order to obtain the background estimation.
-* [metrics.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/metrics.py): Contains functions related to get quantitative results.
-* [utils.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/utils.py): Contains other functions, such as the one to write a json or read one.
-* [visualize.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/visualize.py): Contains the functinos related to plot the different (qualitative) results.
-* [detect2.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/detect2.py): Contains the class Detect2, which contains the function to predict the Detectron2 models.
-* [tf_models.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/tf_models.py): Contains the class TFModel, which contains the functions to predict and train the TensorFlows models.
-* [yolov3.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/yolov3.py): Contains the class UltralyricsYolo, which contains the funtion to predict and train the Ultralytics Yolo model. 
-* [sort.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/sort.py): Contains the class Sort, which is the one related to compute the Kalman tracking.
+* [main.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/main.py): Contains the pipeline to execute the different tasks.
+* [ai_city.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/datasets/ai_city.py): Contains the class AICity, where the data is processed in order to obtain the tracking and the detections.
+* [kitti.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/datasets/kitti.py): Contains the class KITTI, where the data is processed in order to obtain the .
+* [load_seq.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/datasets/load_seq.py): Contains the class LoadSeq, where the data is processed in order to obtain the video stabilization.
+* [metrics.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/utils/metrics.py): Contains functions related to get quantitative results.
+* [utils.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/utils/utils.py): Contains other functions, such as the one to write a json or read one.
+* [visualize.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/utils/visualize.py): Contains the functinos related to plot the different (qualitative) results.
+* [optical_flow.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/models/optical_flow.py): Contains the functions with the different methods of Optical Flow.
+* [stabilize.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/models/stabilize.py): Contains the functions of the different methods of video stabilization.
+* [tracking.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/models/tracking.py): Contains the functions related to the different methods of tracking.
 
 
 ## Inference
 ### Available tasks
-* **Task 1.1**: Off-the-shelf
-* **Task 1.2**: Fine-tuning
-* **Task 1.3**: K-fold Cross validation
-* **Task 2.1**: Tracking by Overlap
-* **Task 2.2**: Tracking with a Kalman Filter
-* **Task 2.3**: IDF1 for Multiple Object Tracking
+* **Task 1.1**: Optical Flow with Block Matching
+* **Task 1.2**: Off-the-shelf Optical Flow
+* **Task 2.1**: Video stabilization with Block Matching
+* **Task 2.2**: Off-the-shelf Stabilization
+* **Task 3.1**: Object Tracking with Optical Flow
 
 
 Run the command below, from Week2/src folder, to obtain the desired task results.
@@ -29,35 +29,49 @@ Run the command below, from Week2/src folder, to obtain the desired task results
 ```bash
 $ python main.py 
 ```
-Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week2/src/config/config.py)
+Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/config/config.py)
+Any parameter when using MaskFlownet could be modified in file [mask_flownet_config](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/config/mask_flownet_config.py)
 
 ### Directory structure
 
 ```bash
-├── datasets
+├── raw_data
 │   ├── AICity
 │   │   ├── train
 │   │   │   ├── S03
 │   │   │   │   ├── c010
 │   │   │   │   │   ├── vdo
-├── Week3
+│   ├── data_stereo_flow
+│   │   ├── training
+│   │   │   ├── image_0
+│   ├── video_stabilization
+│   │   ├── flowers
+│   │   │   ├── flowers_01
+├── Week4
 │   ├── src
 │   │   ├── main.py
 │   │   ├── utils
-│   │   │   ├── ai_city.py
 │   │   │   ├── metrics.py
 │   │   │   ├── visualize.py
 │   │   │   ├── utils.py
-│   │   │   ├── detect2.py
-│   │   │   ├── tf_models.py
+│   │   ├── datasets
+│   │   │   ├── ai_city.py
+│   │   │   ├── kitti.py
+│   │   │   ├── load_seq.py
+│   │   ├── models
+│   │   │   ├── optical_flow.py
+│   │   │   ├── stabilize.py
+│   │   │   ├── tracking.py
 │   │   │   ├── yolov3.py
 │   │   │   ├── sort.py
-│   │   ├── data
-│   │   ├── models
+│   │   ├── pyflow
+│   │   ├── MaskFlownet
+│   │   ├── SelFlow
 │   │   ├── yolov3
-│   │   ├── runs
+│   │   ├── DUTCode
 │   │   ├── config
 │   │   │   ├── config.py
+│   │   │   ├── mask_flownet_config.py
 ```
 
 ## Results
@@ -331,4 +345,4 @@ Tracking results when it is used the Kalman method. These results are computed u
 </p>
 
 ## Report
-The report for week 3 is available [here](https://docs.google.com/presentation/d/1M0Vw8quKhlRDudc1A5YYByKr7KclVOnSPspYGjmRxCo/edit?usp=sharing).
+The report for week 4 is available [here](https://docs.google.com/presentation/d/1JYmlzbrf8hvug4VpYjFmhxA6A4ILqHioQ-ZunkLy9V8/edit?usp=sharing).
