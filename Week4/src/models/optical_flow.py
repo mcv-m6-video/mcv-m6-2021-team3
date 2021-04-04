@@ -11,11 +11,11 @@ from utils.metrics import dist_func, bilateral_weights
 
 import multiprocessing as mp
 
-global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i, bar
+global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i
 
 def process(params):
 
-    global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i, bar
+    global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i
 
     x = params[0]
     y = params[1]
@@ -73,8 +73,6 @@ def process(params):
     vx[int(x-st/2):int(x+st/2), int(y-st/2):int(y+st/2)] = flowy
     vy[int(x-st/2):int(x+st/2), int(y-st/2):int(y+st/2)] = flowx
 
-    bar.update()
-
 
 def block_matching(image1, image2, window_size, shift, stride, metric='ssd', fw_bw='fw', bilateral=None, cv2_method='cv2.TM_CCOEFF_NORMED'):
     """
@@ -88,7 +86,7 @@ def block_matching(image1, image2, window_size, shift, stride, metric='ssd', fw_
     :return: Optical flow for each direction x,y
     """
 
-    global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i, bar
+    global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i
 
     i = 0
     cv2method = cv2_method
@@ -119,8 +117,6 @@ def block_matching(image1, image2, window_size, shift, stride, metric='ssd', fw_
     b = np.arange(wh, img2.shape[1] - wh - 1, stride)
     paramlist = list(itertools.product(a, b))
     n_processes = 8
-    bar = tqdm(range(len(a)*len(b)), total=len(a)*len(b), desc='Outer fors')
-
 
     with mp.Pool(n_processes) as p:
         res = p.map(process, paramlist)      
