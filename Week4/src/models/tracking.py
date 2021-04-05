@@ -33,7 +33,10 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
         flownet = MaskFlownetOF()
 
     #now, frame by frame, no assuming order nor continuity
-    os.makedirs(os.path.join('../outputs/flow', flow_method), exist_ok=True)
+    if flow_method == 'block_matching':
+        os.makedirs(os.path.join('../outputs/flow', flow_method, str(window_size)), exist_ok=True)
+    else:    
+        os.makedirs(os.path.join('../outputs/flow', flow_method), exist_ok=True)
 
     for i in tqdm(range(start_frame, num_frames - 1),'Frames Overlapping Tracking'):
         img1 = cv2.imread(frames_paths[i-1])
@@ -53,7 +56,7 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
                 u, v, _ = pyflow.coarse2fine_flow(img1, img2, alpha[0], ratio[0], minWidth[0], 
                                                 nOuterFPIterations[0], nInnerFPIterations[0], 
                                                 nSORIterations[0], colType)
-                flow = [u, v]
+                flow = np.array([u, v])
 
                 with open(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl'), 'wb') as f:
                     pickle.dump(flow.astype(np.float16), f)
@@ -70,10 +73,10 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
 
 
         elif flow_method == 'block_matching':
-            if not os.path.isfile(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl')):
+            if not os.path.isfile(os.path.join('../outputs/flow', flow_method, str(window_size), 'flow_' + str(i) +'.pkl')):
                 flow = block_matching(img1, img2, window_size, shift, stride)
 
-                with open(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl'), 'wb') as f:
+                with open(os.path.join('../outputs/flow', flow_method, str(window_size), 'flow_' + str(i) +'.pkl'), 'wb') as f:
                     pickle.dump(flow.astype(np.float16), f)
 
                 u = flow[:, :, 0]
