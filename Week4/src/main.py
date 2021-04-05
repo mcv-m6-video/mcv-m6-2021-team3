@@ -8,11 +8,21 @@ from utils.utils import dict_to_list_IDF1
 from utils.visualize import visualize_trajectories
 from utils.metrics import IDF1
 
+import pickle
+import numpy as np
+
 def main(args):
 
     # task 1
     # kitti = KITTI(args.data_path, args.OF_mode, args)
     # kitti.estimate_OF()
+
+    # with open('u_v.pkl', 'rb') as f:
+    #     flow = pickle.load(f)
+    #     u = flow[:, :, 0]
+    #     v = flow[:, :, 1]
+
+    # kitti.pred_OF = np.concatenate((u[..., None], v[..., None], np.ones((u.shape[0],u.shape[1],1))), axis=2)
     # msen, pepn = kitti.get_MSEN_PEPN()
     # kitti.visualize()
     # print('MSEN:', msen)

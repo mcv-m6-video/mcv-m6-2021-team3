@@ -4,11 +4,77 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
+import itertools
 
 sys.path.insert(1, '../')
 from utils.metrics import dist_func, bilateral_weights
 
-def block_matching(img1, img2, window_size, shift, stride, metric='ssd', fw_bw='fw', bilateral=None, cv2_method=None):
+import multiprocessing as mp
+
+global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i
+
+def process(params):
+
+    global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i
+
+    x = params[0]
+    y = params[1]
+
+    nm = img2[x-wh:x+wh+1, y-wh:y+wh+1]
+            
+    # Compare each block of the next frame to each block from a greater
+    # region with the same center in the previous frame.
+    if cv2method is not None:
+        method = eval(cv2method)
+
+        xmin, xmax = max(x-wh-sh, 0), min(x+wh+1+sh, img1.shape[0]-1)
+        ymin, ymax = max(y-wh-sh, 0), min(y+wh+1+sh, img1.shape[1]-1)
+
+        om = img1[xmin:xmax, ymin:ymax]
+
+        # Apply template Matching
+        res = cv2.matchTemplate(om,nm,method)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+        # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
+        if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+            top_left = min_loc
+        else:
+            top_left = max_loc
+        top_left = (ymin+top_left[0], xmin+top_left[1])
+        center = (top_left[0] + wh, top_left[1] + wh)
+        bottom_right = (top_left[0] + ws, top_left[1] + ws)
+
+        flowx, flowy = x - center[1], y - center[0]
+
+    else:
+        if bilateral_w is not None:
+            weights = bilateral_weights(nm,bilateral_w['gamma_col'],bilateral_w['gamma_pos'])
+        else:
+            weights = None
+        nm = nm.flatten()
+                
+        min_dist = np.inf
+        if met in 'ncc':
+            min_dist=0
+        flowx, flowy = 0, 0
+
+        for i in np.arange(max(x - sh, wh), min(x + sh + 1, img1.shape[0] - wh - 1)):
+            for j in np.arange(max(y - sh, wh), min(y + sh + 1, img1.shape[1] - wh - 1)):
+                om = img1[i-wh:i+wh+1, j-wh:j+wh+1].flatten()
+                        
+                # Compute the distance and update minimum.
+                dist = dist_func(nm, om, met, weights)
+                if (dist > min_dist if met in 'ncc' else dist < min_dist):
+                    min_dist = dist
+                    flowx, flowy = x - i, y - j
+            
+    # Update the flow field.
+    vx[int(x-st/2):int(x+st/2), int(y-st/2):int(y+st/2)] = flowy
+    vy[int(x-st/2):int(x+st/2), int(y-st/2):int(y+st/2)] = flowx
+
+
+def block_matching(image1, image2, window_size, shift, stride, metric='ssd', fw_bw='fw', bilateral=None, cv2_method='cv2.TM_CCOEFF_NORMED'):
     """
     Block matching method to compute Optical Flow for two consecutive frames.
     :params img1, img2: First and second consecutive frames
@@ -19,10 +85,25 @@ def block_matching(img1, img2, window_size, shift, stride, metric='ssd', fw_bw='
     :param fw_bw: Forward or backward computation ('fw', 'bw')
     :return: Optical flow for each direction x,y
     """
+
+    global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i
+
+    i = 0
+    cv2method = cv2_method
+
     if fw_bw in 'bw':
-        img1, img2 = img2, img1
+        img1, img2 = image2, image1
+    else:
+        img1 = image1
+        img2 = image2
     if bilateral is None:
         weights = None
+
+    bilateral_w = bilateral
+    met = metric
+    ws = window_size
+    st = stride
+    sh = shift
     
     # Initialize the matrices.
     vx = np.zeros((img2.shape[:2]))
@@ -32,77 +113,13 @@ def block_matching(img1, img2, window_size, shift, stride, metric='ssd', fw_bw='
 
     #plt.figure()
     
-    # Go through all the blocks.
-    for x in tqdm(np.arange(wh, img2.shape[0] - wh - 1, stride), 'Computing pixel Optical Flow'):
-        for y in np.arange(wh, img2.shape[1] - wh - 1, stride):
-            nm = img2[x-wh:x+wh+1, y-wh:y+wh+1]
-            
-            # Compare each block of the next frame to each block from a greater
-            # region with the same center in the previous frame.
-            if cv2_method is not None:
-                method = eval(cv2_method)
+    a = np.arange(wh, img2.shape[0] - wh - 1, stride)
+    b = np.arange(wh, img2.shape[1] - wh - 1, stride)
+    paramlist = list(itertools.product(a, b))
+    n_processes = 12
 
-                xmin, xmax = max(x-wh-shift, 0), min(x+wh+1+shift, img1.shape[0]-1)
-                ymin, ymax = max(y-wh-shift, 0), min(y+wh+1+shift, img1.shape[1]-1)
-
-                om = img1[xmin:xmax, ymin:ymax]
-
-                # Apply template Matching
-                res = cv2.matchTemplate(om,nm,method)
-                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-
-                # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
-                if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-                    top_left = min_loc
-                else:
-                    top_left = max_loc
-                top_left = (ymin+top_left[0], xmin+top_left[1])
-                center = (top_left[0] + wh, top_left[1] + wh)
-                bottom_right = (top_left[0] + window_size, top_left[1] + window_size)
-
-                flowx, flowy = x - center[1], y - center[0]
-
-                '''plt.subplot(121)
-                img2rect = cv2.rectangle(np.expand_dims(img2.copy(),2).repeat(3,2),(y-wh,x-wh), (y+wh+1,x+wh+1), (51,153,255), 2)
-                plt.imshow(img2rect)
-                plt.subplot(122)
-                img1rect = cv2.rectangle(np.expand_dims(img1.copy(),2).repeat(3,2), (ymin,xmin), (ymax,xmax), (255,255,0), 1)
-                img1rect = cv2.rectangle(img1rect, top_left, bottom_right, (0,255,0), 1)
-                img1rect = cv2.rectangle(img1rect, (y-wh,x-wh), (y+wh+1,x+wh+1), (51,153,255), 2)
-                plt.imshow(img1rect)
-                plt.pause(.01)'''
-
-            else:
-                if bilateral is not None:
-                    weights = bilateral_weights(nm,bilateral['gamma_col'],bilateral['gamma_pos'])
-                nm = nm.flatten()
-                
-                min_dist = np.inf
-                if metric in 'ncc':
-                    min_dist=0
-                flowx, flowy = 0, 0
-
-                for i in np.arange(max(x - shift, wh), min(x + shift + 1, img1.shape[0] - wh - 1)):
-                    for j in np.arange(max(y - shift, wh), min(y + shift + 1, img1.shape[1] - wh - 1)):
-                        om = img1[i-wh:i+wh+1, j-wh:j+wh+1].flatten()
-                        '''plt.subplot(121)
-                        img2rect = cv2.rectangle(np.expand_dims((img2.copy()[:200,:200]),2).repeat(3,2),(x-wh,y-wh), (x+wh+1,y+wh+1), (51,153,255), 1)
-                        plt.imshow(img2rect)
-                        plt.subplot(122)
-                        img1rect = cv2.rectangle(np.expand_dims((img1.copy()[:200,:200]),2).repeat(3,2),(x-wh,y-wh), (x+wh+1,y+wh+1), (51,153,255), 1)
-                        img1rect = cv2.rectangle(img1rect,(i-wh,j-wh), (i+wh+1,j+wh+1), (0,255,0), 1)
-                        plt.imshow(img1rect)
-                        plt.pause(.1)'''
-                        
-                        # Compute the distance and update minimum.
-                        dist = dist_func(nm, om, metric, weights)
-                        if (dist > min_dist if metric in 'ncc' else dist < min_dist):
-                            min_dist = dist
-                            flowx, flowy = x - i, y - j
-            
-            # Update the flow field.
-            vx[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowy
-            vy[int(x-stride/2):int(x+stride/2), int(y-stride/2):int(y+stride/2)] = flowx
+    with mp.Pool(n_processes) as p:
+        res = p.map(process, paramlist)      
     
     if fw_bw in 'fw':
         return np.concatenate((vx[..., None], vy[..., None], np.ones((vx.shape[0],vx.shape[1],1))), axis=2)
@@ -136,7 +153,6 @@ def fixBorder(frame):
     T = cv2.getRotationMatrix2D((s[1]/2, s[0]/2), 0, 1.04)
     frame = cv2.warpAffine(frame, T, (s[1], s[0]))
     return frame
-
 
 
 import os
@@ -183,7 +199,6 @@ def find_checkpoint(args):
     			if k in exp_info and k in ('tag',):
     				setattr(args, k, eval(exp_info[k]))
     				print('{}={}, '.format(k, exp_info[k]), end='')
-    		print()
     	sys.stdout.flush()
     return checkpoint, steps
 
