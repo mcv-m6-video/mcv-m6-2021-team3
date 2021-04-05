@@ -34,53 +34,52 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
 
     #now, frame by frame, no assuming order nor continuity
     if flow_method == 'block_matching':
-        os.makedirs(os.path.join('../outputs/flow', flow_method, str(window_size)), exist_ok=True)
-    else:    
-        os.makedirs(os.path.join('../outputs/flow', flow_method), exist_ok=True)
+        path = os.path.join('../outputs/flow', flow_method, str(window_size))
+        os.makedirs(path, exist_ok=True)
+    else:
+        path = os.path.join('../outputs/flow', flow_method)
+        os.makedirs(path, exist_ok=True)
 
     for i in tqdm(range(start_frame, num_frames - 1),'Frames Overlapping Tracking'):
         img1 = cv2.imread(frames_paths[i-1])
         img2 = cv2.imread(frames_paths[i])
 
-        if os.path.isfile(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl')):
-            with open(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl'), 'rb') as f:
+        if os.path.isfile(os.path.join(path, 'flow_' + str(i) +'.pkl')):
+            with open(os.path.join(path, 'flow_' + str(i) +'.pkl'), 'rb') as f:
                 flow = pickle.load(f)
 
             u = flow[:, :, 0]
             v = flow[:, :, 1]
         
         elif flow_method == 'pyflow':
-            if not os.path.isfile(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl')):
-                img1 = img1.astype(float) / 255.
-                img2 = img2.astype(float) / 255.
-                u, v, _ = pyflow.coarse2fine_flow(img1, img2, alpha[0], ratio[0], minWidth[0], 
+            img1 = img1.astype(float) / 255.
+            img2 = img2.astype(float) / 255.
+            u, v, _ = pyflow.coarse2fine_flow(img1, img2, alpha[0], ratio[0], minWidth[0], 
                                                 nOuterFPIterations[0], nInnerFPIterations[0], 
                                                 nSORIterations[0], colType)
-                flow = np.array([u, v])
+            flow = np.array([u, v])
 
-                with open(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl'), 'wb') as f:
-                    pickle.dump(flow.astype(np.float16), f)
+            with open(os.path.join(path, 'flow_' + str(i) +'.pkl'), 'wb') as f:
+                pickle.dump(flow.astype(np.float16), f)
 
         elif flow_method == 'mask_flownet':
-            if not os.path.isfile(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl')):
-                flow = flownet.get_optical_flow(img1, img2)
+            flow = flownet.get_optical_flow(img1, img2)
 
-                with open(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl'), 'wb') as f:
-                    pickle.dump(flow.astype(np.float16), f)
+            with open(os.path.join(path, 'flow_' + str(i) +'.pkl'), 'wb') as f:
+                pickle.dump(flow.astype(np.float16), f)
 
-                u = flow[:, :, 0]
-                v = flow[:, :, 1]
+            u = flow[:, :, 0]
+            v = flow[:, :, 1]
 
 
         elif flow_method == 'block_matching':
-            if not os.path.isfile(os.path.join('../outputs/flow', flow_method, str(window_size), 'flow_' + str(i) +'.pkl')):
-                flow = block_matching(img1, img2, window_size, shift, stride)
+            flow = block_matching(img1, img2, window_size, shift, stride)
 
-                with open(os.path.join('../outputs/flow', flow_method, str(window_size), 'flow_' + str(i) +'.pkl'), 'wb') as f:
+            with open(os.path.join(path, 'flow_' + str(i) +'.pkl'), 'wb') as f:
                     pickle.dump(flow.astype(np.float16), f)
 
-                u = flow[:, :, 0]
-                v = flow[:, :, 1]
+            u = flow[:, :, 0]
+            v = flow[:, :, 1]
 
         #init
         id_seq = {frame_id: False for frame_id in id_seq}
