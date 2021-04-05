@@ -33,13 +33,8 @@ def main(args):
                 aicity.compute_tracking_overlapping()
             elif args.tracking_mode in 'kalman':
                 aicity.compute_tracking_kalman()
-            thresholds = args.track_thr
-            idf1_thr = []
-            for thr in thresholds:
-                idf1 = IDF1 (dict_to_list_IDF1(aicity.gt_bboxes), dict_to_list_IDF1(aicity.det_bboxes), thr)
-                idf1_thr.append(idf1)
-                print('IDF1:',idf1)
-            plot_idf1_thr(aicity.output_path, idf1_thr, thresholds)
+            idf1 = IDF1(dict_to_list_IDF1(aicity.gt_bboxes), dict_to_list_IDF1(aicity.det_bboxes), 0.5)
+            print('IDF1:',idf1)
         if args.view_tracking:
             visualize_trajectories(aicity.data_path, aicity.output_path, aicity.det_bboxes)
             
