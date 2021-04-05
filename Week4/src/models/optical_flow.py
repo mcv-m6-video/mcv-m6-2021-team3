@@ -116,7 +116,7 @@ def block_matching(image1, image2, window_size, shift, stride, metric='ssd', fw_
     a = np.arange(wh, img2.shape[0] - wh - 1, stride)
     b = np.arange(wh, img2.shape[1] - wh - 1, stride)
     paramlist = list(itertools.product(a, b))
-    n_processes = 8
+    n_processes = 12
 
     with mp.Pool(n_processes) as p:
         res = p.map(process, paramlist)      

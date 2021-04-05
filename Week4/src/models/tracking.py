@@ -49,8 +49,8 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
 
         elif flow_method == 'mask_flownet':
             if os.path.isfile(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl')):
-                with open(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl'), 'wb') as f:
-                    flow = pickle.load(flow, f)
+                with open(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl'), 'rb') as f:
+                    flow = pickle.load(f)
 
                 u = flow[:, :, 0]
                 v = flow[:, :, 1]
@@ -67,7 +67,7 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
         elif flow_method == 'block_matching':
             pred_OF = block_matching(img1, img2, window_size, shift, stride)
 
-            with open(os.path.join('../outputs/flow', flow_method, 'flow_' + str(i) +'.pkl'), 'wb') as f:
+            with open(os.path.join('../outputs/flow_25', flow_method, 'flow_' + str(i) +'.pkl'), 'wb') as f:
                 pickle.dump(pred_OF, f)
 
             u = pred_OF[:, :, 0]
@@ -91,7 +91,7 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
             mc_ang = uniques[counts.argmax()]
             x, y = pol2cart(mc_mag, mc_ang)
 
-            detection['bbox'] = [detection['bbox'][0]-x, detection['bbox'][1]-y, 
+            detection['bbox_of'] = [detection['bbox'][0]-x, detection['bbox'][1]-y, 
                         detection['bbox'][2]-x, detection['bbox'][3]-y]
          
             #if there is no good match on previous frame, check n-1 up to n=5
@@ -99,7 +99,7 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
                 candidates = [candidate['bbox'] for candidate in det_bboxes[str_frame_id(active_frame)]]
                 #compare with all detections in previous frame
                 #best match
-                iou = compute_iou(np.array(candidates), np.array(detection['bbox']))
+                iou = compute_iou(np.array(candidates), np.array(detection['bbox_of']))
                 while np.max(iou) > threshold:
                     #candidate found, check if free
                     matching_id = det_bboxes[str_frame_id(active_frame)][np.argmax(iou)]['obj_id']
