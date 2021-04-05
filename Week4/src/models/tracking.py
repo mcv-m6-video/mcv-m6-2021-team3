@@ -15,14 +15,9 @@ import pyflow.pyflow as pyflow
 
 
 def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidth, nOuterFPIterations, 
-<<<<<<< HEAD
-                                nInnerFPIterations, nSORIterations, colType, threshold = 0.5, 
-                                interpolate = True, remove_noise = True, flow_method='pyflow'):
-=======
                                 nInnerFPIterations, nSORIterations, colType, threshold=0.5,
                                 window_size=35, shift=5, stride=1, interpolate=False, remove_noise=True, 
                                 flow_method='pyflow'):
->>>>>>> 1ebb1e64c8064d108858f8920399e80d0e93a6bd
 
     id_seq = {}
     #not assuming any order
