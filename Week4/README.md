@@ -193,7 +193,7 @@ Quantitative results obtained for the Off-the-shelf method compared with our bes
             <td rowspan=3>IDF10.5</td>
             <td rowspan=3>&nbsp;&nbsp;&nbsp;63.8698%</td>
             <td>OpenCV: 61.7942% </td>
-            <td rowspan=3>&nbsp;&nbsp;&nbsp;62.6187%</td>
+            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;62.6187%</td>
         </tr>
         <tr>
             <td>SSD:</td>
