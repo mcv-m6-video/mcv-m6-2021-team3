@@ -23,3 +23,5 @@ $ pip install -r requirements.txt
 ### [Week 2: Background Estimation](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2)
 
 ### [Week 3: Oject Detection and Tracking](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week3)
+
+### [Week 4: Optical Flow: Stabilization and Tracking](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week4)
