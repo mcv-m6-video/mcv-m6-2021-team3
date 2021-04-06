@@ -205,7 +205,7 @@ Quantitative results obtained after doing fine-tuning on differents models.
 
 #### Tracking with MaskFlownet
 <p align="center">
-    <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/tracking_mask_flownet.gif" width="700">
+    <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/6a114ff560eb837c1c67165873322dd6b9583ef9/Week4/src/tracking_mask_flownet.gif" width="700">
 </p>
 
 ## Report
