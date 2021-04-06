@@ -203,5 +203,10 @@ Quantitative results obtained after doing fine-tuning on differents models.
     </tbody>
 </table>
 
+#### Tracking with MaskFlownet
+<p align="center">
+    <img algin="center" src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week4/src/tracking_mask_flownet.gif" width="700">
+</p>
+
 ## Report
 The report for week 4 is available [here](https://docs.google.com/presentation/d/1JYmlzbrf8hvug4VpYjFmhxA6A4ILqHioQ-ZunkLy9V8/edit?usp=sharing).
