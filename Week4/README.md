@@ -77,7 +77,7 @@ Any parameter when using MaskFlownet could be modified in file [Mask_flownet_con
 ## Results
 ### Task 1.1: Optical Flow with Block Matching
 
-Quantitative results obtained after applying inference on different models.
+Quantitative results obtained by applying Block Matching.
 
 <table>
     <thead>
@@ -131,11 +131,9 @@ Quantitative results obtained after applying inference on different models.
     </tbody>
 </table>
 
-<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task11.jpg" width="700">
-
 ### Task 1.2: Off-the-shelf Optical Flow
 
-Quantitative results obtained after doing fine-tuning on differents models.
+Quantitative results obtained for the Off-the-shelf method compared with our best result.
 
 <table>
     <thead>
@@ -160,20 +158,23 @@ Quantitative results obtained after doing fine-tuning on differents models.
     </tbody>
 </table>
 
-<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task12.jpg" width="700">
-
 ### Task 2.1: Video stabilization with Block Matching
 
-
+#### Stabilization using Block Matching
 <p align="center">
-<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/4c2e0306c7a1e52557fe0b9abf984e0885bd8eef/Week3/m6w3.gif" width="700">
+<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/f289b74aa219dd975a1961436b3d5ec58136c422/Week4/src/task2.gif" width="700">
 </p>
 
 ### Task 2.2: Off-the-shelf Stabilization
 
+#### Stabilization using DUT
 <p align="center">
-    <img align="center" src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/be83276ec1d00bf487dac148199e9d530abbae13/Week3/Task22.jpg" width="500">
-    <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/4c2e0306c7a1e52557fe0b9abf984e0885bd8eef/Week3/m6w3_clara.gif" width="700">
+    <img align="center" src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/d50850ce3a7e2bf67517876ff809686364c0915c/Week4/stabilization_dut.gif" width="700">
+</p>
+
+#### Stabilization using OpenCV
+<p align="center">
+    <img align="center" src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/d50850ce3a7e2bf67517876ff809686364c0915c/Week4/opencv2.gif" width="700">
 </p>
 
 ### Task 3.1: Object Tracking with Optical Flow
@@ -192,7 +193,7 @@ Quantitative results obtained after doing fine-tuning on differents models.
             <td rowspan=3>IDF10.5</td>
             <td rowspan=3>&nbsp;&nbsp;&nbsp;63.8698%</td>
             <td>OpenCV: 61.7942% </td>
-            <td rowspan=3>&nbsp;&nbsp;&nbsp;62.6187%</td>
+            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;62.6187%</td>
         </tr>
         <tr>
             <td>SSD:</td>
@@ -206,6 +207,12 @@ Quantitative results obtained after doing fine-tuning on differents models.
 #### Tracking with MaskFlownet
 <p align="center">
     <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/c268c06bf013ba3af66b9278586c0607c3274def/Week4/tracking_mask_flownet.gif" width="700">
+</p>
+
+#### Tracking with Pyflow
+
+<p align="center">
+    <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/24de1b72ac60445bd94359a4d68473664d899647/Week4/tracking_pyflow.gif" width="700">
 </p>
 
 ## Report
