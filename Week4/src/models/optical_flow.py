@@ -11,11 +11,10 @@ from utils.metrics import dist_func, bilateral_weights
 
 import multiprocessing as mp
 
-global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i
 
 def process(params):
 
-    global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i
+    global img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh
 
     x = params[0]
     y = params[1]
@@ -68,10 +67,8 @@ def process(params):
                 if (dist > min_dist if met in 'ncc' else dist < min_dist):
                     min_dist = dist
                     flowx, flowy = x - i, y - j
-            
-    # Update the flow field.
-    vx[int(x-st/2):int(x+st/2), int(y-st/2):int(y+st/2)] = flowy
-    vy[int(x-st/2):int(x+st/2), int(y-st/2):int(y+st/2)] = flowx
+
+    return [flowx, flowy, x, y, st]
 
 
 def block_matching(image1, image2, window_size, shift, stride, metric='ssd', fw_bw='fw', bilateral=None, cv2_method='cv2.TM_CCOEFF_NORMED'):
@@ -86,9 +83,8 @@ def block_matching(image1, image2, window_size, shift, stride, metric='ssd', fw_
     :return: Optical flow for each direction x,y
     """
 
-    global vx, vy, img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh, i
+    global img1, img2, wh, cv2method, bilateral_w, ws, met, st, sh
 
-    i = 0
     cv2method = cv2_method
 
     if fw_bw in 'bw':
@@ -110,17 +106,20 @@ def block_matching(image1, image2, window_size, shift, stride, metric='ssd', fw_
     vy = np.zeros((img2.shape[:2]))
     
     wh = int(window_size / 2)
-
-    #plt.figure()
-    
+        
     a = np.arange(wh, img2.shape[0] - wh - 1, stride)
     b = np.arange(wh, img2.shape[1] - wh - 1, stride)
     paramlist = list(itertools.product(a, b))
-    n_processes = 12
+    n_processes = 8
 
     with mp.Pool(n_processes) as p:
-        res = p.map(process, paramlist)      
+        results = p.map(process, paramlist)
     
+    for result in results:
+        flowx, flowy, x, y, st = result
+        vx[int(x-st/2):int(x+st/2), int(y-st/2):int(y+st/2)] = flowy
+        vy[int(x-st/2):int(x+st/2), int(y-st/2):int(y+st/2)] = flowx    
+
     if fw_bw in 'fw':
         return np.concatenate((vx[..., None], vy[..., None], np.ones((vx.shape[0],vx.shape[1],1))), axis=2)
     elif fw_bw in 'bw':
