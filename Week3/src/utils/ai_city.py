@@ -238,7 +238,7 @@ class AICity:
                 write_json_file(self.det_bboxes,join(self.options.output_path,self.mode+'/') +'_'.join((self.model, self.framework, self.split[0], str(self.options.conf_thres), str(self.options.iou_thres) +'.json')))#save_path+'_'.join((self.model, self.framework, self.split[0]+'.json')))
 
 
-   def get_mAP(self, k=None):
+    def get_mAP(self, k=None):
         """
         Estimats the mAP using the VOC evaluation
 
@@ -286,7 +286,7 @@ class AICity:
                 return bbox['bbox']
         return None
 
-    def compute_tracking_overlapping(self, threshold = 0.5, interpolate = True, remove_noise = True):
+    def compute_tracking_overlapping(self, threshold = 0.5, interpolate = False, remove_noise = True):
 
         id_seq = {}
         #not assuming any order

@@ -11,21 +11,21 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
 
-        parser.add_argument('--framework', type=str, default='tensorflow', help='What framework to use')
+        parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
         parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
-        parser.add_argument('--data_path', type=str, default='../../datasets/AICity/train/S03/c010/vdo',
+        parser.add_argument('--data_path', type=str, default='../../raw_data/AICity/train/S03/c010/vdo',
                             help="Path where the AICity data is located")
-        parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
+        parser.add_argument('--gt_path', type=str, default='../../raw_data', help="Folder where the annotations are stored")
         parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
         parser.add_argument('--split', nargs='+', default=['sort',1], help="Split mode and K-fold")
         parser.add_argument('--k', type=int, default=None, help="k")
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
         parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='resnet640', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
+        parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
                                                                             'yolov3-tiny','mobilenet64', 'resnet640', 'efficientdetd1'], help="Detection model used")
         parser.add_argument('--weights', type=str, default='runs/train/yolov3_sort/weights/best.pt')
 
@@ -42,7 +42,7 @@ class Config:
         parser.add_argument('--save_json', type=bool, default=True, help="Save detection results to json")
         parser.add_argument('--view_img', type=bool, default=False, help="View detection results")
         parser.add_argument('--save_img', type=bool, default=False, help="Save detection qualitative results")
-        parser.add_argument('--view_tracking', type=bool, default=True, help="Save detection qualitative results")
+        parser.add_argument('--view_tracking', type=bool, default=False, help="Save detection qualitative results")
         
          # ================================ TENSORFLOW PARAMS ====================== #
         parser.add_argument('--iou_threshold', type=float, default=0.5, help="Threshold to discard detections")
