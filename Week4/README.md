@@ -103,7 +103,7 @@ Quantitative results obtained after applying inference on different models.
             <td></td>
             <td></td>
             <td></td>
-            <td>SSD</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSD</td>
             <td></td>
             <td></td>
             <td></td>
@@ -113,7 +113,7 @@ Quantitative results obtained after applying inference on different models.
             <td></td>
             <td></td>
             <td></td>
-            <td>NCC</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NCC</td>
             <td></td>
             <td></td>
             <td></td>
@@ -123,7 +123,7 @@ Quantitative results obtained after applying inference on different models.
             <td></td>
             <td></td>
             <td></td>
-            <td>SAD</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SAD</td>
             <td></td>
             <td></td>
             <td></td>
@@ -189,10 +189,10 @@ Quantitative results obtained after doing fine-tuning on differents models.
     </thead>
     <tbody>
         <tr>
-            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IDF10.5</td>
-            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;63.8698%</td>
+            <td rowspan=3>IDF10.5</td>
+            <td rowspan=3>&nbsp;&nbsp;&nbsp;63.8698%</td>
             <td>OpenCV: 61.7942% </td>
-            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;62.6187%</td>
+            <td rowspan=3>&nbsp;&nbsp;&nbsp;62.6187%</td>
         </tr>
         <tr>
             <td>SSD:</td>
