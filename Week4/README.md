@@ -77,11 +77,12 @@ Any parameter when using MaskFlownet could be modified in file [Mask_flownet_con
 ## Results
 ### Task 1.1: Optical Flow with Block Matching
 
-Quantitative results obtained by applying Block Matching.
+Different approaches used and the best quantitative result obtained by applying Block Matching.
 
 <table>
     <thead>
         <tr>
+            <th></th>
             <th colspan=5>Explored values</th>
             <th></th>
             <th colspan=2>Best Configuration</th>
@@ -89,43 +90,35 @@ Quantitative results obtained by applying Block Matching.
     </thead>
     <tbody>
         <tr>
+            <td></td>
             <td>FWD/BWD compensation</td>
             <td>Area of search</td>
-            <td>Block size</td>
+            <td>&nbsp;Block size</td>
             <td>Step size</td>
-            <td>Error function</td>
-            <td>Others</td>
+            <td>&nbsp;&nbsp;&nbsp;Error function</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Others</td>
             <td>PEPN</td>
             <td>MSEN</td>
         </tr>
         <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSD</td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td>Tried</td>
+            <td>&nbsp;&nbsp;&nbsp;FWD/BWD</td>
+            <td>from 5 to 40</td>
+            <td>5,15,25,31,<br>35,45,55,65</td>
+            <td>1, 2, 4, 5</td>
+            <td>ssd, sad, ncc, nccoef, (opt) bil weights</td>
+            <td>Grid search: Exhaustive search <br> Template matching
+</td>
+            <td rowspan=2>0.1580</td>
+            <td rowspan=2>2.3029</td>
         </tr>
         <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NCC</td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SAD</td>
-            <td></td>
-            <td></td>
+            <td>Best Config</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BWD</td>
+            <td>&nbsp;&nbsp;&nbsp;40</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;31</td>
+            <td>&nbsp;&nbsp;&nbsp;1</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nccoef</td>
             <td></td>
         </tr>
     </tbody>
