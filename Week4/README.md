@@ -185,21 +185,15 @@ Quantitative results obtained for the Off-the-shelf method compared with our bes
             <th>Method</th>
             <th>Mask Flownet</th>
             <th>Block Matching</th>
-            <th>Block Matching</th>
+            <th>Pyflow</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td rowspan=3>IDF10.5</td>
-            <td rowspan=3>&nbsp;&nbsp;&nbsp;63.8698%</td>
-            <td>OpenCV: 61.7942% </td>
-            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;62.6187%</td>
-        </tr>
-        <tr>
-            <td>SSD:</td>
-        </tr>
-        <tr>
-            <td>SAD:</td>
+            <td>&nbsp;&nbsp;&nbsp;65.8698%</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;63.3578%</td>
+            <td>64.6187%</td>
         </tr>
     </tbody>
 </table>
