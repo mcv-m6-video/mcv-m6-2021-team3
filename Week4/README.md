@@ -133,7 +133,7 @@ Quantitative results obtained by applying Block Matching.
 
 ### Task 1.2: Off-the-shelf Optical Flow
 
-Quantitative results obtained for the Off-the-shelf method compared with our best result.
+Quantitative results obtained for the Off-the-shelf method compared with our best result using MaskFlownet.
 
 <table>
     <thead>
@@ -151,9 +151,9 @@ Quantitative results obtained for the Off-the-shelf method compared with our bes
         </tr>
         <tr>
             <td>0.9746</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.3029</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.2846</td>
             <td>0.0799</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.1580</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0076</td>
         </tr>
     </tbody>
 </table>
@@ -189,6 +189,8 @@ Quantitative results obtained for the Off-the-shelf method compared with our bes
 
 ### Task 3.1: Object Tracking with Optical Flow
 
+Quantitative tracking results obtained using OF information.
+
 <table>
     <thead>
         <tr>
@@ -210,16 +212,23 @@ Quantitative results obtained for the Off-the-shelf method compared with our bes
 
 #### Tracking with Block Matching
 
+Qualitative tracking results obtained using BM OF information.
+
 <p align="center">
     <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/b01d6c6d7666611fcb02f0b1ace7879e630c3a40/Week4/tracking-bm-edit-2.gif" width="700">
 </p>
 
 #### Tracking with MaskFlownet
+
+Qualitative tracking results obtained using MaskFlownet OF information.
+
 <p align="center">
     <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/c268c06bf013ba3af66b9278586c0607c3274def/Week4/tracking_mask_flownet.gif" width="700">
 </p>
 
 #### Tracking with Pyflow
+
+Qualitative tracking results obtained using Pyflow OF information.
 
 <p align="center">
     <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/24de1b72ac60445bd94359a4d68473664d899647/Week4/tracking_pyflow.gif" width="700">
