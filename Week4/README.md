@@ -151,9 +151,9 @@ Quantitative results obtained for the Off-the-shelf method compared with our bes
         </tr>
         <tr>
             <td>0.9746</td>
-            <td></td>
+            <td>2.3029</td>
             <td>0.0799</td>
-            <td></td>
+            <td>0.1580</td>
         </tr>
     </tbody>
 </table>
