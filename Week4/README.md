@@ -95,8 +95,8 @@ Different approaches used and the best quantitative result obtained by applying 
             <td>Area of search</td>
             <td>&nbsp;Block size</td>
             <td>Step size</td>
-            <td>&nbsp;&nbsp;&nbsp;Error function</td>
-            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Others</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Error function</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Others</td>
             <td>PEPN</td>
             <td>MSEN</td>
         </tr>
