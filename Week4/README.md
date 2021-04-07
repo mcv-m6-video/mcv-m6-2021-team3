@@ -207,8 +207,7 @@ Quantitative results obtained for the Off-the-shelf method compared with our bes
 #### Tracking with Block Matching
 
 <p align="center">
-    <img src="
-https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/b01d6c6d7666611fcb02f0b1ace7879e630c3a40/Week4/tracking-bm-edit-2.gif" width="700">
+    <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/b01d6c6d7666611fcb02f0b1ace7879e630c3a40/Week4/tracking-bm-edit-2.gif" width="700">
 </p>
 
 #### Tracking with MaskFlownet
