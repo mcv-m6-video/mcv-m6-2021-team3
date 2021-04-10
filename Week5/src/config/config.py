@@ -15,7 +15,7 @@ class Config:
         parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
-        parser.add_argument('--data_path', type=str, default='../../raw_data/AICity/train/S03',
+        parser.add_argument('--data_path', type=str, default='../../raw_data',
                             help="Path where the AICity data is located")
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         
