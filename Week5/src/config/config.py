@@ -31,6 +31,8 @@ class Config:
 
         # =============================== FINETUNE =============================== #
 
+        parser.add_argument('--seq_train', nargs='+', default=['S01','S03'], help="Sequences used to train")
+        parser.add_argument('--seq_test', nargs='+', default=['S04'], help="Sequence used to test")
         parser.add_argument('--conf_thres', type=float, default=0.2)
         parser.add_argument('--iou_thres', type=float, default=0.3)
         parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars_rand.yaml', help='data.yaml path')
