@@ -96,7 +96,7 @@ def read_video_file(video_file):
         retrieved, frame = capture.read()
 
         if retrieved:
-            cv2.imwrite(join(folder, str(counter).zfill(4) + '.png'), frame)
+            cv2.imwrite(join(folder, str(counter).zfill(4) + '.jpg'), frame)
             counter += 1
             progress_bar.update(1)
         else:

@@ -5,17 +5,18 @@ from datasets.ai_city import AICity
 from utils.utils import write_json_file, dict_to_list_IDF1, read_video_file
 from config.config import Config
 #from utils.yolov3 import UltralyricsYolo
-from utils.visualize import visualize_trajectories, plot_idf1_thr
-from utils.metrics import IDF1
+'''from utils.visualize import visualize_trajectories, plot_idf1_thr
+from utils.metrics import IDF1'''
 
 
 def main(args):
 
     aicity = AICity(args)
+    aicity.detect_on_seq(['S01','S03','S04'])
 
-    '''print(args.data_path)
+    #print(args.data_path)
 
-    for path in glob.glob(join(args.data_path,'AICity/train/*/*/*.avi')):
+    '''for path in glob.glob(join(args.data_path,'AICity/train/*/*/*.avi')):
         read_video_file(path)'''
 
 if __name__ == "__main__":

@@ -15,19 +15,19 @@ class Config:
         parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
-        parser.add_argument('--data_path', type=str, default='../../raw_data',
+        parser.add_argument('--data_path', type=str, default='/media/gemma/datasets',#'../../raw_data',
                             help="Path where the AICity data is located")
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         
         parser.add_argument('--img_size', nargs='+', type=int, default=[640, 640], help='train and test image sizes')
         parser.add_argument('--split', nargs='+', default=['sort',1], help="Split mode and K-fold")
         parser.add_argument('--test_mode', type=bool, default=False, help="Test mode with less images")
-        parser.add_argument('--extension', type=str, default="png", help="Extension of the frame files")
+        parser.add_argument('--extension', type=str, default="jpg", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
         parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
                                                                             'yolov3-tiny','ssd'], help="Detection model used")
-        parser.add_argument('--weights', type=str, default='runs/train/yolov3-tiny_rand/weights/best.pt')
+        parser.add_argument('--weights', type=str, default=None)
 
         # =============================== FINETUNE =============================== #
 

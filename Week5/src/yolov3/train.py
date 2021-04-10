@@ -36,7 +36,7 @@ from yolov3.utils.torch_utils import ModelEMA, select_device, intersect_dicts, t
 logger = logging.getLogger(__name__)
 
 
-def train(hyp, opt, device, K, tb_writer=None, wandb=None):
+def train(hyp, opt, device, tb_writer=None, wandb=None):
     logger.info(colorstr('hyperparameters: ') + ', '.join(f'{k}={v}' for k, v in hyp.items()))
     save_dir, epochs, batch_size, total_batch_size, weights, rank = \
         Path(opt.save_dir), opt.epochs, opt.batch_size, opt.total_batch_size, opt.weights, opt.global_rank
@@ -60,10 +60,6 @@ def train(hyp, opt, device, K, tb_writer=None, wandb=None):
     init_seeds(2 + rank)
     with open(opt.data) as f:
         data_dict = yaml.load(f, Loader=yaml.SafeLoader)  # data dict
-        if K is not None:
-            data_dict['train'] = '/'.join(data_dict['train'].split('/')[:-1]+['4','train_{}.txt'.format(K)])
-            data_dict['val'] = '/'.join(data_dict['val'].split('/')[:-1]+['4','val_{}.txt'.format(K)])
-            data_dict['test'] = '/'.join(data_dict['test'].split('/')[:-1]+['4','test_{}.txt'.format(K)])
     with torch_distributed_zero_first(rank):
         check_dataset(data_dict)  # check
     train_path = data_dict['train']
@@ -436,7 +432,7 @@ class OPT():
     def __init__(self):
         self.empty=True
 
-def main(weights, args, K=None):
+def main(weights, args):
     opt=OPT()
     # opts
     opt.weights='yolov3.pt'
@@ -471,12 +467,12 @@ def main(weights, args, K=None):
 
     # Refine opt variables
     opt.weights = weights
-    opt.hyp = args.hyp
-    opt.data = args.data_yolov3
-    opt.epochs = args.epochs
-    opt.batch_size = args.batch_size
-    opt.img_size = args.img_size
-    opt.name = args.model+'_'+args.split[0]+'_'+str(K)
+    opt.hyp = args['hyp']
+    opt.data = args['data_yolov3']
+    opt.epochs = args['epochs']
+    opt.batch_size = args['batch_size']
+    opt.img_size = args['img_size']
+    opt.name = args['name']
 
     # Set DDP variables
     opt.world_size = int(os.environ['WORLD_SIZE']) if 'WORLD_SIZE' in os.environ else 1
@@ -531,7 +527,7 @@ def main(weights, args, K=None):
         if opt.global_rank in [-1, 0]:
             logger.info(f'Start Tensorboard with "tensorboard --logdir {opt.project}", view at http://localhost:6006/')
             tb_writer = SummaryWriter(opt.save_dir)  # Tensorboard
-        train(hyp, opt, device, K, tb_writer, wandb)
+        train(hyp, opt, device, tb_writer, wandb)
 
     # Evolve hyperparameters (optional)
     else:
@@ -605,7 +601,7 @@ def main(weights, args, K=None):
                 hyp[k] = round(hyp[k], 5)  # significant digits
 
             # Train mutation
-            results = train(hyp.copy(), opt, device, K, wandb=wandb)
+            results = train(hyp.copy(), opt, device, wandb=wandb)
 
             # Write mutation results
             print_mutation(hyp.copy(), results, yaml_file, opt.bucket)

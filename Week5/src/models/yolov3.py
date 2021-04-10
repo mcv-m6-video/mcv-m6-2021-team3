@@ -34,34 +34,34 @@ class UltralyricsYolo():
 
         # Initialize
         if weights is None:
-            weights=args.model
+            weights=args['model']
         set_logging()
         weights = get_weights(weights,'ultralytics')
         
         # Define class position for car
-        if args.mode in 'inference':
+        if args['mode'] in 'inference':
             classes=[2]
-        elif args.mode in 'eval':
+        elif args['mode'] in 'eval':
             classes=[0]
 
-        if args.mode in 'inference' or args.mode in 'eval':
+        if args['mode'] in 'inference' or args['mode'] in 'eval':
             self.device = select_device(device)
         
             # Load model
             self.model = attempt_load(weights, map_location=self.device)  # load FP32 model
-            self.img_size = check_img_size(args.img_size[0], s=self.model.stride.max())  # check img_size
+            self.img_size = check_img_size(args['img_size'][0], s=self.model.stride.max())  # check img_size
                 
             self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
 
-            self.conf_thres = args.conf_thres
-            self.iou_thres = args.iou_thres
+            self.conf_thres = args['conf_thres']
+            self.iou_thres = args['iou_thres']
             self.classes = classes
             self.agnostic_nms = agnostic_nms
             
             img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
             _ = self.model(img) if self.device.type != 'cpu' else None  # run once
 
-        elif args.mode in 'train':
+        elif args['mode'] in 'train':
             self.weights = weights
             self.args = args
 
@@ -115,10 +115,7 @@ class UltralyricsYolo():
             Train model.
             :param kfold: number of folder used for training. If None, no cross-validation.
         """        
-        if kfold is not None:
-            train_yolov3(self.weights, self.args, kfold)
-        else:
-            train_yolov3(self.weights, self.args)       
+        train_yolov3(self.weights, self.args)       
 
 
 def gt_multi_txt(path, bboxes):
