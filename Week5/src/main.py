@@ -2,17 +2,13 @@ import os
 from os.path import join
 import glob
 from datasets.ai_city import AICity
-from utils.utils import write_json_file, dict_to_list_IDF1, read_video_file
 from config.config import Config
-#from utils.yolov3 import UltralyricsYolo
-'''from utils.visualize import visualize_trajectories, plot_idf1_thr
-from utils.metrics import IDF1'''
-
 
 def main(args):
 
     aicity = AICity(args)
-    aicity.detect_on_seq(['S01','S03','S04'])
+    aicity.data_to_model()
+    #aicity.detect_on_seq(['S01','S03','S04'])
 
     #print(args.data_path)
 

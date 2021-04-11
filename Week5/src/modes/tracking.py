@@ -7,10 +7,10 @@ import cv2
 import pickle
 import time
 from tqdm import tqdm
-from models.sort import Sort
+from .sort import Sort
 from utils.utils import return_bb, str_frame_id, update_data, pol2cart
 from utils.metrics import compute_iou, interpolate_bb
-from models.optical_flow import block_matching, MaskFlownetOF
+from .optical_flow import block_matching, MaskFlownetOF
 import pyflow.pyflow as pyflow
 
 import matplotlib.pyplot as plt

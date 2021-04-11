@@ -20,7 +20,10 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-import yolov3.test as test  # import test.py to get mAP after each epoch
+import sys
+sys.path.insert(0, "yolov3")
+
+import yolov3.test  # import test.py to get mAP after each epoch
 from yolov3.models.experimental import attempt_load
 from yolov3.models.yolo import Model
 from yolov3.utils.autoanchor import check_anchors
@@ -435,7 +438,7 @@ class OPT():
 def main(weights, args):
     opt=OPT()
     # opts
-    opt.weights='yolov3.pt'
+    opt.weights='pt'
     opt.cfg=''
     opt.data='data/coco128.yaml'
     opt.hyp='data/hyp.scratch.yaml'

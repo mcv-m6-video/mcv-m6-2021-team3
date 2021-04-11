@@ -2,13 +2,14 @@ import os
 import cv2
 import png
 import glob
+import random
 import numpy as np
 from tqdm import tqdm
 from os.path import join, exists
 import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
 
-from models.yolov3 import UltralyricsYolo, to_yolov3
+from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 from utils.utils import write_json_file, read_json_file, update_data
 #from models.tracking import compute_tracking_overlapping, compute_tracking_kalman
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
@@ -85,7 +86,6 @@ class LoadSeq():
         self.seq = seq
         self.det_params = det_params
         self.det_name = self.det_params['mode']+'_'+det_name
-        
 
         # OUTPUT PARAMETERS
         self.output_path = output_path        
@@ -112,15 +112,34 @@ class LoadSeq():
             cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
             cam_paths.sort()
             self.frames_paths.update({cam:cam_paths})
+
+    def train_val_split(self, split=.25, mode='test'):
+        """
+        Apply split to specific propotion of the dataset.
+        """
+        self.data = {}
+        if mode in 'train':
+            # Define cams used to train and validate
+            cams = self.frames_paths.keys()
+            cams_val = random.sample(cams, int(len(cams)*split))
+            cams_train = list(set(cams)-set(cams_val))
+
+            self.data.update({'train':dict(filter(lambda cam: cam[0] in cams_train, self.frames_paths.items()))})
+            self.data.update({'val':dict(filter(lambda cam: cam[0] in cams_val, self.frames_paths.items()))})
+        
+        else:
+            # The whole sequence used to test
+            self.data.update({'test':self.frames_paths})
     
-    def data_to_model(self):
-        to_yolov3(self.data, self.gt_bboxes, self.split[0])
+    def data_to_model(self, split=.25, mode='test'):
+        self.train_val_split(split, mode)
+        return to_yolov3(self.data, self.gt_bboxes)
     
     def detect(self):
 
         model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
 
-        for cam, paths in self.cam_paths.items():
+        for cam, paths in self.frames_paths.items():
             print(self.det_params['mode']+f' for sequence: {self.seq}')
             if len(self.det_bboxes[cam]) == len(paths):
                 continue
@@ -130,8 +149,7 @@ class LoadSeq():
                 for (bbox), conf in pred:
                     self.det_bboxes[cam] = update_data(self.det_bboxes[cam], frame_id, *bbox, conf)
         
-            if self.save_json:
-                write_json_file(self.det_bboxes[cam],join(self.output_path,self.seq,cam,self.det_name))
+            write_json_file(self.det_bboxes[cam],join(self.output_path,self.seq,cam,self.det_name))
 
         return self.get_mAP()
     

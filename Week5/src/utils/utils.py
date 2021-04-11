@@ -6,11 +6,12 @@ import pathlib
 import tqdm
 import random
 import json
-from termcolor import colored
 import imageio
 import cv2
 import png
+import yaml
 import subprocess
+from termcolor import colored
 from numpngw import write_png
 
 def read_kitti_OF(flow_file):
@@ -48,6 +49,14 @@ def write_png_flow(flow, png_file):
 
     if exists(png_file):
         print('PNG file ' + colored('\'' + png_file + '\'', 'blue') + ' written successfully!')
+
+
+def write_yaml_file(yaml_dict, yaml_file):
+    with open(yaml_file, 'w') as f:
+        yaml.dump(yaml_dict, f)
+
+    if exists(yaml_file):
+        print('YAML file ' + colored('\'' + yaml_file + '\'', 'blue') + ' written successfully!')
 
 def write_json_file(data_dict, json_file):
     """

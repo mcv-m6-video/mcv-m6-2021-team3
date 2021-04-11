@@ -1,6 +1,9 @@
+import sys
+sys.path.insert(0, ".")
+
 import os
 from PIL import Image
-from os.path import join, basename
+from os.path import join, basename, dirname
 import glob
 import numpy as np
 from tqdm import tqdm
@@ -141,53 +144,31 @@ def gt_multi_txt(path, bboxes):
     return lines_out
 
 
-def to_yolov3(data, gt_bboxes, mode, save_path='yolov3_data'):
+def to_yolov3(data, gt_bboxes):
     """
         Convert AICity data format to YOLOv3 utralytics format.
         :param data: paths to train and validation files
         :param gt_bboxes: dict of ground truth detections
-        :param mode: sorted or shuffled data
-        :param save_path: path to store yolov3 ultralytic data format
-    """        
-    save_path = join(save_path,mode)
-    data_path = join(os.getcwd(),save_path,'data')
-    
-    if len(data)==1:    
-        if os.path.exists(data_path):
-            if len(glob.glob(data_path+'/*.*')) == 2*sum([len(d) for _,d in data.items()]):
-                print('Data already in YOLOv3 format!')
-                return
 
-        os.makedirs(data_path,exist_ok=True)
-
-        for split, split_data in data[0].items():
-            files = []
-            for path in tqdm(split_data,'Preparing '+split+' data for YOLOv3'):
+        :return split_txt: dict with path to files for every split (train, val, test)
+    """
+    splits_txt = {}
+    for split, split_data in data.items():
+        files = []
+        for cam, paths in tqdm(split_data.items(),'Preparing '+split+' data for YOLOv3'):
+            txts = glob.glob(dirname(paths[0])+'/*.txt')
+            if len(paths) == len(txts):
+                continue
+            for path in paths:
                 # Convert to yolov3 format
                 frame_id = basename(path).split('.')[0]
-                lines_out = gt_multi_txt(path, gt_bboxes[frame_id])
+                lines_out = gt_multi_txt(path, gt_bboxes[cam][frame_id])
 
                 # Write/save files
-                file_out = open(join(data_path,frame_id+'.txt'), 'w')
+                file_out = open(path.replace('jpg','txt'), 'w')
                 file_out.writelines(lines_out)
-                new_path = join(data_path,frame_id+'.jpg')
-                files.append(new_path+'\n')
-                copyfile(path, new_path)
+                files.append(path+'\n')
 
-            split_txt = open(join(os.getcwd(),save_path,split+'.txt'), 'w')
-            split_txt.writelines(files)
-    else:
-        for k, fold in enumerate(data):
-            for split, split_data in fold.items():
-                files = []
-                for path in tqdm(split_data,'Preparing '+split+' data for YOLOv3'):
-                    # Convert to yolov3 format
-                    frame_id = basename(path).split('.')[0]
-                    new_path = join(data_path,frame_id+'.jpg')
-                    files.append(new_path+'\n')
-                    
-                # Write files
-                os.makedirs(join(save_path,str(len(data))),exist_ok=True)
-                split_txt = open(join(save_path,str(len(data)),split+'_'+str(k)+'.txt'), 'w')
-                split_txt.writelines(files)
+        splits_txt.update({split:files})
 
+    return splits_txt

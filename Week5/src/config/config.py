@@ -25,14 +25,13 @@ class Config:
         parser.add_argument('--extension', type=str, default="jpg", help="Extension of the frame files")
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
-        parser.add_argument('--model', type=str, default='yolov3', choices=['faster_rcnn', 'mask_rcnn', 'retinanet', 'yolov3', 'yolov3-spp',
-                                                                            'yolov3-tiny','ssd'], help="Detection model used")
+        parser.add_argument('--model', type=str, default='yolov3', choices=['yolov3', 'yolov3-spp', 'yolov3-tiny'], help="Detection model used")
         parser.add_argument('--weights', type=str, default=None)
 
         # =============================== FINETUNE =============================== #
 
-        parser.add_argument('--seq_train', nargs='+', default=['S01','S03'], help="Sequences used to train")
-        parser.add_argument('--seq_test', nargs='+', default=['S04'], help="Sequence used to test")
+        parser.add_argument('--seq_train', nargs='+', default=['S01','S04'], help="Sequences used to train")
+        parser.add_argument('--seq_test', nargs='+', default=['S03'], help="Sequence used to test")
         parser.add_argument('--conf_thres', type=float, default=0.2)
         parser.add_argument('--iou_thres', type=float, default=0.3)
         parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars_rand.yaml', help='data.yaml path')
