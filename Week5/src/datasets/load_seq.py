@@ -139,7 +139,7 @@ class LoadSeq():
 
         model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
         print(self.det_params['mode']+f' for sequence: {self.seq}')
-        
+
         for cam, paths in self.frames_paths.items():    
             if len(self.det_bboxes[cam]) > 0:
                 continue
@@ -173,8 +173,8 @@ class LoadSeq():
         :return: map of all estimated frames
         """
         mAP50, mAP70 = [], []
-        for gt_bboxes, cam_paths, det_bboxes in zip(self.gt_bboxes.values(), self.frames_paths.values(), self.det_bboxes.values()):
-            print(self.det_params['mode']+f' mAP for sequence: {self.seq}')
+        print(self.det_params['mode']+f' mAP for sequence: {self.seq}')
+        for gt_bboxes, cam_paths, det_bboxes in zip(self.gt_bboxes.values(), self.frames_paths.values(), self.det_bboxes.values()):            
             mAP50.append(voc_eval(gt_bboxes, cam_paths, det_bboxes)[2])
             mAP70.append(voc_eval(gt_bboxes, cam_paths, det_bboxes, use_07_metric=True)[2])
         return np.mean(mAP50), np.mean(mAP70)
