@@ -138,10 +138,10 @@ class LoadSeq():
     def detect(self):
 
         model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
-
-        for cam, paths in self.frames_paths.items():
-            print(self.det_params['mode']+f' for sequence: {self.seq}')
-            if len(self.det_bboxes[cam]) == len(paths):
+        print(self.det_params['mode']+f' for sequence: {self.seq}')
+        
+        for cam, paths in self.frames_paths.items():    
+            if len(self.det_bboxes[cam]) > 0:
                 continue
             for file_name in tqdm(paths, 'Model predictions ({}, {})'.format(cam, self.det_params['model'])):
                 pred = model.predict(file_name)
