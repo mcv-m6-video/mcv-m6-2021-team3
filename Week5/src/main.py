@@ -7,8 +7,7 @@ from config.config import Config
 def main(args):
 
     aicity = AICity(args)
-    #aicity.data_to_model()
-    aicity.detect_on_seq(['S01','S03','S04'])
+    aicity.train()
 
     #print(args.data_path)
 

@@ -11,7 +11,7 @@ class Config:
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
-        parser.add_argument('--mode', type=str, default='inference', choices=['train','eval','inference','tracking'], help='What task to perform')
+        parser.add_argument('--mode', type=str, default='train', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
@@ -33,9 +33,9 @@ class Config:
         parser.add_argument('--seq_train', nargs='+', default=['S01','S04'], help="Sequences used to train")
         parser.add_argument('--seq_test', nargs='+', default=['S03'], help="Sequence used to test")
         parser.add_argument('--conf_thres', type=float, default=0.2)
-        parser.add_argument('--iou_thres', type=float, default=0.3)
+        parser.add_argument('--iou_thres', type=float, default=0.5)
         parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars_rand.yaml', help='data.yaml path')
-        parser.add_argument('--hyp', type=str, default='data/finetune/yolov3/hyp.finetune.yaml', help='hyperparameters path for finetuning')
+        parser.add_argument('--hyp', type=str, default='data/yolov3_finetune/hyp.finetune.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=150)
         parser.add_argument('--batch_size', type=int, default=32, help='total batch size for all GPUs')
         

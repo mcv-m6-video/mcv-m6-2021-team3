@@ -20,6 +20,7 @@ import os
 import time
 
 from datasets.load_seq import LoadSeq
+from modes.ultralytics_yolo import UltralyricsYolo
 from utils.utils import write_json_file, read_json_file, write_yaml_file
 
 class AICity:
@@ -78,6 +79,7 @@ class AICity:
         
         if len(os.listdir(save_path)) == 4:
             print(colored('Your data is already in the appropriate format! :)', 'green'))
+            self.det_params.update({'data_yolov3':join(save_path,'cars.yaml')})
             return
         
         print('Preparing data...')
@@ -99,6 +101,7 @@ class AICity:
             yaml_dict.update({split:join(save_path,split+'.txt')})
 
         write_yaml_file(yaml_dict,join(save_path,'cars.yaml'))
+        self.det_params.update({'data_yolov3':join(save_path,'cars.yaml')})
         print(colored('DONE!', 'green'))       
 
     def detect_on_seq(self, seqs):
@@ -107,6 +110,11 @@ class AICity:
             mAP50, mAP70 = self.sequences[seq].detect()
             print(f'Sequence: {seq}, mAP50={mAP50}, mAP70={mAP70}')
     
+    def train(self):
+        self.data_to_model()
+        model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
+        model.train()
+
 
 
 

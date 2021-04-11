@@ -113,10 +113,9 @@ class UltralyricsYolo():
 
         return pred
 
-    def train(self, kfold=None):
+    def train(self):
         """
             Train model.
-            :param kfold: number of folder used for training. If None, no cross-validation.
         """        
         train_yolov3(self.weights, self.args)       
 
@@ -157,17 +156,21 @@ def to_yolov3(data, gt_bboxes):
         files = []
         for cam, paths in tqdm(split_data.items(),'Preparing '+split+' data for YOLOv3'):
             txts = glob.glob(dirname(paths[0])+'/*.txt')
-            if len(paths) == len(txts):
-                continue
+            
             for path in paths:
+                # Add path
+                files.append(path+'\n')
+                
+                if len(paths) == len(txts):
+                    continue
+
                 # Convert to yolov3 format
                 frame_id = basename(path).split('.')[0]
                 lines_out = gt_multi_txt(path, gt_bboxes[cam][frame_id])
 
                 # Write/save files
                 file_out = open(path.replace('jpg','txt'), 'w')
-                file_out.writelines(lines_out)
-                files.append(path+'\n')
+                file_out.writelines(lines_out)                
 
         splits_txt.update({split:files})
 
