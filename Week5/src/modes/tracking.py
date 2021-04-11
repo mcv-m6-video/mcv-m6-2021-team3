@@ -11,7 +11,7 @@ from .sort import Sort
 from utils.utils import return_bb, str_frame_id, update_data, pol2cart
 from utils.metrics import compute_iou, interpolate_bb
 from .optical_flow import block_matching, MaskFlownetOF
-import pyflow.pyflow as pyflow
+#import pyflow.pyflow as pyflow
 
 import matplotlib.pyplot as plt
 
@@ -171,7 +171,7 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
     return det_bboxes
 
 
-def compute_tracking_kalman(det_bboxes): 
+def compute_tracking_kalman(det_bboxes, gt_bboxes): 
     '''
     Funtion to compute the tracking using Kalman filter
     :return: dictionary with the detections and the ids of each bbox computed by the tracking

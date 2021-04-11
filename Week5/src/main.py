@@ -7,7 +7,7 @@ from config.config import Config
 def main(args):
 
     aicity = AICity(args)
-    aicity.train()
+    aicity.track(args.seqs)
 
     #print(args.data_path)
 

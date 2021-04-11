@@ -63,6 +63,8 @@ class AICity:
         self.seq_train = args.seq_train
         self.seq_test = args.seq_test
 
+        self.tracking_mode = args.tracking_mode
+
         # LOAD SEQUENCE
         self.sequences = {}
         for seq in os.listdir(self.data_path):
@@ -114,6 +116,14 @@ class AICity:
         self.data_to_model()
         model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
         model.train()
+
+    def track(self,seqs):
+        for seq_key, seq_val in self.sequences.items():
+            seq_val.tracking()
+            
+
+
+
 
 
 

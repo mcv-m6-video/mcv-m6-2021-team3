@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split, KFold
 
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 from utils.utils import write_json_file, read_json_file, update_data
-#from models.tracking import compute_tracking_overlapping, compute_tracking_kalman
+from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
 
 def load_text(text_dir, text_name):
@@ -164,7 +164,7 @@ class LoadSeq():
                                                             stride=self.stride,
                                                             shift=self.shift)
         elif self.options.tracking_mode in 'kalman':
-            self.det_bboxes = compute_tracking_kalman(self.det_bboxes)
+            self.det_bboxes = compute_tracking_kalman(self.det_bboxes, self.gt_bboxes)
 
     def get_mAP(self):
         """
