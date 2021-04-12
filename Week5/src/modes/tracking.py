@@ -8,7 +8,7 @@ import pickle
 import time
 from tqdm import tqdm
 from .sort import Sort
-from utils.utils import return_bb, str_frame_id, update_data, pol2cart
+from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track
 from utils.metrics import compute_iou, interpolate_bb
 from .optical_flow import block_matching, MaskFlownetOF
 #import pyflow.pyflow as pyflow
@@ -177,34 +177,33 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes):
     :return: dictionary with the detections and the ids of each bbox computed by the tracking
     '''
     
-    data_list = dict_to_list_track(det_bboxes)
+    for idx_cam, cam in tqdm(det_bboxes.items(),'Processing Cameras'): # all frames in the sequence
+        data_list = dict_to_list_track(cam)
 
-    total_time = 0.0
-    total_frames = 0
-    out = []
-    idx_frame = []
-    colours = np.random.rand(32,3) #used only for display
+        total_time = 0.0
+        total_frames = 0
+        out = []
+        idx_frame = []
 
-    mot_tracker = Sort() #create instance of the SORT tracker
+        mot_tracker = Sort() #create instance of the SORT tracker
 
-    det_bboxes_new = {}
+        det_bboxes_new = {}
 
-    count = 0
-    for idx, frame in tqdm(det_bboxes.items(),'Frames Kalman Tracking'): # all frames in the sequence
+        count = 0
+
+        for idx_frame, frame in tqdm(cam.items(), 'Frames Kalman Tracking'):
         
-        colors = []
+            dets = data_list[data_list[:,0]==count,1:6]
+            #im = io.imread(join(data_path,idx)+'.png')
 
-        dets = data_list[data_list[:,0]==count,1:6]
-        #im = io.imread(join(data_path,idx)+'.png')
+            start_time = time.time()
+            trackers = mot_tracker.update(dets)
+            cycle_time = time.time() - start_time
+            total_time += cycle_time
 
-        start_time = time.time()
-        trackers = mot_tracker.update(dets)
-        cycle_time = time.time() - start_time
-        total_time += cycle_time
+            for track in trackers:
+                det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., track[4])
 
-        for track in trackers:
-            det_bboxes_new = update_data(det_bboxes_new, idx, *track[:4], 1., track[4])
-
-        count+=1
+            count+=1
 
     return det_bboxes_new

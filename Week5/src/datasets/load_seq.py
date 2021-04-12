@@ -73,7 +73,7 @@ def load_annot(annot_dir, name, ignore_parked=True):
 
 
 class LoadSeq():
-    def __init__(self, data_path, seq, output_path, det_name, extension='jpg', det_params=None):
+    def __init__(self, data_path, seq, output_path, tracking_mode, det_name, extension='jpg', det_params=None):
         """
         Init of the Load Sequence class
 
@@ -86,6 +86,7 @@ class LoadSeq():
         self.seq = seq
         self.det_params = det_params
         self.det_name = self.det_params['mode']+'_'+det_name
+        self.track_mode = tracking_mode
 
         # OUTPUT PARAMETERS
         self.output_path = output_path        
@@ -94,24 +95,32 @@ class LoadSeq():
         self.gt_bboxes = {}
         self.det_bboxes = {}
         self.frames_paths = {}
-        for cam in os.listdir(join(data_path,seq)):
-            # Load gt
-            self.gt_bboxes.update({cam:load_annot(join(data_path,seq,cam), 'gt/gt.txt')})
 
-            # Check if detections already computed
-            json_path = join(output_path,seq,cam)
-            os.makedirs(json_path,exist_ok=True)
-            json_path = join(json_path,self.det_name)
-            if exists(json_path):
-                self.det_bboxes.update({cam:read_json_file(json_path)})
-            else:
-                self.det_bboxes.update({cam:{}})
+        if self.det_params['mode'] in 'tracking':
+            for cam in os.listdir(join(data_path,seq)):
+                # Load gt
+                self.gt_bboxes.update({cam:load_annot(join(data_path,seq,cam), 'gt/gt.txt')})
+                # Load detections
+                self.det_bboxes.update({cam:read_json_file(join(self.output_path,self.seq,cam,'inference_'+det_name))})
+        else:
+            for cam in os.listdir(join(data_path,seq)):
+                # Load gt
+                self.gt_bboxes.update({cam:load_annot(join(data_path,seq,cam), 'gt/gt.txt')})
 
-            # Save paths to frames
-            cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
-            cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
-            cam_paths.sort()
-            self.frames_paths.update({cam:cam_paths})
+                # Check if detections already computed
+                json_path = join(output_path,seq,cam)
+                os.makedirs(json_path,exist_ok=True)
+                json_path = join(json_path,self.det_name)
+                if exists(json_path):
+                    self.det_bboxes.update({cam:read_json_file(json_path)})
+                else:
+                    self.det_bboxes.update({cam:{}})
+
+                # Save paths to frames
+                cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
+                cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
+                cam_paths.sort()
+                self.frames_paths.update({cam:cam_paths})
 
     def train_val_split(self, split=.25, mode='test'):
         """
@@ -154,7 +163,7 @@ class LoadSeq():
         return self.get_mAP()
     
     def tracking(self):
-        if self.options.tracking_mode in 'overlapping':
+        if self.track_mode in 'overlapping':
             self.det_bboxes = compute_tracking_overlapping(self.det_bboxes, self.frames_paths,
                                                             self.alpha, self.ratio, self.minWidth, 
                                                             self.nOuterFPIterations, self.nInnerFPIterations, 
@@ -163,7 +172,7 @@ class LoadSeq():
                                                             window_size=self.window_size,
                                                             stride=self.stride,
                                                             shift=self.shift)
-        elif self.options.tracking_mode in 'kalman':
+        elif self.track_mode in 'kalman':
             self.det_bboxes = compute_tracking_kalman(self.det_bboxes, self.gt_bboxes)
 
     def get_mAP(self):
