@@ -348,7 +348,7 @@ def IDF1(gtDB, stDB, threshold = 0.5):
     # IDF1 = 2 * IDTP / (2 * IDTP + IDFP + IDFN)
     IDF1 = 2 * IDTP / (nbox_gt + nbox_st) * 100
 
-    return IDF1
+    return IDF1, matched_indices
 
 def corresponding_frame(traj1, len1, traj2, len2):
     """

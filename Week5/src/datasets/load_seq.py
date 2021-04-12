@@ -10,9 +10,9 @@ import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
 
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
-from utils.utils import write_json_file, read_json_file, update_data
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman
-from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
+from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories
+from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb, IDF1
 
 import motmetrics as mm
 
@@ -179,9 +179,13 @@ class LoadSeq():
                                                                 shift=self.shift)'''
                 None
         elif self.track_mode in 'kalman':
-            for idx_cam, cam in self.det_bboxes.items():
-                self.det_bboxes = compute_tracking_kalman(cam, self.gt_bboxes[idx_cam], self.accumulators[idx_cam])
+            for cam, det_bboxes in self.det_bboxes.items():
+                self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam])
 
+                list_det, list_gt = dict_to_list_IDF1(self.det_bboxes[cam]), dict_to_list_IDF1(self.gt_bboxes[cam])
+                idf1, matches = IDF1(list_det, list_gt, 0.5)
+                det_bboxes = match_trajectories(list_det, matches)
+                
     def get_mAP(self):
         """
         Estimats the mAP using the VOC evaluation

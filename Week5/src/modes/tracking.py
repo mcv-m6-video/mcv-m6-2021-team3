@@ -212,7 +212,7 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator):
             det_ids.append(det['obj_id'])
             gt_ids.append(det['obj_id'])
             
-        accumulator.update(gt_ids, det_ids, dists, frameid=None, vf='')
+        #accumulator.update(gt_ids, det_ids, dists, frameid=None, vf='')
         count+=1
 
     return det_bboxes_new
