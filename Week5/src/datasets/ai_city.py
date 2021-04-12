@@ -118,7 +118,7 @@ class AICity:
         model.train()
 
     def track(self,seqs):
-        for seq_key, seq_val in self.sequences.items():
+        for _, seq_val in self.sequences.items():
             seq_val.tracking()
             
 

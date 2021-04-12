@@ -14,6 +14,8 @@ from utils.utils import write_json_file, read_json_file, update_data
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
 
+import motmetrics as mm
+
 def load_text(text_dir, text_name):
     """
     Parses an annotations TXT file
@@ -26,10 +28,9 @@ def load_text(text_dir, text_name):
 
     annot = {}
     for frame in txt:
-        frame_id, _, xmin, ymin, width, height, conf, _, _, _ = list(map(float, (frame.split('\n')[0]).split(',')))
-        update_data(annot, frame_id, xmin, ymin, xmin + width, ymin + height, conf)
+        frame_id, bb_id, xmin, ymin, width, height, conf, _, _, _ = list(map(float, (frame.split('\n')[0]).split(',')))
+        update_data(annot, frame_id, xmin, ymin, xmin + width, ymin + height, conf, int(bb_id))
     return annot
-
 
 def load_xml(xml_dir, xml_name, ignore_parked=True):
     """
@@ -96,12 +97,17 @@ class LoadSeq():
         self.det_bboxes = {}
         self.frames_paths = {}
 
+        self.accumulators = {}
+
         if self.det_params['mode'] in 'tracking':
             for cam in os.listdir(join(data_path,seq)):
                 # Load gt
                 self.gt_bboxes.update({cam:load_annot(join(data_path,seq,cam), 'gt/gt.txt')})
                 # Load detections
                 self.det_bboxes.update({cam:read_json_file(join(self.output_path,self.seq,cam,'inference_'+det_name))})
+                # Creat accumulator 
+                self.accumulators.update({cam:mm.MOTAccumulator()})
+                
         else:
             for cam in os.listdir(join(data_path,seq)):
                 # Load gt
@@ -164,16 +170,19 @@ class LoadSeq():
     
     def tracking(self):
         if self.track_mode in 'overlapping':
-            self.det_bboxes = compute_tracking_overlapping(self.det_bboxes, self.frames_paths,
-                                                            self.alpha, self.ratio, self.minWidth, 
-                                                            self.nOuterFPIterations, self.nInnerFPIterations, 
-                                                            self.nSORIterations, self.colType,
-                                                            flow_method=self.options.OF_mode,
-                                                            window_size=self.window_size,
-                                                            stride=self.stride,
-                                                            shift=self.shift)
+            for idx_cam, cam in self.det_bboxes.items():
+                '''self.det_bboxes = compute_tracking_overlapping(self.det_bboxes, self.frames_paths,
+                                                                self.alpha, self.ratio, self.minWidth, 
+                                                                self.nOuterFPIterations, self.nInnerFPIterations, 
+                                                                self.nSORIterations, self.colType,
+                                                                flow_method=self.options.OF_mode,
+                                                                window_size=self.window_size,
+                                                                stride=self.stride,
+                                                                shift=self.shift)'''
+                None
         elif self.track_mode in 'kalman':
-            self.det_bboxes = compute_tracking_kalman(self.det_bboxes, self.gt_bboxes)
+            for idx_cam, cam in self.det_bboxes.items():
+                self.det_bboxes = compute_tracking_kalman(cam, self.gt_bboxes[idx_cam], self.accumulators[idx_cam])
 
     def get_mAP(self):
         """

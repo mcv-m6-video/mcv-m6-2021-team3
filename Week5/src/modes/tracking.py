@@ -9,7 +9,7 @@ import time
 from tqdm import tqdm
 from .sort import Sort
 from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track
-from utils.metrics import compute_iou, interpolate_bb
+from utils.metrics import compute_iou, interpolate_bb, compute_dist_matrix, compute_iou
 from .optical_flow import block_matching, MaskFlownetOF
 #import pyflow.pyflow as pyflow
 
@@ -171,39 +171,48 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
     return det_bboxes
 
 
-def compute_tracking_kalman(det_bboxes, gt_bboxes): 
+def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator): 
     '''
     Funtion to compute the tracking using Kalman filter
     :return: dictionary with the detections and the ids of each bbox computed by the tracking
     '''
     
-    for idx_cam, cam in tqdm(det_bboxes.items(),'Processing Cameras'): # all frames in the sequence
-        data_list = dict_to_list_track(cam)
 
-        total_time = 0.0
-        total_frames = 0
-        out = []
-        idx_frame = []
+    data_list = dict_to_list_track(det_bboxes)
 
-        mot_tracker = Sort() #create instance of the SORT tracker
+    total_time = 0.0
+    total_frames = 0
+    out = []
+    idx_frame = []
 
-        det_bboxes_new = {}
+    mot_tracker = Sort() #create instance of the SORT tracker
 
-        count = 0
+    det_bboxes_new = {}
 
-        for idx_frame, frame in tqdm(cam.items(), 'Frames Kalman Tracking'):
+    count = 0
+
+    for (idx_frame, frame), (idx_gt, frame_gt) in tqdm(zip(det_bboxes.items(), gt_bboxes.items()), 'Frames Kalman Tracking'): # all frames in the sequence
+    
+        dets = data_list[data_list[:,0]==count,1:6]
+        #im = io.imread(join(data_path,idx)+'.png')
+
+        start_time = time.time()
+        trackers = mot_tracker.update(dets)
+        cycle_time = time.time() - start_time
+        total_time += cycle_time
+
+        for track in trackers:
+            det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., track[4])
         
-            dets = data_list[data_list[:,0]==count,1:6]
-            #im = io.imread(join(data_path,idx)+'.png')
 
-            start_time = time.time()
-            trackers = mot_tracker.update(dets)
-            cycle_time = time.time() - start_time
-            total_time += cycle_time
-
-            for track in trackers:
-                det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., track[4])
-
-            count+=1
+        dists = compute_dist_matrix(frame, frame_gt)
+        det_ids = []
+        gt_ids = []
+        for det, gt in zip(frame, frame_gt):
+            det_ids.append(det['obj_id'])
+            gt_ids.append(det['obj_id'])
+            
+        accumulator.update(gt_ids, det_ids, dists, frameid=None, vf='')
+        count+=1
 
     return det_bboxes_new
