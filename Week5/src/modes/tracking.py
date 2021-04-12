@@ -8,10 +8,10 @@ import pickle
 import time
 from tqdm import tqdm
 from .sort import Sort
-from utils.utils import return_bb, str_frame_id, update_data, pol2cart
-from utils.metrics import compute_iou, interpolate_bb
+from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track
+from utils.metrics import compute_iou, interpolate_bb, compute_dist_matrix, compute_iou
 from .optical_flow import block_matching, MaskFlownetOF
-import pyflow.pyflow as pyflow
+#import pyflow.pyflow as pyflow
 
 import matplotlib.pyplot as plt
 
@@ -171,29 +171,28 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, alpha, ratio, minWidt
     return det_bboxes
 
 
-def compute_tracking_kalman(det_bboxes): 
+def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator): 
     '''
     Funtion to compute the tracking using Kalman filter
     :return: dictionary with the detections and the ids of each bbox computed by the tracking
     '''
     
+
     data_list = dict_to_list_track(det_bboxes)
 
     total_time = 0.0
     total_frames = 0
     out = []
     idx_frame = []
-    colours = np.random.rand(32,3) #used only for display
 
     mot_tracker = Sort() #create instance of the SORT tracker
 
     det_bboxes_new = {}
 
     count = 0
-    for idx, frame in tqdm(det_bboxes.items(),'Frames Kalman Tracking'): # all frames in the sequence
-        
-        colors = []
 
+    for (idx_frame, frame), (idx_gt, frame_gt) in tqdm(zip(det_bboxes.items(), gt_bboxes.items()), 'Frames Kalman Tracking'): # all frames in the sequence
+    
         dets = data_list[data_list[:,0]==count,1:6]
         #im = io.imread(join(data_path,idx)+'.png')
 
@@ -203,8 +202,17 @@ def compute_tracking_kalman(det_bboxes):
         total_time += cycle_time
 
         for track in trackers:
-            det_bboxes_new = update_data(det_bboxes_new, idx, *track[:4], 1., track[4])
+            det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., track[4])
+        
 
+        dists = compute_dist_matrix(frame, frame_gt)
+        det_ids = []
+        gt_ids = []
+        for det, gt in zip(frame, frame_gt):
+            det_ids.append(det['obj_id'])
+            gt_ids.append(det['obj_id'])
+            
+        accumulator.update(gt_ids, det_ids, dists, frameid=None, vf='')
         count+=1
 
     return det_bboxes_new

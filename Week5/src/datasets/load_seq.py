@@ -11,8 +11,10 @@ from sklearn.model_selection import train_test_split, KFold
 
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 from utils.utils import write_json_file, read_json_file, update_data
-#from models.tracking import compute_tracking_overlapping, compute_tracking_kalman
+from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb
+
+import motmetrics as mm
 
 def load_text(text_dir, text_name):
     """
@@ -26,10 +28,9 @@ def load_text(text_dir, text_name):
 
     annot = {}
     for frame in txt:
-        frame_id, _, xmin, ymin, width, height, conf, _, _, _ = list(map(float, (frame.split('\n')[0]).split(',')))
-        update_data(annot, frame_id, xmin, ymin, xmin + width, ymin + height, conf)
+        frame_id, bb_id, xmin, ymin, width, height, conf, _, _, _ = list(map(float, (frame.split('\n')[0]).split(',')))
+        update_data(annot, frame_id, xmin, ymin, xmin + width, ymin + height, conf, int(bb_id))
     return annot
-
 
 def load_xml(xml_dir, xml_name, ignore_parked=True):
     """
@@ -73,7 +74,7 @@ def load_annot(annot_dir, name, ignore_parked=True):
 
 
 class LoadSeq():
-    def __init__(self, data_path, seq, output_path, det_name, extension='jpg', det_params=None):
+    def __init__(self, data_path, seq, output_path, tracking_mode, det_name, extension='jpg', det_params=None):
         """
         Init of the Load Sequence class
 
@@ -86,6 +87,9 @@ class LoadSeq():
         self.seq = seq
         self.det_params = det_params
         self.det_name = self.det_params['mode']+'_'+det_name
+        if self.det_params['mode'] == 'tracking':
+            self.det_name = 'inference_'+det_name
+        self.track_mode = tracking_mode
 
         # OUTPUT PARAMETERS
         self.output_path = output_path        
@@ -94,7 +98,13 @@ class LoadSeq():
         self.gt_bboxes = {}
         self.det_bboxes = {}
         self.frames_paths = {}
+
+        self.accumulators = {}
+
         for cam in os.listdir(join(data_path,seq)):
+            if '.' in cam:
+                continue
+
             # Load gt
             self.gt_bboxes.update({cam:load_annot(join(data_path,seq,cam), 'gt/gt.txt')})
 
@@ -112,6 +122,9 @@ class LoadSeq():
             cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
             cam_paths.sort()
             self.frames_paths.update({cam:cam_paths})
+
+            # Creat accumulator 
+            self.accumulators.update({cam:mm.MOTAccumulator()})
 
     def train_val_split(self, split=.25, mode='test'):
         """
@@ -154,17 +167,20 @@ class LoadSeq():
         return self.get_mAP()
     
     def tracking(self):
-        if self.options.tracking_mode in 'overlapping':
-            self.det_bboxes = compute_tracking_overlapping(self.det_bboxes, self.frames_paths,
-                                                            self.alpha, self.ratio, self.minWidth, 
-                                                            self.nOuterFPIterations, self.nInnerFPIterations, 
-                                                            self.nSORIterations, self.colType,
-                                                            flow_method=self.options.OF_mode,
-                                                            window_size=self.window_size,
-                                                            stride=self.stride,
-                                                            shift=self.shift)
-        elif self.options.tracking_mode in 'kalman':
-            self.det_bboxes = compute_tracking_kalman(self.det_bboxes)
+        if self.track_mode in 'overlapping':
+            for idx_cam, cam in self.det_bboxes.items():
+                '''self.det_bboxes = compute_tracking_overlapping(self.det_bboxes, self.frames_paths,
+                                                                self.alpha, self.ratio, self.minWidth, 
+                                                                self.nOuterFPIterations, self.nInnerFPIterations, 
+                                                                self.nSORIterations, self.colType,
+                                                                flow_method=self.options.OF_mode,
+                                                                window_size=self.window_size,
+                                                                stride=self.stride,
+                                                                shift=self.shift)'''
+                None
+        elif self.track_mode in 'kalman':
+            for idx_cam, cam in self.det_bboxes.items():
+                self.det_bboxes = compute_tracking_kalman(cam, self.gt_bboxes[idx_cam], self.accumulators[idx_cam])
 
     def get_mAP(self):
         """

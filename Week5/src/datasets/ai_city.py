@@ -63,12 +63,14 @@ class AICity:
         self.seq_train = args.seq_train
         self.seq_test = args.seq_test
 
+        self.tracking_mode = args.tracking_mode
+
         # LOAD SEQUENCE
         self.sequences = {}
         for seq in os.listdir(self.data_path):
-            if 'S' in seq[0]:
+            if '.' not in seq[0]:
                 det_name = '_'.join((self.model, self.framework+'.json'))
-                self.sequences.update({seq:LoadSeq(self.data_path, seq, self.output_path, det_name, det_params=self.det_params)})
+                self.sequences.update({seq:LoadSeq(self.data_path, seq, self.output_path, self.tracking_mode, det_name, det_params=self.det_params)})
         
     def __len__(self):
         return len(self.sequences)
@@ -114,6 +116,14 @@ class AICity:
         self.data_to_model()
         model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
         model.train()
+
+    def track(self,seqs):
+        for _, seq_val in self.sequences.items():
+            seq_val.tracking()
+            
+
+
+
 
 
 

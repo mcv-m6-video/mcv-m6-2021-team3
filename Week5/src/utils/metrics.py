@@ -3,6 +3,7 @@ import numpy as np
 import sys
 from scipy.optimize import linear_sum_assignment as linear_assignment
 from utils.utils import dict_to_list, bbox_overlap
+import motmetrics as mm
 
 def bilateral_weights(arr, gamma_col=12, gamma_pos=17):
     
@@ -54,7 +55,6 @@ def vec_error(gt, det, nchannel=2):
     non_occluded_idx = gt[:, :, 2] != 0
 
     return error[non_occluded_idx], error
-
 
 def compute_MSEN_PEPN(gt=None, det=None, error_noc=None, nchannel=2, th=3):
     """
@@ -424,6 +424,7 @@ def compute_distance(traj1, traj2, matched_pos):
     return distance
 
 def cost_between_gt_pred(groundtruth, prediction, threshold):
+
     """
     Compute cost between detections in gt and in prediction
     :param groundtruth: ft information
@@ -442,3 +443,26 @@ def cost_between_gt_pred(groundtruth, prediction, threshold):
                 groundtruth[i], prediction[j], threshold)
             cost[i, j] = fp[i, j] + fn[i, j]
     return cost, fp, fn
+
+def compute_dist_matrix(det_bboxes,gt_bboxes,thr = 0.3, matching_mode = 'iou'):
+
+    if matching_mode in 'iou':
+        dist_mat = []
+        for detection in det_bboxes:
+            gt_det = []
+            for gt in gt_bboxes:
+                iou = compute_iou(np.array(np.expand_dims(gt['bbox'],axis=0)),np.array(detection['bbox']))
+                if iou>thr:
+                    gt_det.append(iou[0])
+                else:
+                    gt_det.append(np.NaN)
+            dist_mat.append(gt_det)
+    
+    return dist_mat
+
+def compute_metrics():
+    '''mh = mm.metrics.create()
+    summary = mh.compute(acc, metrics=['num_frames', 'idf1', 'idp', 'idr', 'precision', 'recall'], name='acc')
+
+    return summary'''
+    pass
