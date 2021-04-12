@@ -68,7 +68,7 @@ class AICity:
         # LOAD SEQUENCE
         self.sequences = {}
         for seq in os.listdir(self.data_path):
-            if 'S' in seq[0]:
+            if '.' not in seq[0]:
                 det_name = '_'.join((self.model, self.framework+'.json'))
                 self.sequences.update({seq:LoadSeq(self.data_path, seq, self.output_path, self.tracking_mode, det_name, det_params=self.det_params)})
         

@@ -87,6 +87,8 @@ class LoadSeq():
         self.seq = seq
         self.det_params = det_params
         self.det_name = self.det_params['mode']+'_'+det_name
+        if self.det_params['mode'] == 'tracking':
+            self.det_name = 'inference_'+det_name
         self.track_mode = tracking_mode
 
         # OUTPUT PARAMETERS
@@ -99,34 +101,30 @@ class LoadSeq():
 
         self.accumulators = {}
 
-        if self.det_params['mode'] in 'tracking':
-            for cam in os.listdir(join(data_path,seq)):
-                # Load gt
-                self.gt_bboxes.update({cam:load_annot(join(data_path,seq,cam), 'gt/gt.txt')})
-                # Load detections
-                self.det_bboxes.update({cam:read_json_file(join(self.output_path,self.seq,cam,'inference_'+det_name))})
-                # Creat accumulator 
-                self.accumulators.update({cam:mm.MOTAccumulator()})
-                
-        else:
-            for cam in os.listdir(join(data_path,seq)):
-                # Load gt
-                self.gt_bboxes.update({cam:load_annot(join(data_path,seq,cam), 'gt/gt.txt')})
+        for cam in os.listdir(join(data_path,seq)):
+            if '.' in cam:
+                continue
 
-                # Check if detections already computed
-                json_path = join(output_path,seq,cam)
-                os.makedirs(json_path,exist_ok=True)
-                json_path = join(json_path,self.det_name)
-                if exists(json_path):
-                    self.det_bboxes.update({cam:read_json_file(json_path)})
-                else:
-                    self.det_bboxes.update({cam:{}})
+            # Load gt
+            self.gt_bboxes.update({cam:load_annot(join(data_path,seq,cam), 'gt/gt.txt')})
 
-                # Save paths to frames
-                cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
-                cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
-                cam_paths.sort()
-                self.frames_paths.update({cam:cam_paths})
+            # Check if detections already computed
+            json_path = join(output_path,seq,cam)
+            os.makedirs(json_path,exist_ok=True)
+            json_path = join(json_path,self.det_name)
+            if exists(json_path):
+                self.det_bboxes.update({cam:read_json_file(json_path)})
+            else:
+                self.det_bboxes.update({cam:{}})
+
+            # Save paths to frames
+            cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
+            cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
+            cam_paths.sort()
+            self.frames_paths.update({cam:cam_paths})
+
+            # Creat accumulator 
+            self.accumulators.update({cam:mm.MOTAccumulator()})
 
     def train_val_split(self, split=.25, mode='test'):
         """
