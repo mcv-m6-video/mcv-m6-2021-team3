@@ -3,6 +3,7 @@ import numpy as np
 import sys
 from scipy.optimize import linear_sum_assignment as linear_assignment
 from utils.utils import dict_to_list, bbox_overlap
+from utils.cnn_feature_extractor import CNNFeatureExtractor
 import motmetrics as mm
 
 def bilateral_weights(arr, gamma_col=12, gamma_pos=17):
@@ -445,19 +446,29 @@ def cost_between_gt_pred(groundtruth, prediction, threshold):
     return cost, fp, fn
 
 def compute_dist_matrix(det_bboxes,gt_bboxes,thr = 0.3, matching_mode = 'iou'):
+    if matching_mode in 'cnn':
+        matcher = CNNFeatureExtractor()
 
-    if matching_mode in 'iou':
-        dist_mat = []
-        for detection in det_bboxes:
-            gt_det = []
-            for gt in gt_bboxes:
+    dist_mat = []
+    for detection in det_bboxes:
+        gt_det = []
+        for gt in gt_bboxes:
+            if matching_mode in 'iou':
                 iou = compute_iou(np.array(np.expand_dims(gt['bbox'],axis=0)),np.array(detection['bbox']))
-                if iou>thr:
+                if iou > thr:
                     gt_det.append(iou[0])
                 else:
                     gt_det.append(np.NaN)
-            dist_mat.append(gt_det)
-    
+            elif matching_mode in 'cnn':
+                pass
+                # dist = 0
+                # if dist < thr:
+                #     gt_det.append(dist)
+                # else:
+                #     gt_det.append(np.NaN)
+            
+        dist_mat.append(gt_det)
+
     return dist_mat
 
 def compute_IDmetrics(acc):

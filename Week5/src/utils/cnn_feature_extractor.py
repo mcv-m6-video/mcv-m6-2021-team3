@@ -10,7 +10,7 @@ from torchvision.models import resnet50, resnet101, mobilenet_v2, vgg16
 from torchvision.transforms import Normalize, Resize, Compose, ToTensor
 
 
-class CNNMatcher:
+class CNNFeatureExtractor:
     """
         This class contains the functionality to:
             - load a pretrained model from PyTorch.
