@@ -170,15 +170,8 @@ class LoadSeq():
         self.ID_metrics={}
 
         if self.track_mode in 'overlapping':
-            for idx_cam, cam in self.det_bboxes.items():
-                '''self.det_bboxes = compute_tracking_overlapping(self.det_bboxes, self.frames_paths,
-                                                                self.alpha, self.ratio, self.minWidth, 
-                                                                self.nOuterFPIterations, self.nInnerFPIterations, 
-                                                                self.nSORIterations, self.colType,
-                                                                flow_method=self.options.OF_mode,
-                                                                window_size=self.window_size,
-                                                                stride=self.stride,
-                                                                shift=self.shift)'''
+            for cam, det_bboxes in self.det_bboxes.items():
+                self.det_bboxes[cam] = compute_tracking_overlapping(det_bboxes)
                 None
         elif self.track_mode in 'kalman':
             for cam, det_bboxes in self.det_bboxes.items():
