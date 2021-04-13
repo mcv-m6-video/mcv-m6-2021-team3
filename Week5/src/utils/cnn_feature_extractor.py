@@ -51,7 +51,7 @@ class CNNFeatureExtractor:
                                        std=[0.229, 0.224, 0.225])
         self.transform = Compose([ToTensor(), Resize((256, 256)), self.normalization])
 
-    def get_image_features(self, img):
+    def get_image_features(self, img, bbox):
         """
             Gets the features from the image by passing it over a CNN pretrained
             on ImageNet
@@ -107,7 +107,7 @@ class CNNFeatureExtractor:
 
 # For testing purposes
 if __name__ == '__main__':
-    matcher = CNNMatcher(device='gpu')
+    matcher = CNNFeatureExtractor(device='gpu')
     img = Image.open('/home/josep/Documents/Git/mcv-m6-2021-team3/Week5/src/flor.jpeg')
     features = matcher.get_image_features(img)
     features2 = features * 2
