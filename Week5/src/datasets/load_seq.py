@@ -176,7 +176,7 @@ class LoadSeq():
                 None
         elif self.track_mode in 'kalman':
             for cam, det_bboxes in self.det_bboxes.items():
-                self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam])
+                self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam], self.frames_paths)
 
                 self.ID_metrics.update({cam:compute_IDmetrics(self.accumulators[cam])})
                 print(f'Camera: {cam}')

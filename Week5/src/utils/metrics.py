@@ -3,8 +3,9 @@ import numpy as np
 import sys
 from scipy.optimize import linear_sum_assignment as linear_assignment
 from utils.utils import dict_to_list, bbox_overlap
-from utils.cnn_feature_extractor import CNNFeatureExtractor
+from utils.cnn_feature_extractor import CNNFeatureExtractor, get_feature_distance, get_image_features
 import motmetrics as mm
+
 
 def bilateral_weights(arr, gamma_col=12, gamma_pos=17):
     
@@ -445,9 +446,9 @@ def cost_between_gt_pred(groundtruth, prediction, threshold):
             cost[i, j] = fp[i, j] + fn[i, j]
     return cost, fp, fn
 
-def compute_dist_matrix(det_bboxes,gt_bboxes,thr = 0.3, matching_mode = 'iou'):
+def compute_dist_matrix(det_bboxes,gt_bboxes,image_path = None,thr = 0.3, matching_mode = 'iou'):
     if matching_mode in 'cnn':
-        matcher = CNNFeatureExtractor()
+        matcher = CNNFeatureExtractor(device='cpu')
 
     dist_mat = []
     for detection in det_bboxes:
@@ -460,12 +461,14 @@ def compute_dist_matrix(det_bboxes,gt_bboxes,thr = 0.3, matching_mode = 'iou'):
                 else:
                     gt_det.append(np.NaN)
             elif matching_mode in 'cnn':
-                pass
-                # dist = 0
-                # if dist < thr:
-                #     gt_det.append(dist)
-                # else:
-                #     gt_det.append(np.NaN)
+                feature_det = get_image_features(image_path,detection)
+                feature_gt = get_image_features(image_path,gt)
+                dist = get_feature_distance(feature_det, feature_gt)
+                
+                if dist < thr:
+                    gt_det.append(dist)
+                else:
+                    gt_det.append(np.NaN)
             
         dist_mat.append(gt_det)
 

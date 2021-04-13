@@ -85,7 +85,7 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = Fals
     return det_bboxes
 
 
-def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator): 
+def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator, frames_paths): 
     '''
     Funtion to compute the tracking using Kalman filter
     :return: dictionary with the detections and the ids of each bbox computed by the tracking
@@ -102,7 +102,7 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator):
 
     det_bboxes_new = {}
 
-    for idx_frame, frame_gt in tqdm(gt_bboxes.items(), 'Frames Kalman Tracking'): # all frames in the sequence
+    for (idx_frame, frame_gt), frame_path in tqdm(zip(gt_bboxes.items(), frames_paths), 'Frames Kalman Tracking'): # all frames in the sequence
 
         dets = data_list[data_list[:,0]==int(idx_frame),1:6]
         #im = io.imread(join(data_path,idx)+'.png')
