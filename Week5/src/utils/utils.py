@@ -275,3 +275,12 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf, obj_id=0):
         annot[frame_name].append(obj_info)
 
     return annot
+
+def match_trajectories(det_bboxes, matches):
+    """
+    Match ids between gt and predictions.
+    """
+    for matched in zip(*matches):
+        det_bboxes[np.where(det_bboxes[:,1] == matched[1]),1]=matched[0]
+    return det_bboxes
+
