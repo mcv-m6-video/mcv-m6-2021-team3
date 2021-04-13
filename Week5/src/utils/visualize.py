@@ -35,6 +35,8 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
     id_ocurrence = {}
     # Count ocurrences and compute centers 
     for i in range(start_frame, num_frames):
+        if str_frame_id(i) not in det_bboxes.keys():
+            continue
         for detection in det_bboxes[str_frame_id(i)]:
             # Store story of obj_id along with their centroids
             objt_id = detection['obj_id']
@@ -47,20 +49,22 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
     colours = np.random.rand(num_colors,3) 
     for i in tqdm(range(start_frame, num_frames),"saving tracking img"):
         f_id = str_frame_id(i)
-        frame = det_bboxes[f_id]
         detections = []
         id_list = []
-        for detection in frame:
-            bb_id = detection['obj_id']
-            bbbox = detection['bbox']
-            detections.append(bbbox)
-            id_list.append(bb_id)
+        
+        if str_frame_id(i) in det_bboxes.keys():
+            frame = det_bboxes[f_id]
+            for detection in frame:
+                bb_id = detection['obj_id']
+                bbbox = detection['bbox']
+                detections.append(bbbox)
+                id_list.append(bb_id)
 
         img = draw_frame_track(path_in, f_id, detections, colours, id_list, id_ocurrence) 
         #cv2.imshow('Tracking',img)
         #cv2.waitKey(1)
         os.makedirs(join(path_out, 'tracking'), exist_ok=True)
-        cv2.imwrite(join(path_out,'tracking',f_id)+'.png',img)
+        cv2.imwrite(join(path_out,'tracking',f_id)+'.jpg',img)
         
 
 def draw_frame_track(path_in, frame, detections, colors, ids, id_ocurrence=[]):
@@ -72,7 +76,7 @@ def draw_frame_track(path_in, frame, detections, colors, ids, id_ocurrence=[]):
     :param fill: a boolean to decide if the bbox is filled or not
     :return: return the image created by the frame and its bboxes
     """
-    img = cv2.imread(join(path_in,frame)+'.png')
+    img = cv2.imread(join(path_in,frame)+'.jpg')
     for detection, bb_id in zip(detections, ids):
         #get color and draw bbox with id
         color = colors[bb_id%1000,:]*255

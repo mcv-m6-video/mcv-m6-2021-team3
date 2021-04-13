@@ -117,9 +117,10 @@ class AICity:
         model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
         model.train()
 
-    def track(self,seqs):
-        for _, seq_val in self.sequences.items():
-            seq_val.tracking()
+    def track(self, seqs):
+        for seq in seqs:
+            self.sequences[seq].tracking()
+            self.sequences[seq].visualize()
             
 
 

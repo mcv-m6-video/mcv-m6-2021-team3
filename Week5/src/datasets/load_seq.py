@@ -5,12 +5,13 @@ import glob
 import random
 import numpy as np
 from tqdm import tqdm
-from os.path import join, exists
+from os.path import join, exists, dirname
 import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
 
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman
+from utils.visualize import visualize_trajectories
 from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
 
@@ -29,7 +30,7 @@ def load_text(text_dir, text_name):
     annot = {}
     for frame in txt:
         frame_id, bb_id, xmin, ymin, width, height, conf, _, _, _ = list(map(float, (frame.split('\n')[0]).split(',')))
-        update_data(annot, frame_id, xmin, ymin, xmin + width, ymin + height, conf, int(bb_id))
+        update_data(annot, frame_id-1, xmin, ymin, xmin + width, ymin + height, conf, int(bb_id))
     return annot
 
 def load_xml(xml_dir, xml_name, ignore_parked=True):
@@ -88,7 +89,7 @@ class LoadSeq():
         self.det_params = det_params
         self.det_name = self.det_params['mode']+'_'+det_name
         if self.det_params['mode'] == 'tracking':
-            self.det_name = 'inference_'+det_name
+            self.det_name = 'eval_'+det_name
         self.track_mode = tracking_mode
 
         # OUTPUT PARAMETERS
@@ -206,3 +207,9 @@ class LoadSeq():
         """
         return \
             compute_total_miou(self.gt_bboxes, self.det_bboxes, self.frames_paths)
+
+    def visualize(self):
+        for (cam,cam_paths), det_bboxes in zip(self.frames_paths.items(), self.det_bboxes.values()):
+            path_in = dirname(cam_paths[0])
+            if self.det_params['mode'] == 'tracking':
+                visualize_trajectories(path_in, join(self.output_path,self.seq,cam), det_bboxes)

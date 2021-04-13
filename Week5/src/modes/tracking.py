@@ -117,7 +117,7 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator):
 
         if len(trackers)>0:
             for track in trackers:
-                det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., track[4])
+                det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., int(track[4]))
             dists = compute_dist_matrix(det_bboxes_new[idx_frame], frame_gt)
             det_ids = [det['obj_id'] for det in det_bboxes_new[idx_frame]]
         else:

@@ -12,7 +12,7 @@ class Config:
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
         parser.add_argument('--mode', type=str, default='tracking', choices=['train','eval','inference','tracking'], help='What task to perform')
-        parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman'], help='What type of tracking to perform')
+        parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../raw_data',#'../../raw_data',
@@ -27,7 +27,7 @@ class Config:
         parser.add_argument('--task', type=int, default=24, help="Task to do")
         parser.add_argument('--model', type=str, default='yolov3', choices=['yolov3', 'yolov3-spp', 'yolov3-tiny'], help="Detection model used")
         parser.add_argument('--weights', type=str, default=None)
-        parser.add_argument('--seqs', type=list, default=['S01','S03','S04'])
+        parser.add_argument('--seqs', type=list, default=['S03'])
 
         # =============================== FINETUNE =============================== #
 
