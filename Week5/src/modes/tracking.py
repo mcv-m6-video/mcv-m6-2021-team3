@@ -176,7 +176,6 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator):
     Funtion to compute the tracking using Kalman filter
     :return: dictionary with the detections and the ids of each bbox computed by the tracking
     '''
-    
 
     data_list = dict_to_list_track(det_bboxes)
 
@@ -189,30 +188,30 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator):
 
     det_bboxes_new = {}
 
-    count = 0
+    for idx_frame, frame_gt in tqdm(gt_bboxes.items(), 'Frames Kalman Tracking'): # all frames in the sequence
 
-    for (idx_frame, frame), (idx_gt, frame_gt) in tqdm(zip(det_bboxes.items(), gt_bboxes.items()), 'Frames Kalman Tracking'): # all frames in the sequence
-    
-        dets = data_list[data_list[:,0]==count,1:6]
+        dets = data_list[data_list[:,0]==int(idx_frame),1:6]
         #im = io.imread(join(data_path,idx)+'.png')
 
-        start_time = time.time()
-        trackers = mot_tracker.update(dets)
-        cycle_time = time.time() - start_time
-        total_time += cycle_time
+        if dets.size==0:
+            trackers=[]
+        else:
+            start_time = time.time()
+            trackers = mot_tracker.update(dets)
+            cycle_time = time.time() - start_time
+            total_time += cycle_time
 
-        for track in trackers:
-            det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., track[4])
-        
+        if len(trackers)>0:
+            for track in trackers:
+                det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., track[4])
+            dists = compute_dist_matrix(det_bboxes_new[idx_frame], frame_gt)
+            det_ids = [det['obj_id'] for det in det_bboxes_new[idx_frame]]
+        else:
+            dists=[]
+            det_ids=[]
 
-        dists = compute_dist_matrix(frame, frame_gt)
-        det_ids = []
-        gt_ids = []
-        for det, gt in zip(frame, frame_gt):
-            det_ids.append(det['obj_id'])
-            gt_ids.append(det['obj_id'])
+        gt_ids = [gt['obj_id'] for gt in frame_gt]
             
-        #accumulator.update(gt_ids, det_ids, dists, frameid=None, vf='')
-        count+=1
+        accumulator.update(gt_ids, det_ids, dists, frameid=int(idx_frame), vf='')
 
     return det_bboxes_new

@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split, KFold
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman
 from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories
-from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb, IDF1
+from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
 
 import motmetrics as mm
 
@@ -167,6 +167,8 @@ class LoadSeq():
         return self.get_mAP()
     
     def tracking(self):
+        self.ID_metrics={}
+
         if self.track_mode in 'overlapping':
             for idx_cam, cam in self.det_bboxes.items():
                 '''self.det_bboxes = compute_tracking_overlapping(self.det_bboxes, self.frames_paths,
@@ -182,9 +184,13 @@ class LoadSeq():
             for cam, det_bboxes in self.det_bboxes.items():
                 self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam])
 
-                list_det, list_gt = dict_to_list_IDF1(self.det_bboxes[cam]), dict_to_list_IDF1(self.gt_bboxes[cam])
+                self.ID_metrics.update({cam:compute_IDmetrics(self.accumulators[cam])})
+                print(f'Camera: {cam}')
+                print(self.ID_metrics[cam])
+
+                '''list_det, list_gt = dict_to_list_IDF1(self.det_bboxes[cam]), dict_to_list_IDF1(self.gt_bboxes[cam])
                 idf1, matches = IDF1(list_det, list_gt, 0.5)
-                det_bboxes = match_trajectories(list_det, matches)
+                det_bboxes = match_trajectories(list_det, matches)'''
                 
     def get_mAP(self):
         """

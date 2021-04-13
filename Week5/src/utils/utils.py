@@ -167,9 +167,9 @@ def dict_to_list_track(frame_info):
     :return: return the np array created with the information of the detection (frame_idx, bbox coord, confidence)
     """
     boxes = []
-    for idx, obj in enumerate(frame_info):
-        for bbox in frame_info[obj]:
-            box_info = [idx, bbox['bbox'][0], bbox['bbox'][1], bbox['bbox'][2], bbox['bbox'][3], bbox['confidence']]
+    for idx, obj in frame_info.items():
+        for bbox in obj:
+            box_info = [int(idx), bbox['bbox'][0], bbox['bbox'][1], bbox['bbox'][2], bbox['bbox'][3], bbox['confidence']]
             boxes.append(box_info)
     return np.array(boxes)
 

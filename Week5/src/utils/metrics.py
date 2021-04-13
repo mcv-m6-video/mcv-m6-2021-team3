@@ -460,9 +460,8 @@ def compute_dist_matrix(det_bboxes,gt_bboxes,thr = 0.3, matching_mode = 'iou'):
     
     return dist_mat
 
-def compute_metrics():
-    '''mh = mm.metrics.create()
+def compute_IDmetrics(acc):
+    mh = mm.metrics.create()
     summary = mh.compute(acc, metrics=['num_frames', 'idf1', 'idp', 'idr', 'precision', 'recall'], name='acc')
 
-    return summary'''
-    pass
+    return summary
