@@ -1,4 +1,6 @@
-from ReID_CNN.Model_Wrapper import ResNet_Loader 
+import sys
+sys.path.append('AIC2018/ReID')
+from ReID_CNN.Model_Wrapper import ResNet_Loader
 from track import Track
 
 import argparse
@@ -7,7 +9,6 @@ import cv2
 import os
 from scipy.misc import imsave
 from progressbar import ProgressBar
-import sys
 import pathlib
 import pickle
 
