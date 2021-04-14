@@ -2,8 +2,8 @@ import os
 import numpy as np
 import sys
 from scipy.optimize import linear_sum_assignment as linear_assignment
-from .utils import dict_to_list, bbox_overlap
-from .cnn_feature_extractor import CNNFeatureExtractor
+from utils.utils import dict_to_list, bbox_overlap
+from utils.cnn_feature_extractor import CNNFeatureExtractor
 import motmetrics as mm
 
 

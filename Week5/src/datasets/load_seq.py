@@ -9,8 +9,10 @@ from os.path import join, exists, dirname
 import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
 
+from config.config_multitracking import ConfigMultiTracking
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
-from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou
+from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou,\
+                           compute_multitracking
 from utils.visualize import visualize_trajectories
 from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
@@ -91,6 +93,7 @@ class LoadSeq():
         if self.det_params['mode'] == 'tracking':
             self.det_name = 'eval2_'+det_name
         self.track_mode = tracking_mode
+        self.mt_args = ConfigMultiTracking().get_args()
 
         # OUTPUT PARAMETERS
         self.output_path = output_path        
@@ -99,10 +102,11 @@ class LoadSeq():
         self.gt_bboxes = {}
         self.det_bboxes = {}
         self.frames_paths = {}
+        self.tracker = {}
 
         self.accumulators = {}
 
-        for cam in os.listdir(join(data_path,seq)):
+        for cam in os.listdir(join(data_path, seq)):
             if '.' in cam:
                 continue
 
@@ -183,10 +187,9 @@ class LoadSeq():
                 print(self.ID_metrics[cam])
         elif self.track_mode in 'iou_track':
             for cam, det_bboxes in self.det_bboxes.items():
-                compute_tracking_iou(det_bboxes)
-
-
-
+                self.tracker.update({cam:compute_tracking_iou(det_bboxes,cam,self.data_path)})
+        elif self.track_mode in 'multitracking':
+            compute_multitracking(self.mt_args)
                 
     def get_mAP(self):
         """
