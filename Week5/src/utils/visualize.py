@@ -6,8 +6,8 @@ from os.path import join
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from utils.metrics import compute_miou, compute_centroid
-from utils.utils import dict_to_list, read_json_file, str_frame_id
+from utils.metrics import compute_miou
+from utils.utils import dict_to_list, read_json_file, str_frame_id, compute_centroid
 from itertools import compress
 from matplotlib import cm
 from matplotlib.ticker import MaxNLocator

@@ -14,8 +14,8 @@ from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou,\
                            compute_multitracking
 from utils.visualize import visualize_trajectories
-from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories
-from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
+from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories, dist_to_roi, filter_dets
+from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
 
 import motmetrics as mm
 
@@ -103,6 +103,7 @@ class LoadSeq():
         self.det_bboxes = {}
         self.frames_paths = {}
         self.tracker = {}
+        self.mask = {}
 
         self.accumulators = {}
 
@@ -127,6 +128,8 @@ class LoadSeq():
             #cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
             cam_paths.sort()
             self.frames_paths.update({cam:cam_paths})
+            # Load cam mask (roi)
+            self.mask.update({cam:dist_to_roi(join(data_path,seq,cam,'roi.jpg'))})
 
             # Creat accumulator 
             self.accumulators.update({cam:mm.MOTAccumulator()})
@@ -174,22 +177,26 @@ class LoadSeq():
     def tracking(self):
         self.ID_metrics={}
 
-        if self.track_mode in 'overlapping':
-            for cam, det_bboxes in self.det_bboxes.items():
-                self.det_bboxes[cam] = compute_tracking_overlapping(det_bboxes)
-                None
-        elif self.track_mode in 'kalman':
-            for cam, det_bboxes in self.det_bboxes.items():
-                self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam])
-
-                self.ID_metrics.update({cam:compute_IDmetrics(self.accumulators[cam])})
-                print(f'Camera: {cam}')
-                print(self.ID_metrics[cam])
-        elif self.track_mode in 'iou_track':
-            for cam, det_bboxes in self.det_bboxes.items():
-                self.tracker.update({cam:compute_tracking_iou(det_bboxes,cam,self.data_path)})
-        elif self.track_mode in 'multitracking':
+        if self.track_mode in 'multitracking':
             compute_multitracking(self.mt_args)
+        else:
+            for cam, det_bboxes in self.det_bboxes.items():
+                det_bboxes = filter_dets(det_bboxes,self.mask[cam])
+
+                if self.track_mode in 'overlapping':            
+                    self.det_bboxes[cam] = compute_tracking_overlapping(det_bboxes)
+
+                elif self.track_mode in 'kalman':
+                    self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam])
+
+                    self.ID_metrics.update({cam:compute_IDmetrics(self.accumulators[cam])})
+                    print(f'Camera: {cam}')
+                    print(self.ID_metrics[cam])
+
+                elif self.track_mode in 'iou_track':
+                    self.tracker.update({cam:compute_tracking_iou(det_bboxes,cam,self.data_path)})
+
+        
                 
     def get_mAP(self):
         """

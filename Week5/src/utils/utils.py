@@ -13,6 +13,7 @@ import yaml
 import subprocess
 from termcolor import colored
 from numpngw import write_png
+from scipy import ndimage
 
 def read_kitti_OF(flow_file):
     """
@@ -284,3 +285,31 @@ def match_trajectories(det_bboxes, matches):
         det_bboxes[np.where(det_bboxes[:,1] == matched[1]),1]=matched[0]
     return det_bboxes
 
+def compute_centroid(bb, resize_factor=1):
+    """
+    Computes centroid of bb
+    :param bb: Detected bbox
+    :return: Centroid [x,y] 
+    """
+    # intersection
+    bb = np.array(bb) / resize_factor
+    # (xmax - xmin)  / 2  
+    x = (bb[2] + bb[0]) / 2
+    # (ymax - ymin)  / 2  
+    y = (bb[3] + bb[1]) / 2
+    
+    return (int(x), int(y))
+
+def dist_to_roi(mask_path):
+    roi = cv2.imread(mask_path,cv2.IMREAD_GRAYSCALE)/255
+    return ndimage.distance_transform_edt(roi)
+
+def filter_dets(det_bboxes, roi_dist, th=0):
+    for frame_id, obj in det_bboxes.items():
+        new_obj = []
+        for det in obj:            
+            centroid = compute_centroid(det['bbox'])
+            if roi_dist[centroid[1],centroid[0]]>th:
+                new_obj.append(det)
+        det_bboxes[frame_id] = new_obj.copy()
+    return det_bboxes

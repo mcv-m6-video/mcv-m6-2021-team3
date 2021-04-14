@@ -11,7 +11,7 @@ from .sort import Sort
 from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track
 from utils.metrics import compute_iou, interpolate_bb, compute_dist_matrix, compute_iou
 from .optical_flow import block_matching, MaskFlownetOF
-from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_images
+#from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_images
 #import pyflow.pyflow as pyflow
 
 import matplotlib.pyplot as plt
@@ -79,7 +79,7 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = Fals
                     id_ocurrence[objt_id] += 1
                 else:
                     id_ocurrence[objt_id] = 1
-        # detectiosn to be removed
+        # detections to be removed
         ids_to_remove = [id_obj for id_obj in id_ocurrence if id_ocurrence[id_obj]<4]
         for i in range(start_frame, num_frames):
             for idx, detection in enumerate(det_bboxes[str_frame_id(i)]):
@@ -108,6 +108,9 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator):
 
         dets = data_list[data_list[:,0]==int(idx_frame),1:6]
         #im = io.imread(join(data_path,idx)+'.png')
+
+        if dets.size==0:
+            dets = []
 
         start_time = time.time()
         trackers = mot_tracker.update(dets)

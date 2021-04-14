@@ -161,6 +161,7 @@ cython_debug/
 *.pth.tar
 *.pt
 *.png
+*.jpg
 Week4/src/DUTCode/images/14.jpg
 Week4/src/DUTCode/images/1.jpg
 datasets/AICity/aic19-track1-mtmc-train/train/S03/c011/mtsc/mtsc_moana_mask_rcnn.txt

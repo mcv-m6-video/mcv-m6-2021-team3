@@ -127,21 +127,6 @@ def compute_miou(gt_frame, dets_frame, resize_factor=1):
 
     return np.mean(iou), np.std(iou)
 
-def compute_centroid(bb, resize_factor=1):
-    """
-    Computes centroid of bb
-    :param bb: Detected bbox
-    :return: Centroid [x,y] 
-    """
-    # intersection
-    bb = np.array(bb) / resize_factor
-    # (xmax - xmin)  / 2  
-    x = (bb[2] + bb[0]) / 2
-    # (ymax - ymin)  / 2  
-    y = (bb[3] + bb[1]) / 2
-    
-    return (int(x), int(y))
-
 def compute_total_miou(gt, dets, frames):
     """
     Computes miou for every frame being evaluated.
