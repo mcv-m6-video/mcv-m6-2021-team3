@@ -131,11 +131,11 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator, frames_paths):
 
     return det_bboxes_new
 
-def compute_tracking_iou(det_bboxes,cam):
+def compute_tracking_iou(det_bboxes,cam, path):
     list_det_bboxes = []
     for detection in det_bboxes.values():
         list_det_bboxes.append(detection)
 
-    tracking_dict = track_iou(list_det_bboxes, 0.2, 0.7, 0.5, 1, cam)
+    tracking_dict = track_iou(list_det_bboxes, 0.2, 0.7, 0.5, 1, cam, path)
 
     return tracking_dict
