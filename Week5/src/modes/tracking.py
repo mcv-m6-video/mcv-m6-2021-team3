@@ -15,7 +15,7 @@ from .optical_flow import block_matching, MaskFlownetOF
 
 import matplotlib.pyplot as plt
 
-from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
+#from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
 
 def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = False, remove_noise = False):
 
@@ -86,7 +86,7 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = Fals
                     det_bboxes[str_frame_id(i)].pop(idx)
     return det_bboxes
 
-def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator, frames_paths): 
+def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator): 
     '''
     Funtion to compute the tracking using Kalman filter
     :return: dictionary with the detections and the ids of each bbox computed by the tracking
@@ -103,32 +103,29 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator, frames_paths):
 
     det_bboxes_new = {}
 
-    for (idx_frame, frame_gt), frame_path in tqdm(zip(gt_bboxes.items(), frames_paths), 'Frames Kalman Tracking'): # all frames in the sequence
+    for idx_frame, frame_det in tqdm(det_bboxes.items(), 'Frames Kalman Tracking'): # all frames in the sequence
 
         dets = data_list[data_list[:,0]==int(idx_frame),1:6]
         #im = io.imread(join(data_path,idx)+'.png')
 
-        if dets.size==0:
-            trackers=[]
-        else:
-            start_time = time.time()
-            trackers = mot_tracker.update(dets)
-            cycle_time = time.time() - start_time
-            total_time += cycle_time
+        start_time = time.time()
+        trackers = mot_tracker.update(dets)
+        cycle_time = time.time() - start_time
+        total_time += cycle_time
 
-        if len(trackers)>0:
-            for track in trackers:
-                det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., int(track[4]))
-            dists = compute_dist_matrix(det_bboxes_new[idx_frame], frame_gt)
-            det_ids = [det['obj_id'] for det in det_bboxes_new[idx_frame]]
-        else:
-            dists=[]
-            det_ids=[]
+        if idx_frame in gt_bboxes.keys():
+            if len(trackers)>0:
+                for track in trackers:
+                    det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., int(track[4]))
+                dists = compute_dist_matrix(frame_det, gt_bboxes[idx_frame])
+                det_ids = [det['obj_id'] for det in frame_det]
+            else:
+                dists=[]
+                det_ids=[]
 
-        gt_ids = [gt['obj_id'] for gt in frame_gt]
-            
-        accumulator.update(gt_ids, det_ids, dists, frameid=int(idx_frame), vf='')
-
+            gt_ids = [gt['obj_id'] for gt in gt_bboxes[idx_frame]]            
+            accumulator.update(gt_ids, det_ids, dists, frameid=int(idx_frame), vf='')
+        
     return det_bboxes_new
 
 def compute_tracking_iou(det_bboxes):

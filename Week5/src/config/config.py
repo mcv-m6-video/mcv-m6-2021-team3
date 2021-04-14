@@ -12,7 +12,7 @@ class Config:
         # ================================ FRAMEWORK ============================ #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
         parser.add_argument('--mode', type=str, default='tracking', choices=['train','eval','inference','tracking'], help='What task to perform')
-        parser.add_argument('--tracking_mode', type=str, default='iou_track', choices=['overlapping','kalman','iou_track'], help='What type of tracking to perform')
+        parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman','iou_track'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../raw_data',#'../../raw_data',
@@ -26,15 +26,15 @@ class Config:
         
         parser.add_argument('--task', type=int, default=24, help="Task to do")
         parser.add_argument('--model', type=str, default='yolov3', choices=['yolov3', 'yolov3-spp', 'yolov3-tiny'], help="Detection model used")
-        parser.add_argument('--weights', type=str, default=None)
-        parser.add_argument('--seqs', type=list, default=['S03'])
+        parser.add_argument('--weights', type=str, default='runs/train/yolov3S03_S042/weights/best.pt')
+        parser.add_argument('--seqs', nargs='+', default=['S03'])
 
         # =============================== FINETUNE =============================== #
 
         parser.add_argument('--seq_train', nargs='+', default=['S01','S04'], help="Sequences used to train")
         parser.add_argument('--seq_test', nargs='+', default=['S03'], help="Sequence used to test")
         parser.add_argument('--conf_thres', type=float, default=0.2)
-        parser.add_argument('--iou_thres', type=float, default=0.5)
+        parser.add_argument('--iou_thres', type=float, default=0.45)
         parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars_rand.yaml', help='data.yaml path')
         parser.add_argument('--hyp', type=str, default='data/yolov3_finetune/hyp.finetune.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=150)

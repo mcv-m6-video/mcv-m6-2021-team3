@@ -39,11 +39,11 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
             continue
         for detection in det_bboxes[str_frame_id(i)]:
             # Store story of obj_id along with their centroids
-            objt_id = detection['obj_id']
-            if objt_id in id_ocurrence:
-                id_ocurrence[objt_id].append((i,compute_centroid(detection['bbox'])))
+            obj_id = detection['obj_id']
+            if obj_id in id_ocurrence:
+                id_ocurrence[obj_id].append((i,compute_centroid(detection['bbox'])))
             else:
-                id_ocurrence[objt_id] = [(i,compute_centroid(detection['bbox']))] 
+                id_ocurrence[obj_id] = [(i,compute_centroid(detection['bbox']))] 
     # Ensure unique color for ID
     num_colors = 1000
     colours = np.random.rand(num_colors,3) 

@@ -87,9 +87,9 @@ class LoadSeq():
         self.data_path = data_path
         self.seq = seq
         self.det_params = det_params
-        self.det_name = self.det_params['mode']+'_'+det_name
+        self.det_name = self.det_params['mode']+'2_'+det_name
         if self.det_params['mode'] == 'tracking':
-            self.det_name = 'inference_'+det_name
+            self.det_name = 'eval2_'+det_name
         self.track_mode = tracking_mode
 
         # OUTPUT PARAMETERS
@@ -120,7 +120,7 @@ class LoadSeq():
 
             # Save paths to frames
             cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
-            cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
+            #cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
             cam_paths.sort()
             self.frames_paths.update({cam:cam_paths})
 
@@ -176,7 +176,7 @@ class LoadSeq():
                 None
         elif self.track_mode in 'kalman':
             for cam, det_bboxes in self.det_bboxes.items():
-                self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam], self.frames_paths)
+                self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam])
 
                 self.ID_metrics.update({cam:compute_IDmetrics(self.accumulators[cam])})
                 print(f'Camera: {cam}')
