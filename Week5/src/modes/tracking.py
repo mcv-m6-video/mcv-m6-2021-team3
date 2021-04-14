@@ -15,6 +15,8 @@ from .optical_flow import block_matching, MaskFlownetOF
 
 import matplotlib.pyplot as plt
 
+from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
+
 def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = False, remove_noise = False):
 
     id_seq = {}
@@ -84,7 +86,6 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = Fals
                     det_bboxes[str_frame_id(i)].pop(idx)
     return det_bboxes
 
-
 def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator, frames_paths): 
     '''
     Funtion to compute the tracking using Kalman filter
@@ -129,3 +130,10 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator, frames_paths):
         accumulator.update(gt_ids, det_ids, dists, frameid=int(idx_frame), vf='')
 
     return det_bboxes_new
+
+def compute_tracking_iou(det_bboxes):
+    list_det_bboxes = []
+    for detection in det_bboxes.values():
+        list_det_bboxes.append(detection)
+
+    tracking_dict = track_iou(list_det_bboxes, 0.2, 0.7, 0.5, 10)

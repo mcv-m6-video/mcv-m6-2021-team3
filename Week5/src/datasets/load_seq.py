@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
 
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
-from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman
+from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou
 from utils.visualize import visualize_trajectories
 from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories
 from utils.metrics import voc_eval, compute_iou, compute_centroid, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
@@ -89,7 +89,7 @@ class LoadSeq():
         self.det_params = det_params
         self.det_name = self.det_params['mode']+'_'+det_name
         if self.det_params['mode'] == 'tracking':
-            self.det_name = 'eval_'+det_name
+            self.det_name = 'inference_'+det_name
         self.track_mode = tracking_mode
 
         # OUTPUT PARAMETERS
@@ -181,10 +181,12 @@ class LoadSeq():
                 self.ID_metrics.update({cam:compute_IDmetrics(self.accumulators[cam])})
                 print(f'Camera: {cam}')
                 print(self.ID_metrics[cam])
+        elif self.track_mode in 'iou_track':
+            for cam, det_bboxes in self.det_bboxes.items():
+                compute_tracking_iou(det_bboxes)
 
-                '''list_det, list_gt = dict_to_list_IDF1(self.det_bboxes[cam]), dict_to_list_IDF1(self.gt_bboxes[cam])
-                idf1, matches = IDF1(list_det, list_gt, 0.5)
-                det_bboxes = match_trajectories(list_det, matches)'''
+
+
                 
     def get_mAP(self):
         """
