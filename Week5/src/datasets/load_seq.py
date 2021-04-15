@@ -194,9 +194,7 @@ class LoadSeq():
                     print(self.ID_metrics[cam])
 
                 elif self.track_mode in 'iou_track':
-                    self.tracker.update({cam:compute_tracking_iou(det_bboxes,cam,self.data_path)})
-
-        
+                    self.tracker.update({cam:compute_tracking_iou(det_bboxes, cam, self.output_path)})
                 
     def get_mAP(self):
         """
