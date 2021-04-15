@@ -11,8 +11,8 @@ from sklearn.model_selection import train_test_split, KFold
 
 from config.config_multitracking import ConfigMultiTracking
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
-from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou,\
-                           compute_multitracking
+from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou
+from modes.multitracking import compute_multitracking
 from utils.visualize import visualize_trajectories
 from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories, dist_to_roi, filter_dets
 from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics

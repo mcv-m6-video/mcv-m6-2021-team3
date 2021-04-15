@@ -12,9 +12,7 @@ import matplotlib.pyplot as plt
 from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track
 from utils.metrics import compute_iou, interpolate_bb, compute_dist_matrix, compute_iou
 from .optical_flow import block_matching, MaskFlownetOF
-from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_images
 from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
-
 #import pyflow.pyflow as pyflow
 
 
@@ -140,40 +138,3 @@ def compute_tracking_iou(det_bboxes,cam, path):
     tracking_dict = track_iou(list_det_bboxes, 0.2, 0.7, 0.5, 1, cam=cam, path=path)
 
     return tracking_dict
-
-def compute_multitracking(args):
-    
-    available_csv_files = os.listdir(args.tracking_csv)
-    for csv_file in available_csv_files:
-        # Read tracks
-        tracks = parse_tracks(os.path.join(args.tracking_csv, csv_file))
-
-        # Filter tracks
-        tracks = filter_tracks(tracks, args.size_th, args.mask)
-    
-        # Extract images
-        # tracks = extract_images(tracks, args.video, args.size_th, args.dist_th, args.mask, args.img_dir)
-        
-        if tracks is None: 
-            sys.exit()
-        
-        # Save track obj
-        save_pkl_path = os.path.join(args.output_path, 'pkl')
-        
-        os.makedirs(save_pkl_path, exist_ok=True)
-        # os.system('mkdir -p %s' % args.output)
-        
-        file_name = csv_file.split('.')[0]
-
-        with open(os.path.join(save_pkl_path,  '%s.pkl'%file_name), 'wb') as f:
-            pickle.dump(tracks, f, protocol=pickle.HIGHEST_PROTOCOL)
-        
-        dets = []
-        for t in tracks:
-            dets.append(t.dump())
-        dets = np.concatenate(dets, axis=0)
-
-        save_csv_path = os.path.join(args.output_path, 'csv')
-        os.makedirs(save_csv_path, exist_ok=True)
-        np.savetxt(os.path.join(save_csv_path, '%s.csv'%file_name), dets, delimiter=',', fmt='%f')
-        print("done")

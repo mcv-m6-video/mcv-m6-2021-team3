@@ -1,11 +1,13 @@
-from ReID_CNN.Model_Wrapper import ResNet_Loader 
+import sys
+import os
+sys.path.append(os.path.join(os.getcwd(), 'AIC2018/ReID'))
+
+from ReID_CNN.Model_Wrapper import ResNet_Loader
 from track import Track, intersect_test
 from clustering import Top_Down, Seed_KMeans 
 
 import argparse
 import numpy as np
-import os
-import sys
 from collections import defaultdict
 from sklearn.cluster import MiniBatchKMeans, KMeans, AgglomerativeClustering
 from sklearn.preprocessing import normalize
@@ -38,7 +40,7 @@ def compute_distance(combie_list):
     for t in combie_list:
         features.append(t.summarized_feature())
     features = torch.nn.functional.normalize(torch.FloatTensor(np.vstack(features))).cuda()
-    dis_matrix = -1*torch.mm(features,torch.t(features))
+    dis_matrix = -1*torch.mm(features, torch.t(features))
     dis_matrix = dis_matrix.cpu().numpy()
     return dis_matrix
 
