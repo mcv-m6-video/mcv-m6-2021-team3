@@ -120,7 +120,7 @@ class AICity:
     def track(self, seqs):
         for seq in seqs:
             self.sequences[seq].tracking()
-            self.sequences[seq].visualize()
+            #self.sequences[seq].visualize()
             
 
 

@@ -14,7 +14,7 @@ from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou,\
                            compute_multitracking
 from utils.visualize import visualize_trajectories, visualize_filter_roi
-from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories, dist_to_roi, filter_dets
+from utils.utils import write_json_file, read_json_file, update_data, match_trajectories, dist_to_roi, filter_by_roi
 from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
 
 import motmetrics as mm
@@ -183,17 +183,17 @@ class LoadSeq():
             compute_multitracking(self.mt_args)
         else:
             for cam, det_bboxes in self.det_bboxes.items():
-                det_bboxes = filter_dets(det_bboxes,self.mask[cam])
+                det_bboxes = filter_by_roi(det_bboxes,self.mask[cam])
 
                 if self.track_mode in ['overlapping', 'kalman']:
 
                     if self.track_mode in 'overlapping':            
-                        self.det_bboxes[cam] = compute_tracking_overlapping(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam])
+                        self.det_bboxes[cam] = compute_tracking_overlapping(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
 
                     elif self.track_mode in 'kalman':
-                        self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam], self.accumulators[cam])
+                        self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
 
-                    self.ID_metrics.update({cam:compute_IDmetrics(self.accumulators[cam])})
+                    self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],self.det_bboxes[cam],self.accumulators[cam])})
                     print(f'Camera: {cam}')
                     print(self.ID_metrics[cam])
 
@@ -223,16 +223,16 @@ class LoadSeq():
             compute_total_miou(self.gt_bboxes, self.det_bboxes, self.frames_paths)
 
     def visualize(self):
-        self.visualize_filter()
-        '''for (cam,cam_paths), det_bboxes in tqdm(zip(self.frames_paths.items(), self.det_bboxes.values()), 'Saving tracking qualitative results'):
+        #self.visualize_filter()
+        for (cam,cam_paths), det_bboxes in tqdm(zip(self.frames_paths.items(), self.det_bboxes.values()), 'Saving tracking qualitative results'):
             path_in = dirname(cam_paths[0])
             if self.det_params['mode'] == 'tracking':
-                visualize_trajectories(path_in, join(self.output_path,self.seq,cam), det_bboxes)'''
+                visualize_trajectories(path_in, join(self.output_path,self.seq,cam), det_bboxes)
     
     def visualize_filter(self):
         for cam, det_bboxes in self.det_bboxes.items():
             if cam in 'c010':
                 continue
-            det_bboxes_filter = filter_dets(det_bboxes,self.mask[cam])
+            det_bboxes_filter = filter_by_roi(det_bboxes,self.mask[cam])
             visualize_filter_roi(self.frames_paths[cam],self.gt_bboxes[cam], det_bboxes, det_bboxes_filter,
                                  self.mask[cam], join(self.output_path,self.seq,cam))

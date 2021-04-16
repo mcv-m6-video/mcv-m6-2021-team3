@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import sys
+from tqdm import tqdm
 from scipy.optimize import linear_sum_assignment as linear_assignment
 from utils.utils import dict_to_list, bbox_overlap
 from utils.cnn_feature_extractor import CNNFeatureExtractor
@@ -459,7 +460,20 @@ def compute_dist_matrix(det_bboxes,gt_bboxes,image_path = None,thr = 0.3, matchi
 
     return dist_mat
 
-def compute_IDmetrics(acc):
+def compute_IDmetrics(gt_bboxes,det_bboxes,acc):
+
+    for frame_id, gt_data in tqdm(gt_bboxes.items(),'Defining accumulator for ID metrics'):
+        dists=[]
+        det_ids=[]
+        if frame_id in det_bboxes.keys():
+            det_data = [det for det in det_bboxes[frame_id] if not det['parked']]
+
+            dists = compute_dist_matrix(det_data, gt_data)
+            det_ids = [det['obj_id'] for det in det_data]
+            
+        gt_ids = [gt['obj_id'] for gt in gt_data]
+        acc.update(gt_ids, det_ids, dists, frameid=int(frame_id), vf='')
+
     mh = mm.metrics.create()
     summary = mh.compute(acc, metrics=['num_frames', 'idf1', 'idp', 'idr', 'precision', 'recall'], name='acc')
 

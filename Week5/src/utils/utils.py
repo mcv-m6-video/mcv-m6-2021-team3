@@ -148,7 +148,7 @@ def dict_to_list(frame_info, tlwh=True):
     else:
         return [[obj['bbox'][0], obj['bbox'][1], obj['bbox'][2], obj['bbox'][3]] for obj in frame_info]
 
-def dict_to_list_IDF1(data):
+def dict_to_array(data):
     """
     Transform a dictionary into a list with the format needed in IDF1 function
     :param data: dictionary with the information needed to create the list
@@ -249,7 +249,7 @@ def pol2cart(rho, phi):
 
     return(x, y)
 
-def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf, obj_id=0):
+def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf, obj_id=0, parked=False):
     """
     Updates the annotations dict with by adding the desired data to it
     :param annot: annotation dict
@@ -267,7 +267,8 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf, obj_id=0):
         name='car',
         obj_id=obj_id,
         bbox=list(map(float, [xmin, ymin, xmax, ymax])),
-        confidence=float(conf)
+        confidence=float(conf),
+        parked=parked
     )
 
     if frame_name not in annot.keys():
@@ -304,17 +305,31 @@ def dist_to_roi(mask_path):
     roi = cv2.imread(mask_path,cv2.IMREAD_GRAYSCALE)/255
     return ndimage.distance_transform_edt(roi)
 
-def filter_dets(det_bboxes, roi_dist, th=100):
+def filter_by_roi(det_bboxes, roi_dist, th=100):
     # Filter by proximity to roi area
     for frame_id, obj in det_bboxes.items():
-        new_obj = []
-        for det in obj:
+        #new_obj = []
+        for i, det in enumerate(obj):
             #xmin,ymin,xmax,ymax = det['bbox']
             #dist = np.min([roi_dist[int(y),int(x)] for x,y in [(xmin,ymin),(xmin,ymax),(xmax,ymin),(xmax,ymax)]])
             #if dist > th:
             centroid = compute_centroid(det['bbox'])
             if roi_dist[centroid[1],centroid[0]]>th:
-                new_obj.append(det)
-        det_bboxes[frame_id] = new_obj.copy()
-    
+                det_bboxes[frame_id][i].update({'parked':False})
+            else:
+                det_bboxes[frame_id][i].update({'parked':True})
+                #new_obj.append(det)
+        #det_bboxes[frame_id] = new_obj.copy()
+
     return det_bboxes
+
+def filter_static(det_bboxes, hist, max_age):
+
+    det_array = dict_to_array(det_bboxes)
+
+    det_ids = np.unique(det_array[:, 1])
+    n_dets = len(det_ids)
+    dets = [det_array[np.where(det_array[:, 1] == det_ids[i])[0], :]
+                  for i in range(n_dets)]
+    
+    return

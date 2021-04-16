@@ -81,11 +81,11 @@ def compute_tracking_overlapping(det_bboxes, gt_bboxes, accumulator, threshold =
         # Count ocurrences
         for i in range(start_frame, num_frames):
             for detection in det_bboxes[str_frame_id(i)]:
-                objt_id = detection['obj_id']
-                if objt_id in id_ocurrence:
-                    id_ocurrence[objt_id] += 1
+                obj_id = detection['obj_id']
+                if obj_id in id_ocurrence:
+                    id_ocurrence[obj_id] += 1
                 else:
-                    id_ocurrence[objt_id] = 1
+                    id_ocurrence[obj_id] = 1
         # detections to be removed
         ids_to_remove = [id_obj for id_obj in id_ocurrence if id_ocurrence[id_obj]<4]
         for i in range(start_frame, num_frames):
@@ -94,7 +94,7 @@ def compute_tracking_overlapping(det_bboxes, gt_bboxes, accumulator, threshold =
                     det_bboxes[str_frame_id(i)].pop(idx)
     return det_bboxes
 
-def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator): 
+def compute_tracking_kalman(det_bboxes, gt_bboxes):#, accumulator): 
     '''
     Funtion to compute the tracking using Kalman filter
     :return: dictionary with the detections and the ids of each bbox computed by the tracking
@@ -135,7 +135,7 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes, accumulator):
                 det_ids=[]
 
             gt_ids = [gt['obj_id'] for gt in gt_bboxes[idx_frame]]            
-            accumulator.update(gt_ids, det_ids, dists, frameid=int(idx_frame), vf='')
+            #accumulator.update(gt_ids, det_ids, dists, frameid=int(idx_frame), vf='')
         
     return det_bboxes_new
 
