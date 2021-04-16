@@ -9,15 +9,17 @@ from os.path import join, exists, dirname
 import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
 
-from config.config_multitracking import ConfigMultiTracking
+#from config.config_multitracking import ConfigMultiTracking
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou,\
                            compute_multitracking
-from utils.visualize import visualize_trajectories
+from utils.visualize import visualize_trajectories, visualize_filter_roi
 from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories, dist_to_roi, filter_dets
 from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
 
 import motmetrics as mm
+
+import matplotlib.pyplot as plt
 
 def load_text(text_dir, text_name):
     """
@@ -93,7 +95,7 @@ class LoadSeq():
         if self.det_params['mode'] == 'tracking':
             self.det_name = 'eval2_'+det_name
         self.track_mode = tracking_mode
-        self.mt_args = ConfigMultiTracking().get_args()
+        #self.mt_args = ConfigMultiTracking().get_args()
 
         # OUTPUT PARAMETERS
         self.output_path = output_path        
@@ -195,8 +197,6 @@ class LoadSeq():
 
                 elif self.track_mode in 'iou_track':
                     self.tracker.update({cam:compute_tracking_iou(det_bboxes,cam,self.data_path)})
-
-        
                 
     def get_mAP(self):
         """
@@ -221,7 +221,16 @@ class LoadSeq():
             compute_total_miou(self.gt_bboxes, self.det_bboxes, self.frames_paths)
 
     def visualize(self):
-        for (cam,cam_paths), det_bboxes in zip(self.frames_paths.items(), self.det_bboxes.values()):
+        self.visualize_filter()
+        '''for (cam,cam_paths), det_bboxes in tqdm(zip(self.frames_paths.items(), self.det_bboxes.values()), 'Saving tracking qualitative results'):
             path_in = dirname(cam_paths[0])
             if self.det_params['mode'] == 'tracking':
-                visualize_trajectories(path_in, join(self.output_path,self.seq,cam), det_bboxes)
+                visualize_trajectories(path_in, join(self.output_path,self.seq,cam), det_bboxes)'''
+    
+    def visualize_filter(self):
+        for cam, det_bboxes in self.det_bboxes.items():
+            if cam in 'c010':
+                continue
+            det_bboxes_filter = filter_dets(det_bboxes,self.mask[cam])
+            visualize_filter_roi(self.frames_paths[cam],self.gt_bboxes[cam], det_bboxes, det_bboxes_filter,
+                                 self.mask[cam], join(self.output_path,self.seq,cam))

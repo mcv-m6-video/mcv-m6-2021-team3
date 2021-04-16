@@ -304,12 +304,17 @@ def dist_to_roi(mask_path):
     roi = cv2.imread(mask_path,cv2.IMREAD_GRAYSCALE)/255
     return ndimage.distance_transform_edt(roi)
 
-def filter_dets(det_bboxes, roi_dist, th=0):
+def filter_dets(det_bboxes, roi_dist, th=100):
+    # Filter by proximity to roi area
     for frame_id, obj in det_bboxes.items():
         new_obj = []
-        for det in obj:            
+        for det in obj:
+            #xmin,ymin,xmax,ymax = det['bbox']
+            #dist = np.min([roi_dist[int(y),int(x)] for x,y in [(xmin,ymin),(xmin,ymax),(xmax,ymin),(xmax,ymax)]])
+            #if dist > th:
             centroid = compute_centroid(det['bbox'])
             if roi_dist[centroid[1],centroid[0]]>th:
                 new_obj.append(det)
         det_bboxes[frame_id] = new_obj.copy()
+    
     return det_bboxes
