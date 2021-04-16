@@ -18,16 +18,20 @@ import matplotlib.pyplot as plt
 
 #from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
 
-def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = False, remove_noise = False):
+def compute_tracking_overlapping(det_bboxes, gt_bboxes, accumulator, threshold = 0.5, interpolate = False, remove_noise = False):
 
     id_seq = {}
     start_frame = int(min(det_bboxes.keys()))
     num_frames = int(max(det_bboxes.keys())) - start_frame + 1
 
-    #init the tracking by  using the first frame 
-    for value, detection in enumerate(det_bboxes[str_frame_id(start_frame)]):
-        detection['obj_id'] = value
-        id_seq.update({value: True})
+    #init the tracking by  using the first frame which has detections
+    first_det_frame = start_frame
+    while(len(id_seq)==0):
+        for value, detection in enumerate(det_bboxes[str_frame_id(first_det_frame)]):
+            detection['obj_id'] = value
+            id_seq.update({value: True})
+        first_det_frame = first_det_frame + 1
+
     #now, frame by frame, no assuming order nor continuity
     for idx_frame, f_detections in tqdm(det_bboxes.items(),'Frames Overlapping Tracking'):
         id_seq = {frame_id: False for frame_id in id_seq}
@@ -40,7 +44,10 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = Fals
                 candidates = [candidate['bbox'] for candidate in det_bboxes[str_frame_id(active_frame)]]
                 #compare with all detections in previous frame
                 #best match
-                iou = compute_iou(np.array(candidates), np.array(detection['bbox']))
+                if len(candidates) > 0:
+                    iou = compute_iou(np.array(candidates), np.array(detection['bbox']))
+                else:
+                    iou = 0
                 while np.max(iou) > threshold:
                     #candidate found, check if free
                     matching_id = det_bboxes[str_frame_id(active_frame)][np.argmax(iou)]['obj_id']
