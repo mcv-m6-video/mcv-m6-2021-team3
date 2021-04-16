@@ -75,7 +75,6 @@ def load_annot(annot_dir, name, ignore_parked=True):
 
     return annot
 
-
 class LoadSeq():
     def __init__(self, data_path, seq, output_path, tracking_mode, det_name, extension='jpg', det_params=None):
         """
@@ -89,9 +88,9 @@ class LoadSeq():
         self.data_path = data_path
         self.seq = seq
         self.det_params = det_params
-        self.det_name = self.det_params['mode']+'2_'+det_name
+        self.det_name = self.det_params['mode']+'_'+det_name
         if self.det_params['mode'] == 'tracking':
-            self.det_name = 'eval2_'+det_name
+            self.det_name = 'eval_'+det_name
         self.track_mode = tracking_mode
         self.mt_args = ConfigMultiTracking().get_args()
 
@@ -167,6 +166,8 @@ class LoadSeq():
             for file_name in tqdm(paths, 'Model predictions ({}, {})'.format(cam, self.det_params['model'])):
                 pred = model.predict(file_name)
                 frame_id = file_name[-8:-4]
+                if len(pred)==0:
+                    self.det_bboxes[cam] = update_data(self.det_bboxes[cam], frame_id, [], 0.0)
                 for (bbox), conf in pred:
                     self.det_bboxes[cam] = update_data(self.det_bboxes[cam], frame_id, *bbox, conf)
         
@@ -221,5 +222,5 @@ class LoadSeq():
     def visualize(self):
         for (cam,cam_paths), det_bboxes in zip(self.frames_paths.items(), self.det_bboxes.values()):
             path_in = dirname(cam_paths[0])
-            if self.det_params['mode'] == 'tracking':
+            if self.det_params['mode'] == 'multitracking':
                 visualize_trajectories(path_in, join(self.output_path,self.seq,cam), det_bboxes)
