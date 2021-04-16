@@ -5,7 +5,7 @@ import os
 import pickle
 import numpy as np
 
-from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks
+from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_features
 from AIC2018.ReID.MCT import import_pkl, remove, debug_loc, debug_id, debug_frame, dump_imgs,\
                              cluster_fill, multi_camera_matching
 
@@ -68,6 +68,7 @@ def _multi_camera_tracking(args):
     #locs = os.listdir(args.data_path)
     locs = ['S01','S03']
     locs.sort()
+    model_path = os.path.join(os.getcwd(), args.data_path.split('/AICity')[0], 'AIC2018_models/model_880_base.ckpt')
     # loc_n_seq = ['001', 6, 2, 3]
 
     # Load and initialize tracks objs with seq names
@@ -79,11 +80,15 @@ def _multi_camera_tracking(args):
         seqs = []
         loc_n_seq = os.listdir(os.path.join(args.data_path, l))
         for n in loc_n_seq:
+            img_dir = os.path.join(args.data_path, l, n, 'vdo')
             pkl_name = os.path.join(args.output_path, 'pkl', n + '.csv')
-            tracks = import_pkl(pkl_name[:-3]+'pkl')
+            tracks = import_pkl(pkl_name.split('.csv')[0] + '.pkl')
+            tracks = extract_features(tracks, img_dir, model_path, args.n_layers, args.batch_size)
+
             for t in tracks:
                 t.assign_seq_id(seq_id, int(l[-1]))
             seqs.append(seq_id)
+
             seq_id += 1
             single_cam_tracks += tracks
         loc_seq_id.append(seqs)
@@ -91,8 +96,8 @@ def _multi_camera_tracking(args):
 
     # Multi camera matching
     # len of multi_cam_tracks is equal to the number of Locations
-    tracks = multi_camera_matching(args, multi_cam_tracks)
-    with open(os.path.join(args.output_dir, 'after_mct.pkl'), 'wb') as f:
+    tracks = multi_camera_matching(args, multi_cam_tracks, len(locs))
+    with open(os.path.join(args.output_path, 'after_mct.pkl'), 'wb') as f:
         pickle.dump(tracks, f)
     # with open(os.path.join(args.output_dir, 'after_mct.pkl'), 'rb') as f:
     #    tracks = pickle.load(f)
@@ -102,24 +107,24 @@ def _multi_camera_tracking(args):
     # Remove detections with known submissions
     if args.filter is not None:
         tracks = remove(args, tracks)
-        with open(os.path.join(args.output_dir, 'after_remove.pkl'), 'wb') as f:
+        with open(os.path.join(args.output_path, 'after_remove.pkl'), 'wb') as f:
             pickle.dump(tracks, f)
 
     # Decide the final 100 tracks
     # tracks = sample_tracks(tracks, 100)
     # tracks = sample_tracks(tracks, 300)[200:300]
     # tracks = fill(tracks, 100)
-    tracks = cluster_fill(args, tracks, 100)
+    # tracks = cluster_fill(args, tracks, 1)
 
     # Re-index id & final check
-    for i, t in enumerate(tracks):
-        t.assign_id(i + 1)
-        if not debug_loc(t.dump(), loc_seq_id):
-            sys.exit('Does not satisfy location condition!')
-        if not debug_frame(t.dump()):
-            sys.exit('Does not satisfy frame condition!')
-        if not debug_id(t.dump()):
-            sys.exit('Does not satisfy object id condition')
+    # for i, t in enumerate(tracks):
+    #     t.assign_id(i + 1)
+    #     if not debug_loc(t.dump(), loc_seq_id):
+    #         sys.exit('Does not satisfy location condition!')
+    #     if not debug_frame(t.dump()):
+    #         sys.exit('Does not satisfy frame condition!')
+    #     if not debug_id(t.dump()):
+    #         sys.exit('Does not satisfy object id condition')
 
     # Output to file
     dets = []
@@ -128,11 +133,12 @@ def _multi_camera_tracking(args):
     dets = np.concatenate(dets, axis=0)
     dets = np.concatenate([dets[:, :7], -1 * np.ones((dets.shape[0], 1)), dets[:, [7]]], axis=1)
     dets[:, 5:7] = dets[:, 5:7] + dets[:, 3:5]
-    np.savetxt(os.path.join(args.output_dir, 'track3.txt'),
+    np.savetxt(os.path.join(args.output_path, 'track3.txt'),
                dets, fmt='%d %d %d %d %d %d %d %d %f')
 
     # Dump imgs
     print('dumping images...')
+    os.makedirs(args.dump_dir, exist_ok=True)
     for t in tracks:
         dump_imgs(args.dump_dir, t)
 
