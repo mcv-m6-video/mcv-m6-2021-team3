@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 #from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
 
-def compute_tracking_overlapping(det_bboxes, gt_bboxes, accumulator, threshold = 0.5, interpolate = False, remove_noise = False):
+def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = False, remove_noise = False):
 
     id_seq = {}
     start_frame = int(min(det_bboxes.keys()))
@@ -126,16 +126,18 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes):#, accumulator):
 
         if idx_frame in gt_bboxes.keys():
             if len(trackers)>0:
-                for track in trackers:
-                    det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., int(track[4]))
-                dists = compute_dist_matrix(frame_det, gt_bboxes[idx_frame])
+                det_parked = [det['parked'] for det in frame_det]
+                for track, parked in zip(trackers, det_parked):
+                    det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., int(track[4]), parked = parked)
+            None
+            '''    dists = compute_dist_matrix(frame_det, gt_bboxes[idx_frame])
                 det_ids = [det['obj_id'] for det in frame_det]
             else:
                 dists=[]
                 det_ids=[]
 
             gt_ids = [gt['obj_id'] for gt in gt_bboxes[idx_frame]]            
-            #accumulator.update(gt_ids, det_ids, dists, frameid=int(idx_frame), vf='')
+            accumulator.update(gt_ids, det_ids, dists, frameid=int(idx_frame), vf='')'''
         
     return det_bboxes_new
 

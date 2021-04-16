@@ -305,7 +305,7 @@ def dist_to_roi(mask_path):
     roi = cv2.imread(mask_path,cv2.IMREAD_GRAYSCALE)/255
     return ndimage.distance_transform_edt(roi)
 
-def filter_by_roi(det_bboxes, roi_dist, th=100):
+def filter_by_roi(det_bboxes, roi_dist, th=50):
     # Filter by proximity to roi area
     for frame_id, obj in det_bboxes.items():
         #new_obj = []

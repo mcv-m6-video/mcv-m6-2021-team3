@@ -188,12 +188,12 @@ class LoadSeq():
                 if self.track_mode in ['overlapping', 'kalman']:
 
                     if self.track_mode in 'overlapping':            
-                        self.det_bboxes[cam] = compute_tracking_overlapping(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
+                        det_bboxes = compute_tracking_overlapping(det_bboxes)#, self.accumulators[cam])
 
                     elif self.track_mode in 'kalman':
-                        self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
+                        det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
 
-                    self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],self.det_bboxes[cam],self.accumulators[cam])})
+                    self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam])})
                     print(f'Camera: {cam}')
                     print(self.ID_metrics[cam])
 
