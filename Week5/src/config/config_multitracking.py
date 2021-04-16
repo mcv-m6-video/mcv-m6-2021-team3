@@ -20,10 +20,10 @@ class ConfigMultiTracking:
         parser.add_argument('--img_dir', default='./tmp', type=str, help='dir for saving img for reid')
 
         parser.add_argument('--dump_dir', default='./tmp', help='folder to dump images')
-        parser.add_argument('--method', help='multi-camera tracking methods: cluster or bottom_up_cluster or rank')
+        parser.add_argument('--method', default = 'cluster', help='multi-camera tracking methods: cluster or bottom_up_cluster or rank')
         parser.add_argument('--cluster', default='kmeans', type=str, help='cluster methods')
         parser.add_argument('--normalize', action='store_true', help='whether normalize feature or not')
-        parser.add_argument('--k', type=int, help='# of clusters')
+        parser.add_argument('--k', default=5, type=int, help='# of clusters')
         parser.add_argument('--n', type=int, help='bottom up parameter')
         parser.add_argument('--sum', default='avg', help='feature summarization method: max or avg')
         parser.add_argument('--filter', help='the filter file for filtering')

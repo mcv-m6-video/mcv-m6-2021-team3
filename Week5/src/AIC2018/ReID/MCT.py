@@ -177,7 +177,7 @@ def multi_camera_matching(opt,MCT):
         
         return tracks
 
-    elif args.method == 'bottom_up_cluster':
+    elif opt.method == 'bottom_up_cluster':
         all_tracks = []
         # clustering within same location
         for i, loc_tracks in enumerate(MCT):

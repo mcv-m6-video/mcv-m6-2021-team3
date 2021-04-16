@@ -65,7 +65,8 @@ def _multi_camera_tracking(args):
     """
 
     # Create sequence names
-    locs = os.listdir(args.data_path)
+    #locs = os.listdir(args.data_path)
+    locs = ['S01','S03']
     locs.sort()
     # loc_n_seq = ['001', 6, 2, 3]
 
@@ -78,10 +79,10 @@ def _multi_camera_tracking(args):
         seqs = []
         loc_n_seq = os.listdir(os.path.join(args.data_path, l))
         for n in loc_n_seq:
-            pkl_name = os.path.join(args.output_path, 'multitracking', 'pkl', n + '.csv')
-            tracks = import_pkl(pkl_name)
+            pkl_name = os.path.join(args.output_path, 'pkl', n + '.csv')
+            tracks = import_pkl(pkl_name[:-3]+'pkl')
             for t in tracks:
-                t.assign_seq_id(seq_id, l)
+                t.assign_seq_id(seq_id, int(l[-1]))
             seqs.append(seq_id)
             seq_id += 1
             single_cam_tracks += tracks
