@@ -15,7 +15,7 @@ class Config:
         parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman','iou_track'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
-        parser.add_argument('--data_path', type=str, default='../../raw_data',#'../../raw_data',
+        parser.add_argument('--data_path', type=str, default='/media/gemma/datasets',
                             help="Path where the AICity data is located")
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         
@@ -31,8 +31,8 @@ class Config:
 
         # =============================== FINETUNE =============================== #
 
-        parser.add_argument('--seq_train', nargs='+', default=['S01','S04'], help="Sequences used to train")
-        parser.add_argument('--seq_test', nargs='+', default=['S03'], help="Sequence used to test")
+        parser.add_argument('--seq_train', nargs='+', default=['S01','S03'], help="Sequences used to train")
+        parser.add_argument('--seq_test', nargs='+', default=['S04'], help="Sequence used to test")
         parser.add_argument('--conf_thres', type=float, default=0.2)
         parser.add_argument('--iou_thres', type=float, default=0.45)
         parser.add_argument('--data_yolov3', type=str, default='data/finetune/yolov3/cars_rand.yaml', help='data.yaml path')

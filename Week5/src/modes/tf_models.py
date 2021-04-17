@@ -207,11 +207,8 @@ def to_tf_record(data, gt, writer):
         'train': os.path.join(tf_records_path, 'train'),
         'val': os.path.join(tf_records_path, 'val')
     }'''
-
-    train_data = data['train']
-    val_data = data['val']
     
-    for dataset in ['train', 'val']:
+    for dataset in ['train', 'val', 'test']:
         #writer = tf.io.TFRecordWriter(paths[dataset] + '.tfrecord')
         for cam, frames in data[dataset].items():
             for img in tqdm(frames, 'Creating TF Record'):

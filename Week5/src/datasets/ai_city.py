@@ -21,7 +21,7 @@ import time
 
 import tensorflow as tf
 from datasets.load_seq import LoadSeq
-from modes.ultralytics_yolo import UltralyricsYolo
+#from modes.ultralytics_yolo import UltralyricsYolo
 from utils.utils import write_json_file, read_json_file, write_yaml_file
 
 class AICity:
@@ -112,17 +112,18 @@ class AICity:
             print(colored('DONE!', 'green'))
 
         elif self.framework in 'tf_models':
-            save_path='data/tf2_finetune'
+            save_path='/media/gemma/datasets/AICity/tf2_finetune'
             save_path = join(save_path,'-'.join(self.seq_train)+'_'+'-'.join(self.seq_test))
             os.makedirs(save_path,exist_ok=True)
 
             print('Preparing data...')
             paths = {
                 'train': os.path.join(save_path, 'train'),
-                'val': os.path.join(save_path, 'val')
+                'val': os.path.join(save_path, 'val'),
+                'test': os.path.join(save_path, 'test')
             }
             writer = {}
-            for dataset in ['train', 'val']:
+            for dataset in ['train', 'val', 'test']:
                 writer.update({dataset:tf.io.TFRecordWriter(paths[dataset] + '.tfrecord')})
 
             for seq, sequence in self.sequences.items():
@@ -131,7 +132,7 @@ class AICity:
                 else:
                     writer = sequence.data_to_model(mode='test',writer=writer)
             
-            for dataset in ['train', 'val']:
+            for dataset in ['train', 'val', 'test']:
                 print("Saving TFRecords file. This can take a while...")
                 writer[dataset].close()
 
