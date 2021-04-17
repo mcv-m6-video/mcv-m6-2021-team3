@@ -18,13 +18,15 @@ import matplotlib.pyplot as plt
 
 #from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
 
-def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True, remove_noise = True):
+def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet'):
 
     id_seq = {}
 
     start_frame = int(min(det_bboxes.keys()))
-    num_frames = int(max(det_bboxes.keys())) - start_frame + 1
 
+    if flow_method == 'mask_flownet':
+        flownet = MaskFlownetOF()
+    
     #init the tracking by using the first frame which has at least one detection
     first_det_frame = start_frame
     while(len(id_seq)==0):

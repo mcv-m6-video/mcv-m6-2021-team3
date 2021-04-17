@@ -81,7 +81,7 @@ def load_annot(annot_dir, name, ignore_parked=True):
 
 
 class LoadSeq():
-    def __init__(self, data_path, seq, output_path, tracking_mode, det_name, extension='jpg', det_params=None):
+    def __init__(self, data_path, seq, output_path, tracking_mode, det_name, OF_mode, extension='jpg', det_params=None):
         """
         Init of the Load Sequence class
 
@@ -97,6 +97,7 @@ class LoadSeq():
         if self.det_params['mode'] == 'tracking':
             self.det_name = 'eval2_'+det_name
         self.track_mode = tracking_mode
+        self.OF_mode = OF_mode
         #self.mt_args = ConfigMultiTracking().get_args()
 
         # OUTPUT PARAMETERS
@@ -200,11 +201,10 @@ class LoadSeq():
                 if self.track_mode in ['overlapping', 'kalman']:
 
                     if self.track_mode in 'overlapping':            
-                        det_bboxes = compute_tracking_overlapping(det_bboxes)#, self.accumulators[cam])
+                        det_bboxes = compute_tracking_overlapping(det_bboxes, flow_method= self.OF_mode)
 
                     elif self.track_mode in 'kalman':
-                        det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
-
+                        det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])
                     self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam])})
                     print(f'Camera: {cam}')
                     print(self.ID_metrics[cam])
