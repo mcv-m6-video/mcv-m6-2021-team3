@@ -9,14 +9,15 @@ from os.path import join, exists, dirname
 import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
 
-#from config.config_multitracking import ConfigMultiTracking
-#from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
+
+from config.config_multitracking import ConfigMultiTracking
+from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 from modes.tf_models import TFModel, to_tf_record
-#from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou,\
-#                           compute_multitracking
-#from utils.visualize import visualize_trajectories, visualize_filter_roi
+from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou,\
+                           compute_multitracking
+from utils.visualize import visualize_trajectories, visualize_filter_roi
 from utils.utils import write_json_file, read_json_file, update_data, match_trajectories, dist_to_roi, filter_by_roi
-#from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
+from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
 
 import motmetrics as mm
 

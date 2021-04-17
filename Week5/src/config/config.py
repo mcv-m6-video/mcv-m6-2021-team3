@@ -10,12 +10,12 @@ class Config:
     def get_args():
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
-        parser.add_argument('--framework', type=str, default='tf_models', choices=['ultralytics', 'tf_models'], help='What framework to use')
-        parser.add_argument('--mode', type=str, default='train', choices=['train','eval','inference','tracking'], help='What task to perform')
+        parser.add_argument('--framework', type=str, default='ultralytics', choices=['ultralytics', 'tf_models'], help='What framework to use')
+        parser.add_argument('--mode', type=str, default='tracking', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman','iou_track'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
-        parser.add_argument('--data_path', type=str, default='/media/gemma/datasets',
+        parser.add_argument('--data_path', type=str, default='../../raw_data',
                             help="Path where the AICity data is located")
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         

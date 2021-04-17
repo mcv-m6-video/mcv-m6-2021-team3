@@ -21,7 +21,7 @@ import time
 
 import tensorflow as tf
 from datasets.load_seq import LoadSeq
-#from modes.ultralytics_yolo import UltralyricsYolo
+from modes.ultralytics_yolo import UltralyricsYolo
 from utils.utils import write_json_file, read_json_file, write_yaml_file
 
 class AICity:
