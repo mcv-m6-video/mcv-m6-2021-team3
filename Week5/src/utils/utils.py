@@ -170,8 +170,9 @@ def dict_to_list_track(frame_info):
     boxes = []
     for idx, obj in frame_info.items():
         for bbox in obj:
-            box_info = [int(idx), bbox['bbox'][0], bbox['bbox'][1], bbox['bbox'][2], bbox['bbox'][3], bbox['confidence']]
-            boxes.append(box_info)
+            if not bbox['parked']:
+                box_info = [int(idx), bbox['bbox'][0], bbox['bbox'][1], bbox['bbox'][2], bbox['bbox'][3], bbox['confidence']]
+                boxes.append(box_info)
     return np.array(boxes)
 
 def frames_to_gif(save_dir, ext):
@@ -305,7 +306,7 @@ def dist_to_roi(mask_path):
     roi = cv2.imread(mask_path,cv2.IMREAD_GRAYSCALE)/255
     return ndimage.distance_transform_edt(roi)
 
-def filter_by_roi(det_bboxes, roi_dist, th=50):
+def filter_by_roi(det_bboxes, roi_dist, th=100):
     # Filter by proximity to roi area
     for frame_id, obj in det_bboxes.items():
         #new_obj = []
@@ -318,6 +319,7 @@ def filter_by_roi(det_bboxes, roi_dist, th=50):
                 det_bboxes[frame_id][i].update({'parked':False})
             else:
                 det_bboxes[frame_id][i].update({'parked':True})
+                #det.update({'parked':False})
                 #new_obj.append(det)
         #det_bboxes[frame_id] = new_obj.copy()
 

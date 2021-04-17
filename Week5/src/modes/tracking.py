@@ -114,7 +114,6 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes):#, accumulator):
     for idx_frame, frame_det in tqdm(det_bboxes.items(), 'Frames Kalman Tracking'): # all frames in the sequence
 
         dets = data_list[data_list[:,0]==int(idx_frame),1:6]
-        #im = io.imread(join(data_path,idx)+'.png')
 
         if dets.size==0:
             dets = []
@@ -126,18 +125,11 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes):#, accumulator):
 
         if idx_frame in gt_bboxes.keys():
             if len(trackers)>0:
-                det_parked = [det['parked'] for det in frame_det]
-                for track, parked in zip(trackers, det_parked):
-                    det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., int(track[4]), parked = parked)
-            None
-            '''    dists = compute_dist_matrix(frame_det, gt_bboxes[idx_frame])
-                det_ids = [det['obj_id'] for det in frame_det]
-            else:
-                dists=[]
-                det_ids=[]
-
-            gt_ids = [gt['obj_id'] for gt in gt_bboxes[idx_frame]]            
-            accumulator.update(gt_ids, det_ids, dists, frameid=int(idx_frame), vf='')'''
+                for track in trackers:
+                    det_bboxes_new = update_data(det_bboxes_new, idx_frame, *track[:4], 1., int(track[4]), False)
+            for obj in frame_det:
+                if obj['parked']:
+                    det_bboxes_new = update_data(det_bboxes_new, idx_frame, *obj['bbox'], obj['confidence'], -1, True)
         
     return det_bboxes_new
 
