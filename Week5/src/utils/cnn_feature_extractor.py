@@ -48,7 +48,7 @@ class CNNFeatureExtractor:
         else:
             raise(NameError)
 
-        if self.device == 'gpu':
+        if self.device in 'gpu':
             self.model.cuda()
 
         self.normalization = Normalize(mean=[0.485, 0.456, 0.406],
@@ -72,13 +72,9 @@ class CNNFeatureExtractor:
             img = cv2.imread(img)
         
         img_h, img_w, _ = img.shape
-        cx, cy, w, h = bbox
-        x = int((cx - w / 2)*img_w)
-        y = int((cy - h / 2)*img_h)
-        h = int(h*img_h)
-        w = int(w*img_w)
+        xmin, ymin, xmax, ymax = list(map(int, bbox))
 
-        img = img[y:y+h, x:x+w, :]
+        img = img[ymin:ymax, xmin:xmax, :]
         img = self.transform(img)
 
         if self.device == 'gpu':
@@ -121,7 +117,7 @@ class CNNFeatureExtractor:
         feat2 = torch.tensor(feat2)
         loss = metric(feat1, feat2).numpy()
 
-        return (np.mean(loss), thr) if dist in ['cosine', 'pairwise'] else (loss, thr)
+        return [np.mean(loss), thr] if dist in ['cosine', 'pairwise'] else [loss, thr]
 
 
 # For testing purposes

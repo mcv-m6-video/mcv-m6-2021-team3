@@ -205,8 +205,9 @@ class LoadSeq():
                         det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode)
 
                     elif self.track_mode in 'kalman':
-                        det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])
-                    self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam])})
+                        det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
+
+                    self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam],self.frames_paths[cam][0])})
                     print(f'Camera: {cam}')
                     print(self.ID_metrics[cam])
 
