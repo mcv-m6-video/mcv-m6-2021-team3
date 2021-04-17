@@ -2,6 +2,7 @@ import os
 import cv2
 import glob
 import numpy as np
+from PIL import Image
 from os.path import join
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
@@ -60,7 +61,9 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
                 detections.append(bbbox)
                 id_list.append(bb_id)
 
-        img = draw_frame_track(path_in, f_id, detections, colours, id_list, id_ocurrence) 
+        img = draw_frame_track(path_in, f_id, detections, colours, id_list, id_ocurrence)
+
+        #img = np.resize(img,(int(img.shape[0]/2),int(img.shape[1]/2)))
         #cv2.imshow('Tracking',img)
         #cv2.waitKey(1)
         os.makedirs(join(path_out, 'tracking'), exist_ok=True)
@@ -110,6 +113,43 @@ def draw_bboxes(img, bboxes, color):
         img = cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
     return img
 
+def visualize_filter_roi(paths, gt, dets, dets_filter, roi_dist, output_path):
+
+    mask = Image.fromarray(np.clip(((1-(roi_dist/np.max(roi_dist)))*255)-30,0,255)).convert('L')
+    bg = Image.fromarray(np.zeros(roi_dist.shape,np.uint8))
+
+    for file_name in tqdm(paths,'Visualize roi filter results'):
+        frame_id = file_name[-8:-4]
+        img = cv2.imread(file_name)
+
+        if frame_id in gt.keys():
+            gt_frame = np.array(dict_to_list(gt[frame_id], False))
+            img = draw_bboxes(img, gt_frame, (0, 255, 0))
+
+            if frame_id in dets.keys():
+                dets_frame = np.array(dict_to_list(dets[frame_id], False))
+                img_nofilter = draw_bboxes(img.copy(), dets_frame, (255, 0, 0))
+            else:
+                img_nofilter = img
+
+            if frame_id in dets_filter.keys():
+                dets_filter_frame = np.array(dict_to_list(dets_filter[frame_id], False))
+                img_filter = draw_bboxes(img.copy(), dets_filter_frame, (255, 0, 0))
+            else:
+                img_filter = img
+
+            #alpha = np.array(np.clip((roi_dist/np.max(roi_dist))*400,0,255), dtype=np.uint8)
+
+            nfil = Image.composite(bg,Image.fromarray(cv2.cvtColor(img_nofilter, cv2.COLOR_BGR2RGB)),mask)
+            fil = Image.composite(bg,Image.fromarray(cv2.cvtColor(img_filter, cv2.COLOR_BGR2RGB)),mask)
+
+            os.makedirs(join(output_path, 'no_filter_parked'),exist_ok=True)
+            os.makedirs(join(output_path, 'filter_parked'),exist_ok=True)
+
+            nfil.save(join(output_path, 'no_filter_parked',frame_id+'.jpg'))
+            fil.save(join(output_path, 'filter_parked',frame_id+'.jpg'))
+            #cv2.imwrite(join(output_path, 'no_filter_parked',frame_id+'.jpg'),img_nofilter)
+            #cv2.imwrite(join(output_path, 'filter_parked',frame_id+'.jpg'),img_filter)
 
 def visualize_background_iou(data, segmen, gt, dets, framework, model, output_path, mode='inference', axis=[536, 915]):
     """

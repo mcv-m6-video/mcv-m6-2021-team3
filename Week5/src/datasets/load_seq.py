@@ -9,17 +9,21 @@ from os.path import join, exists, dirname
 import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
 
+
 from config.config_multitracking import ConfigMultiTracking
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
-from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou
+
+from modes.tf_models import TFModel, to_tf_record
 from modes.multitracking import compute_multitracking
-from utils.visualize import visualize_trajectories
-from utils.utils import write_json_file, read_json_file, update_data, dict_to_list_IDF1, match_trajectories, \
-    dist_to_roi, filter_dets
+from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou
+from utils.visualize import visualize_trajectories, visualize_filter_roi
+from utils.utils import write_json_file, read_json_file, update_data, match_trajectories, dist_to_roi, filter_by_roi
 from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
 
 import motmetrics as mm
 
+
+import matplotlib.pyplot as plt
 
 def load_text(text_dir, text_name):
     """
@@ -81,7 +85,7 @@ def load_annot(annot_dir, name, ignore_parked=True):
 
 
 class LoadSeq():
-    def __init__(self, data_path, seq, output_path, tracking_mode, det_name, extension='jpg', det_params=None):
+    def __init__(self, data_path, seq, output_path, tracking_mode, det_name, OF_mode, extension='jpg', det_params=None):
         """
         Init of the Load Sequence class
 
@@ -97,7 +101,8 @@ class LoadSeq():
         if self.det_params['mode'] == 'tracking':
             self.det_name = 'eval_' + det_name
         self.track_mode = tracking_mode
-        self.mt_args = ConfigMultiTracking().get_args()
+        self.OF_mode = OF_mode
+        #self.mt_args = ConfigMultiTracking().get_args()
 
         # OUTPUT PARAMETERS
         self.output_path = output_path
@@ -114,7 +119,14 @@ class LoadSeq():
         for cam in os.listdir(join(data_path, seq)):
             if '.' in cam:
                 continue
-
+            # Save paths to frames
+            cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
+            #cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
+            cam_paths.sort()
+            self.frames_paths.update({cam:cam_paths})
+            # Load cam mask (roi)
+            self.mask.update({cam:dist_to_roi(join(data_path,seq,cam,'roi.jpg'))})
+            
             # Load gt
             self.gt_bboxes.update({cam: load_annot(join(data_path, seq, cam), 'gt/gt.txt')})
 
@@ -123,18 +135,14 @@ class LoadSeq():
             os.makedirs(json_path, exist_ok=True)
             json_path = join(json_path, self.det_name)
             if exists(json_path):
-                self.det_bboxes.update({cam: read_json_file(json_path)})
+                self.det_bboxes.update({cam:read_json_file(json_path)})
+                for frame_id in self.frames_paths[cam]:
+                    idx = frame_id[-8:-4]
+                    if idx not in self.det_bboxes[cam].keys():
+                        self.det_bboxes[cam] = update_data(self.det_bboxes[cam], idx,*[-1,-1,-1,-1],0,0, True)
             else:
-                self.det_bboxes.update({cam: {}})
-
-            # Save paths to frames
-            cam_paths = glob.glob(join(data_path, seq, cam, 'vdo/*.' + extension))
-            # cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
-            cam_paths.sort()
-            self.frames_paths.update({cam: cam_paths})
-            # Load cam mask (roi)
-            self.mask.update({cam: dist_to_roi(join(data_path, seq, cam, 'roi.jpg'))})
-
+                self.det_bboxes.update({cam:{}})
+            
             # Creat accumulator 
             self.accumulators.update({cam: mm.MOTAccumulator()})
 
@@ -142,7 +150,7 @@ class LoadSeq():
         """
         Apply split to specific propotion of the dataset.
         """
-        self.data = {}
+        self.data = {'train':{},'val':{},'test':{}}
         if mode in 'train':
             # Define cams used to train and validate
             cams = self.frames_paths.keys()
@@ -154,16 +162,23 @@ class LoadSeq():
 
         else:
             # The whole sequence used to test
-            self.data.update({'test': self.frames_paths})
-
-    def data_to_model(self, split=.25, mode='test'):
+            self.data.update({'test':self.frames_paths})
+    
+    def data_to_model(self, split=.25, mode='test', writer=None):
         self.train_val_split(split, mode)
-        return to_yolov3(self.data, self.gt_bboxes)
-
+        if self.det_params['framework'] in 'ultralytics':
+            return to_yolov3(self.data, self.gt_bboxes)
+        elif self.det_params['framework'] in 'tf_models':
+            return to_tf_record(self.data, self.gt_bboxes, writer)
+    
     def detect(self):
 
-        model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
-        print(self.det_params['mode'] + f' for sequence: {self.seq}')
+        if self.det_params['framework'] in 'ultralytics':
+            model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
+        elif self.det_params['framework'] in 'tf_models':
+            model = TFModel(self.det_params['model'],self.det_params['weights'],self.det_params['iou_thres'], self.det_params['coco_model'])
+
+        print(self.det_params['mode']+f' for sequence: {self.seq}')
 
         for cam, paths in self.frames_paths.items():
             if len(self.det_bboxes[cam]) > 0:
@@ -187,22 +202,24 @@ class LoadSeq():
             compute_multitracking(self.mt_args)
         else:
             for cam, det_bboxes in self.det_bboxes.items():
-                det_bboxes = filter_dets(det_bboxes, self.mask[cam])
 
-                if self.track_mode in 'overlapping':
-                    self.det_bboxes[cam] = compute_tracking_overlapping(det_bboxes)
+                det_bboxes = filter_by_roi(det_bboxes,self.mask[cam])
 
-                elif self.track_mode in 'kalman':
-                    self.det_bboxes[cam] = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam],
-                                                                   self.accumulators[cam])
+                if self.track_mode in ['overlapping', 'kalman']:
 
-                    self.ID_metrics.update({cam: compute_IDmetrics(self.accumulators[cam])})
+                    if self.track_mode in 'overlapping':            
+                        det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode)
+
+                    elif self.track_mode in 'kalman':
+                        det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
+
+                    self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam],self.frames_paths[cam][0])})
                     print(f'Camera: {cam}')
                     print(self.ID_metrics[cam])
 
                 elif self.track_mode in 'iou_track':
                     self.tracker.update({cam: compute_tracking_iou(det_bboxes, cam, self.output_path)})
-
+          
     def get_mAP(self):
         """
         Estimats the mAP using the VOC evaluation
@@ -227,7 +244,15 @@ class LoadSeq():
             compute_total_miou(self.gt_bboxes, self.det_bboxes, self.frames_paths)
 
     def visualize(self):
-        for (cam, cam_paths), det_bboxes in zip(self.frames_paths.items(), self.det_bboxes.values()):
+        #self.visualize_filter()
+        for (cam,cam_paths), det_bboxes in tqdm(zip(self.frames_paths.items(), self.det_bboxes.values()), 'Saving tracking qualitative results'):
             path_in = dirname(cam_paths[0])
-            if self.det_params['mode'] == 'multitracking':
-                visualize_trajectories(path_in, join(self.output_path, self.seq, cam), det_bboxes)
+            if self.det_params['mode'] == 'tracking':
+                visualize_trajectories(path_in, join(self.output_path,self.seq,cam), det_bboxes)
+    
+    def visualize_filter(self):
+        for cam, det_bboxes in self.det_bboxes.items():
+            det_bboxes_filter = filter_by_roi(det_bboxes,self.mask[cam])
+            visualize_filter_roi(self.frames_paths[cam],self.gt_bboxes[cam], det_bboxes, det_bboxes_filter,
+                                 self.mask[cam], join(self.output_path,self.seq,cam))
+
