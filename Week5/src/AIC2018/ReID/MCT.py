@@ -146,10 +146,10 @@ def clustering(args, tracks):
     return class_output
 
 
-def multi_camera_matching(opt, MCT, n_seq):
+def multi_camera_matching(opt, MCT, loc_seq_id):
     """Multi-camera matching"""
     print('multi camera matching...')
-    loc_seq_id = list(range(1, n_seq + 1))
+    #loc_seq_id = list(range(1, n_seq + 1))
     if opt.method == 'cluster':
         idxs = []
         tracks = []
@@ -364,7 +364,7 @@ def multi_camera_matching(opt, MCT, n_seq):
                 tracks = [loc_tracks[j] for j in select.tolist()]
                 track = merge_tracks(opt, tracks)
                 assert debug_frame(track.dump())
-                if i == 3:
+                if i == (len(MCT)-1):
                     ref_tracks.append(track)
                 else:
                     tgt_tracks.append(track)
@@ -387,7 +387,7 @@ def multi_camera_matching(opt, MCT, n_seq):
         features = np.stack(features, axis=0)
         targets = np.array(targets)
         print('start knn...')
-        knn = KNeighborsClassifier(n_neighbors=1, n_jobs=-1)
+        knn = KNeighborsClassifier(n_neighbors=4, n_jobs=-1)
         knn.fit(features, targets)
 
         features = []
@@ -406,8 +406,9 @@ def multi_camera_matching(opt, MCT, n_seq):
         # Filter out tracks that does not appear in all 4 locations
         outputs = []
         for t in ref_tracks:
-            if debug_loc(t.dump(), loc_seq_id):
-                outputs.append(t)
+            outputs.append(t)
+            '''if debug_loc(t.dump(), loc_seq_id):
+                outputs.append(t)'''
         print('%d qualified clusters!' % len(outputs))
         return outputs
 
@@ -652,9 +653,12 @@ def debug_loc(dets, loc_seq_id):
     video_id = np.unique(dets[:, 0]).tolist()
     seq2loc = {}
     for i, seqs in enumerate(loc_seq_id):
-        for seq in seqs:
-            seq2loc[seq] = i
-    video_id = [seq2loc[id] for id in video_id]
+        #for seq in seqs:
+        seq2loc[seqs] = i
+    for id in video_id:
+        id = int(id)
+        video_id = [seq2loc[id]]
+    #video_id = [seq2loc[id] for id in video_id]
     cond = False
     for i in range(len(loc_seq_id)):
         cond = cond or (i not in video_id)

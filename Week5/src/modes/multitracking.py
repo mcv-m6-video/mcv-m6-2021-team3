@@ -96,7 +96,7 @@ def _multi_camera_tracking(args):
 
     # Multi camera matching
     # len of multi_cam_tracks is equal to the number of Locations
-    tracks = multi_camera_matching(args, multi_cam_tracks, len(locs))
+    tracks = multi_camera_matching(args, multi_cam_tracks, locs)
     with open(os.path.join(args.output_path, 'after_mct.pkl'), 'wb') as f:
         pickle.dump(tracks, f)
     # with open(os.path.join(args.output_dir, 'after_mct.pkl'), 'rb') as f:

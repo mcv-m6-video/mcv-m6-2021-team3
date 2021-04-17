@@ -44,7 +44,7 @@ class ResNet_Loader(object):
         self.output_color = output_color
 
         self.model = Feature_ResNet(n_layer, output_color)
-        state_dict = torch.load(model_path)
+        state_dict = torch.load(model_path, map_location=torch.device('cpu')) # treure aixo: map_location=torch.device('cpu')
         for key in list(state_dict.keys()):
             if key.find('fc') != -1 and key.find('fc_c') == -1:
                 del state_dict[key]
@@ -59,7 +59,10 @@ class ResNet_Loader(object):
 
     def inference(self, file_name_list):
 
-        self.model.cuda()
+        if torch.cuda.is_available():
+            self.model.cuda()
+        else:
+            self.model.cpu()
         feature_list = []
         color_list = []
         batch_list = []
@@ -72,20 +75,32 @@ class ResNet_Loader(object):
             batch_list.append(img)
             if (i + 1) % self.batch_size == 0:
                 if not self.output_color:
-                    features = self.model(Variable(torch.stack(batch_list)).cuda())
+                    if torch.cuda.is_available():
+                        features = self.model(Variable(torch.stack(batch_list)).cuda())
+                    else:
+                        features = self.model(Variable(torch.stack(batch_list))) 
                     feature_list.append(features.cpu().data)
                 else:
-                    features, colors = self.model(Variable(torch.stack(batch_list)).cuda())
+                    if torch.cuda.is_available():
+                        features, colors = self.model(Variable(torch.stack(batch_list)).cuda())
+                    else:
+                        features, colors = self.model(Variable(torch.stack(batch_list)))
                     feature_list.append(features.cpu().data)
                     color_list.append(colors.cpu().data)
                 batch_list = []
 
         if len(batch_list) > 0:
             if not self.output_color:
-                features = self.model(Variable(torch.stack(batch_list)).cuda())
+                if torch.cuda.is_available():
+                    features = self.model(Variable(torch.stack(batch_list)).cuda())
+                else:
+                    features = self.model(Variable(torch.stack(batch_list)))
                 feature_list.append(features.cpu().data)
             else:
-                features, colors = self.model(Variable(torch.stack(batch_list)).cuda())
+                if torch.cuda.is_available():
+                    features, colors = self.model(Variable(torch.stack(batch_list)).cuda())
+                else:
+                    features, colors = self.model(Variable(torch.stack(batch_list)))
                 feature_list.append(features.cpu().data)
                 color_list.append(colors.cpu().data)
             batch_list = []

@@ -23,7 +23,7 @@ class ConfigMultiTracking:
         parser.add_argument('--n_layers', default=50, type=int, help='Number of layers of the network')
         parser.add_argument('--batch_size', default=10, type=int, help='Batch size')
         parser.add_argument('--dump_dir', default='./tmp', help='folder to dump images')
-        parser.add_argument('--method', default='re-rank-4', help='multi-camera tracking methods: cluster or bottom_up_cluster or rank')
+        parser.add_argument('--method', default='biased_knn', help='multi-camera tracking methods: cluster or bottom_up_cluster or rank')
         parser.add_argument('--cluster', default='kmeans', type=str, help='cluster methods')
         parser.add_argument('--normalize', action='store_true', help='whether normalize feature or not')
         parser.add_argument('--k', default=5, type=int, help='# of clusters')
