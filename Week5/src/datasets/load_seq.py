@@ -113,7 +113,14 @@ class LoadSeq():
         for cam in os.listdir(join(data_path, seq)):
             if '.' in cam:
                 continue
-
+            # Save paths to frames
+            cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
+            #cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
+            cam_paths.sort()
+            self.frames_paths.update({cam:cam_paths})
+            # Load cam mask (roi)
+            self.mask.update({cam:dist_to_roi(join(data_path,seq,cam,'roi.jpg'))})
+            
             # Load gt
             self.gt_bboxes.update({cam:load_annot(join(data_path,seq,cam), 'gt/gt.txt')})
 
@@ -123,16 +130,12 @@ class LoadSeq():
             json_path = join(json_path,self.det_name)
             if exists(json_path):
                 self.det_bboxes.update({cam:read_json_file(json_path)})
+                for frame_id in self.frames_paths[cam]:
+                    if frame_id not in self.det_bboxes[cam].keys():
+                        update_data(self.det_bboxes[cam], frame_id[-8:-4],*[-1,-1,-1,-1],0,0, True)
             else:
                 self.det_bboxes.update({cam:{}})
-
-            # Save paths to frames
-            cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
-            #cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
-            cam_paths.sort()
-            self.frames_paths.update({cam:cam_paths})
-            # Load cam mask (roi)
-            self.mask.update({cam:dist_to_roi(join(data_path,seq,cam,'roi.jpg'))})
+            
 
             # Creat accumulator 
             self.accumulators.update({cam:mm.MOTAccumulator()})
