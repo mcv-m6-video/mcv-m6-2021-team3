@@ -10,8 +10,8 @@ class Config:
     def get_args():
         parser = argparse.ArgumentParser()
         # ================================ FRAMEWORK ============================ #
-        parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
-        parser.add_argument('--mode', type=str, default='tracking', choices=['train','eval','inference','tracking'], help='What task to perform')
+        parser.add_argument('--framework', type=str, default='tf_models', choices=['ultralytics', 'tf_models'], help='What framework to use')
+        parser.add_argument('--mode', type=str, default='train', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman','iou_track'], help='What type of tracking to perform')
 
         # ================================ INPUT ================================ #
@@ -39,6 +39,8 @@ class Config:
         parser.add_argument('--hyp', type=str, default='data/yolov3_finetune/hyp.finetune.yaml', help='hyperparameters path for finetuning')
         parser.add_argument('--epochs', type=int, default=150)
         parser.add_argument('--batch_size', type=int, default=32, help='total batch size for all GPUs')
+
+        parser.add_argument('--coco_model', type=bool, default=False, help="Wether the model is trained on COCO or AICity")
         
         # ================================ OUTPUT ================================ #
         parser.add_argument('--output_path', type=str, default='../outputs', help="Path to store results")

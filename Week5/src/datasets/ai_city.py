@@ -19,6 +19,7 @@ from skimage import io
 import os
 import time
 
+import tensorflow as tf
 from datasets.load_seq import LoadSeq
 from modes.ultralytics_yolo import UltralyricsYolo
 from utils.utils import write_json_file, read_json_file, write_yaml_file
@@ -48,6 +49,7 @@ class AICity:
 
         # DETECTOR PARAMETERS
         self.det_params = dict(
+            framework = args.framework,
             mode = args.mode,
             model = args.model,
             weights = args.weights,
@@ -58,7 +60,8 @@ class AICity:
             img_size = args.img_size,
             conf_thres = args.conf_thres,
             iou_thres = args.iou_thres,
-            name = args.model+'_'.join(args.seq_train)
+            name = args.model+'_'.join(args.seq_train),
+            coco_model = args.coco_model
         )
         self.seq_train = args.seq_train
         self.seq_test = args.seq_test
@@ -75,36 +78,62 @@ class AICity:
     def __len__(self):
         return len(self.sequences)
 
-    def data_to_model(self, save_path='data/yolov3_finetune'):
-        save_path = join(save_path,'-'.join(self.seq_train)+'_'+'-'.join(self.seq_test))
-        os.makedirs(save_path,exist_ok=True)
-        
-        if len(os.listdir(save_path)) == 4:
-            print(colored('Your data is already in the appropriate format! :)', 'green'))
-            self.det_params.update({'data_yolov3':join(save_path,'cars.yaml')})
-            return
-        
-        print('Preparing data...')
-        files_txt = {'train':[],'val':[],'test':[]}
-        for seq, sequence in self.sequences.items():
-            if seq in self.seq_train:
-                [files_txt[split].append(paths) for split, paths in sequence.data_to_model(mode='train').items()]
-            else:
-                [files_txt[split].append(paths) for split, paths in sequence.data_to_model(mode='test').items()]
-        
-        yaml_dict = dict(
-            nc = 1,
-            names = ['car']
-        )
-        for split, paths in files_txt.items():
-            paths = [path for cam in paths for path in cam]
-            file_out = open(join(save_path,split+'.txt'), 'w')
-            file_out.writelines(paths)
-            yaml_dict.update({split:join(save_path,split+'.txt')})
+    def data_to_model(self):
+        if self.framework in 'ultralytics':
+            save_path='data/yolov3_finetune'
+            save_path = join(save_path,'-'.join(self.seq_train)+'_'+'-'.join(self.seq_test))
+            os.makedirs(save_path,exist_ok=True)
+            
+            if len(os.listdir(save_path)) == 4:
+                print(colored('Your data is already in the appropriate format! :)', 'green'))
+                self.det_params.update({'data_yolov3':join(save_path,'cars.yaml')})
+                return
+            
+            print('Preparing data...')
+            files_txt = {'train':[],'val':[],'test':[]}
+            for seq, sequence in self.sequences.items():
+                if seq in self.seq_train:
+                    [files_txt[split].append(paths) for split, paths in sequence.data_to_model(mode='train').items()]
+                else:
+                    [files_txt[split].append(paths) for split, paths in sequence.data_to_model(mode='test').items()]
+            
+            yaml_dict = dict(
+                nc = 1,
+                names = ['car']
+            )
+            for split, paths in files_txt.items():
+                paths = [path for cam in paths for path in cam]
+                file_out = open(join(save_path,split+'.txt'), 'w')
+                file_out.writelines(paths)
+                yaml_dict.update({split:join(save_path,split+'.txt')})
 
-        write_yaml_file(yaml_dict,join(save_path,'cars.yaml'))
-        self.det_params.update({'data_yolov3':join(save_path,'cars.yaml')})
-        print(colored('DONE!', 'green'))       
+            write_yaml_file(yaml_dict,join(save_path,'cars.yaml'))
+            self.det_params.update({'data_yolov3':join(save_path,'cars.yaml')})
+            print(colored('DONE!', 'green'))
+
+        elif self.framework in 'tf_models':
+            save_path='data/tf2_finetune'
+            save_path = join(save_path,'-'.join(self.seq_train)+'_'+'-'.join(self.seq_test))
+            os.makedirs(save_path,exist_ok=True)
+
+            print('Preparing data...')
+            paths = {
+                'train': os.path.join(save_path, 'train'),
+                'val': os.path.join(save_path, 'val')
+            }
+            writer = {}
+            for dataset in ['train', 'val']:
+                writer.update({dataset:tf.io.TFRecordWriter(paths[dataset] + '.tfrecord')})
+
+            for seq, sequence in self.sequences.items():
+                if seq in self.seq_train:
+                    writer = sequence.data_to_model(mode='train',writer=writer)
+                else:
+                    writer = sequence.data_to_model(mode='test',writer=writer)
+            
+            for dataset in ['train', 'val']:
+                print("Saving TFRecords file. This can take a while...")
+                writer[dataset].close()
 
     def detect_on_seq(self, seqs):
         for seq in seqs:
