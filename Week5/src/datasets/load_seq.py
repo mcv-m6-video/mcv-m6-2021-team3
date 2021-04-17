@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split, KFold
 
 #from config.config_multitracking import ConfigMultiTracking
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
+from modes.tf_models import TFModel, to_tf_record
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou,\
                            compute_multitracking
 from utils.visualize import visualize_trajectories, visualize_filter_roi
@@ -157,13 +158,20 @@ class LoadSeq():
             # The whole sequence used to test
             self.data.update({'test':self.frames_paths})
     
-    def data_to_model(self, split=.25, mode='test'):
+    def data_to_model(self, split=.25, mode='test', writer=None):
         self.train_val_split(split, mode)
-        return to_yolov3(self.data, self.gt_bboxes)
+        if self.det_params['framework'] in 'ultralytics':
+            return to_yolov3(self.data, self.gt_bboxes)
+        elif self.det_params['framework'] in 'tf_models':
+            return to_tf_record(self.data, self.gt_bboxes, writer)
     
     def detect(self):
 
-        model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
+        if self.det_params['framework'] in 'ultralytics':
+            model = UltralyricsYolo(self.det_params['weights'], args=self.det_params)
+        elif self.det_params['framework'] in 'tf_models':
+            model = TFModel(self.det_params['model'],self.det_params['weights'],self.det_params['iou_thres'], self.det_params['coco_model'])
+
         print(self.det_params['mode']+f' for sequence: {self.seq}')
 
         for cam, paths in self.frames_paths.items():    
@@ -234,8 +242,6 @@ class LoadSeq():
     
     def visualize_filter(self):
         for cam, det_bboxes in self.det_bboxes.items():
-            if cam in 'c010':
-                continue
             det_bboxes_filter = filter_by_roi(det_bboxes,self.mask[cam])
             visualize_filter_roi(self.frames_paths[cam],self.gt_bboxes[cam], det_bboxes, det_bboxes_filter,
                                  self.mask[cam], join(self.output_path,self.seq,cam))
