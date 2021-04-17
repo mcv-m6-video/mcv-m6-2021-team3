@@ -8,10 +8,11 @@ import pickle
 import time
 from tqdm import tqdm
 from .sort import Sort
+import matplotlib.pyplot as plt
 from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track
 from utils.metrics import compute_iou, interpolate_bb, compute_dist_matrix, compute_iou
 from .optical_flow import block_matching, MaskFlownetOF
-#from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_images
+from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
 #import pyflow.pyflow as pyflow
 
 #otherwise it needs more than 4gbs to startup the model
@@ -19,7 +20,6 @@ os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 
 import matplotlib.pyplot as plt
 
-#from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
 
 def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet'):
 
@@ -175,31 +175,6 @@ def compute_tracking_iou(det_bboxes,cam, path):
     for detection in det_bboxes.values():
         list_det_bboxes.append(detection)
 
-    tracking_dict = track_iou(list_det_bboxes, 0.2, 0.7, 0.5, 1, cam, path)
+    tracking_dict = track_iou(list_det_bboxes, 0.2, 0.7, 0.5, 1, cam=cam, path=path)
 
     return tracking_dict
-
-def compute_multitracking(args):
-    
-    # Read tracks
-    tracks = parse_tracks(args.tracking_csv)
-
-    # Filter tracks
-    tracks = filter_tracks(tracks, args.size_th, args.mask)
-   
-    # Extract images
-    # tracks = extract_images(tracks, args.video, args.size_th, args.dist_th, args.mask, args.img_dir)
-    
-    if tracks is None: 
-        sys.exit()
-    
-    # Save track obj
-    os.system('mkdir -p %s' % args.output)
-    file_name = args.video.split('/')[-1].split('.')[0]
-    with open(os.path.join(args.output, '%s.pkl'%file_name), 'wb') as f:
-        pickle.dump(tracks, f, protocol=pickle.HIGHEST_PROTOCOL)
-    dets = []
-    for t in tracks:
-        dets.append(t.dump())
-    dets = np.concatenate(dets, axis=0)
-    np.savetxt(os.path.join(args.output, '%s.csv'%file_name), dets, delimiter=',', fmt='%f')
