@@ -14,7 +14,7 @@ from config.config_multitracking import ConfigMultiTracking
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 
 from modes.tf_models import TFModel, to_tf_record
-from modes.multitracking import compute_multitracking
+from modes.multitracking import iamai_multitracking, hist_multitracking
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou
 from utils.visualize import visualize_trajectories, visualize_filter_roi
 from utils.utils import write_json_file, read_json_file, update_data, match_trajectories, dist_to_roi, filter_by_roi
@@ -102,7 +102,7 @@ class LoadSeq():
             self.det_name = 'eval_' + det_name
         self.track_mode = tracking_mode
         self.OF_mode = OF_mode
-        #self.mt_args = ConfigMultiTracking().get_args()
+        self.mt_args = ConfigMultiTracking().get_args()
 
         # OUTPUT PARAMETERS
         self.output_path = output_path
@@ -195,30 +195,37 @@ class LoadSeq():
 
         return self.get_mAP()
 
-    def tracking(self):
-        self.ID_metrics = {}
+    def single_cam_tracking(self):
+        for cam, det_bboxes in self.det_bboxes.items():
+            det_bboxes = filter_by_roi(det_bboxes,self.mask[cam])
+            if self.track_mode in ['overlapping', 'kalman']:
 
-        if self.track_mode in 'multitracking':
-            compute_multitracking(self.mt_args)
+                if self.track_mode in 'overlapping':            
+                    det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode)
+
+                elif self.track_mode in 'kalman':
+                    det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
+
+                self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam],self.frames_paths[cam][0])})
+                print(f'Camera: {cam}')
+                print(self.ID_metrics[cam])
+
+                self.det_bboxes[cam] = det_bboxes
+
+            elif self.track_mode in 'iou_track':
+                self.tracker.update({cam:compute_tracking_iou(det_bboxes,cam,self.data_path)})
+
+    def tracking(self, multitracking):
+        self.ID_metrics={}
+
+        if multitracking:
+            if self.mt_args.mode in 'color_hist':
+                self.single_cam_tracking()
+                hist_multitracking(self.det_bboxes, self.frames_paths)
+            elif self.mt_args.mode in 'iamai':
+                iamai_multitracking(self.mt_args)
         else:
-            for cam, det_bboxes in self.det_bboxes.items():
-
-                det_bboxes = filter_by_roi(det_bboxes,self.mask[cam])
-
-                if self.track_mode in ['overlapping', 'kalman']:
-
-                    if self.track_mode in 'overlapping':            
-                        det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode)
-
-                    elif self.track_mode in 'kalman':
-                        det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
-
-                    self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam],self.frames_paths[cam][0])})
-                    print(f'Camera: {cam}')
-                    print(self.ID_metrics[cam])
-
-                elif self.track_mode in 'iou_track':
-                    self.tracker.update({cam: compute_tracking_iou(det_bboxes, cam, self.output_path)})
+            self.single_cam_tracking()
           
     def get_mAP(self):
         """

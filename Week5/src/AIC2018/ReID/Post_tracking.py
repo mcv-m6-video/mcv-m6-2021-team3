@@ -8,7 +8,7 @@ import argparse
 import numpy as np
 import cv2
 import os
-from scipy.misc import imsave
+import imageio
 from progressbar import ProgressBar
 import pathlib
 import pickle
@@ -137,7 +137,7 @@ def extract_images(tracks, video, size_th, dist_th, mask_file, save_dir):
                 x1, y1 = imgs_info[i][j, 4:6].astype(int)
                 crop = frame[y0:y1, x0:x1]
                 img_name = imgs_path[k]
-                imsave(img_name, crop)
+                imageio.imwrite(img_name, crop)
                 pbar.update(k)
                 k += 1
             i += 1

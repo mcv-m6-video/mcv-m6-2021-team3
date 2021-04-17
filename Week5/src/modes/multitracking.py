@@ -2,9 +2,11 @@ import sys
 sys.path.insert(1, './AIC2018')
 
 import os
+from os.path import dirname, join
 import pickle
 import numpy as np
 
+from utils.utils import dict_to_array, color_hist, str_frame_id
 from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_features
 from AIC2018.ReID.MCT import import_pkl, remove, debug_loc, debug_id, debug_frame, dump_imgs,\
                              cluster_fill, multi_camera_matching
@@ -143,10 +145,29 @@ def _multi_camera_tracking(args):
         dump_imgs(args.dump_dir, t)
 
 
-def compute_multitracking(args):
+def iamai_multitracking(args):
     """
         This function implements the full pipeline for AIC2018
     """
 
     _post_tracking(args)
     _multi_camera_tracking(args)
+
+def hist_multitracking(det_bboxes, frames_path):
+    for cam, dets in det_bboxes.items():
+        img_dir = dirname(frames_path[cam][0])
+        det_array = dict_to_array(dets)
+
+        frames_ids = np.unique(det_array[:,0])
+
+        det_ids = np.unique(det_array[:, 1])
+        n_dets = len(det_ids)
+        trajs = [det_array[np.where(det_array[:, 1] == det_ids[i])[0], :]
+                    for i in range(n_dets)]
+        
+        for frame_id in frames_ids:
+            loc = np.where(det_array[:,0] == frame_id)[0]
+            color_hist(join(img_dir,str_frame_id(frame_id)+'.jpg'), det_array[loc, 2:6].astype(int))
+            
+
+                

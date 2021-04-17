@@ -433,7 +433,7 @@ def cost_between_gt_pred(groundtruth, prediction, threshold):
             cost[i, j] = fp[i, j] + fn[i, j]
     return cost, fp, fn
 
-def compute_dist_matrix(det_bboxes,gt_bboxes,image_path = None,thr = 0.3, matching_mode = 'cnn'):
+def compute_dist_matrix(det_bboxes,gt_bboxes,image_path = None,thr = 0.3, matching_mode = 'iou'):
     if matching_mode in 'cnn':
         matcher = CNNFeatureExtractor(device='gpu')
 

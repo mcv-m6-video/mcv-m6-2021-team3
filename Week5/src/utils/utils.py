@@ -158,7 +158,8 @@ def dict_to_array(data):
 
     for frame_id, frame in data.items():
         for detect in frame:
-            idf1_list.append([float(frame_id),float(detect['obj_id']),float(detect['bbox'][0]),float(detect['bbox'][1]),float(detect['bbox'][2]), float(detect['bbox'][3]),float(detect['confidence'])])
+            if not detect['parked']:
+                idf1_list.append([float(frame_id),float(detect['obj_id']),float(detect['bbox'][0]),float(detect['bbox'][1]),float(detect['bbox'][2]), float(detect['bbox'][3]),float(detect['confidence'])])
     return np.array(idf1_list)
 
 def dict_to_list_track(frame_info):
@@ -335,3 +336,20 @@ def filter_static(det_bboxes, hist, max_age):
                   for i in range(n_dets)]
     
     return
+
+def color_hist(img_path, boxes):
+    img = cv2.imread(img_path)
+    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
+
+    hist = np.empty([])
+
+    for box in boxes:
+        rgb_crop = rgb[box[1]:box[3],box[0]:box[2]]
+        hsv_crop = hsv[box[1]:box[3],box[0]:box[2]]
+        lab_crop = lab[box[1]:box[3],box[0]:box[2]]
+        ycrcb_crop = ycrcb[box[1]:box[3],box[0]:box[2]]
+        for c in [0,1,2]:
+            cv2.calcHist([rgb_crop],[c],None,[256],[0,256])
