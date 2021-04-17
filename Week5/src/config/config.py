@@ -13,7 +13,7 @@ class Config:
         parser.add_argument('--framework', type=str, default='ultralytics', choices=['ultralytics', 'tf_models'], help='What framework to use')
         parser.add_argument('--mode', type=str, default='tracking', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman','iou_track'], help='What type of tracking to perform')
-        parser.add_argument('--OF_mode', type=str, default='mask_flownet', choices = ['block_matching', 'pyflow', 'mask_flownet'], help='What type of optical flow to perform')
+        parser.add_argument('--OF_mode', type=str, default=None, choices = ['mask_flownet'], help='What type of optical flow to perform')
 
         # ================================ INPUT ================================ #
         parser.add_argument('--data_path', type=str, default='../../raw_data',

@@ -133,8 +133,9 @@ class LoadSeq():
             if exists(json_path):
                 self.det_bboxes.update({cam:read_json_file(json_path)})
                 for frame_id in self.frames_paths[cam]:
-                    if frame_id not in self.det_bboxes[cam].keys():
-                        update_data(self.det_bboxes[cam], frame_id[-8:-4],*[-1,-1,-1,-1],0,0, True)
+                    idx = frame_id[-8:-4]
+                    if idx not in self.det_bboxes[cam].keys():
+                        self.det_bboxes[cam] = update_data(self.det_bboxes[cam], idx,*[-1,-1,-1,-1],0,0, True)
             else:
                 self.det_bboxes.update({cam:{}})
             
@@ -201,7 +202,7 @@ class LoadSeq():
                 if self.track_mode in ['overlapping', 'kalman']:
 
                     if self.track_mode in 'overlapping':            
-                        det_bboxes = compute_tracking_overlapping(det_bboxes, flow_method= self.OF_mode)
+                        det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode)
 
                     elif self.track_mode in 'kalman':
                         det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])

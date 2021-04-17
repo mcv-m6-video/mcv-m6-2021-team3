@@ -14,11 +14,14 @@ from .optical_flow import block_matching, MaskFlownetOF
 #from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_images
 #import pyflow.pyflow as pyflow
 
+#otherwise it needs more than 4gbs to startup the model
+os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
+
 import matplotlib.pyplot as plt
 
 #from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
 
-def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet'):
+def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet'):
 
     id_seq = {}
 
@@ -42,17 +45,41 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True
     for idx_frame, _ in tqdm(det_bboxes.items(),'Frames Overlapping Tracking'):
         id_seq = {obj_id: False for obj_id in id_seq}
         i = int(idx_frame)       
-        if str_frame_id(int(idx_frame)+1) in det_bboxes.keys():
+        if str_frame_id(int(idx_frame)+1) in det_bboxes.keys() and len(det_bboxes[str_frame_id(int(idx_frame)+1)])>0:
+            #load frames for OF computation
+            if flow_method == 'mask_flownet':
+                img1 = cv2.imread(frames_paths[i])
+                img2 = cv2.imread(frames_paths[i+1])  
+                flow = flownet.get_optical_flow(img1, img2)    
+                u = flow[:,:,0]      
+                v = flow[:,:,1]      
             for detection in det_bboxes[str_frame_id(int(idx_frame)+1)]:
                 if not detection['parked']:
                     active_frame = i 
-                    bbox_matched = False
+                    bbox_matched = False     
+                    if flow_method == 'mask_flownet':
+                        OF_x = u[int(detection['bbox'][1]):int(detection['bbox'][3]),int(detection['bbox'][0]):int(detection['bbox'][2])]
+                        OF_y = v[int(detection['bbox'][1]):int(detection['bbox'][3]),int(detection['bbox'][0]):int(detection['bbox'][2])]
+
+                        mag, ang = cv2.cartToPolar(OF_x.astype(np.float32), OF_y.astype(np.float32))
+                        #keep the values which is found the most for mag and ang
+                        uniques, counts = np.unique(mag, return_counts=True)
+                        mc_mag = uniques[counts.argmax()]
+                        uniques, counts = np.unique(ang, return_counts=True)
+                        mc_ang = uniques[counts.argmax()]
+                        x, y = pol2cart(mc_mag, mc_ang)
+
+                        OF_bbox = [detection['bbox'][0]-x, detection['bbox'][1]-y, 
+                                    detection['bbox'][2]-x, detection['bbox'][3]-y]
+                    else: 
+                        OF_bbox = detection['bbox'].copy()                
+                    
                     #if there is no good match on previous frame, check n-1 up to n=5
                     while (bbox_matched == False) and (active_frame >= start_frame) and ((i - active_frame)<5):
                         candidates_bbox = [candidate['bbox'] for candidate in det_bboxes[str_frame_id(active_frame)] if candidate['parked']==False]
                         #compare with detections in previous frame
                         if len(candidates_bbox) > 0:
-                            iou = compute_iou(np.array(candidates_bbox), np.array(detection['bbox']))
+                            iou = compute_iou(np.array(candidates_bbox), np.array(OF_bbox))
                         else:
                             iou = 0
                         while np.max(iou) > threshold:
