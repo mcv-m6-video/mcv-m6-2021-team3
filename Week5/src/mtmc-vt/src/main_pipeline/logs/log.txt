@@ -1,0 +1,55 @@
+2021-04-17 20:20:44,667 reid_baseline INFO: Using 1 GPUS
+2021-04-17 20:20:44,667 reid_baseline INFO: Loaded configuration file /home/josep/Escriptori/mtmc-vt/src/reid_baseline/configs/track2_softmax_triple.yml
+2021-04-17 20:20:44,668 reid_baseline INFO: 
+MODEL:
+  PRETRAIN_PATH:  '/home/josep/Escriptori/mtmc-vt/src/reid_baseline/export_dir/aic_track2/softmax_triplet/resnet50_model_120.pth'
+
+TEST:
+  IMS_PER_BATCH: 1
+  WEIGHT: "path"
+
+OUTPUT_DIR: "export_dir/aic_track2/softmax_triplet"
+
+
+
+2021-04-17 20:20:44,668 reid_baseline INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 16
+  NUM_WORKERS: 8
+  SAMPLER: softmax
+DATASETS:
+  NAMES: market1501
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+  PROB: 0.5
+  SIZE_TEST: [384, 128]
+  SIZE_TRAIN: [384, 128]
+MODEL:
+  DEVICE: cuda
+  LAST_STRIDE: 1
+  NAME: resnet50
+  PRETRAIN_PATH: /home/josep/Escriptori/mtmc-vt/src/reid_baseline/export_dir/aic_track2/softmax_triplet/resnet50_model_120.pth
+OUTPUT_DIR: export_dir/aic_track2/softmax_triplet
+SOLVER:
+  BASE_LR: 0.0003
+  BIAS_LR_FACTOR: 2
+  CHECKPOINT_PERIOD: 50
+  EVAL_PERIOD: 50
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LOG_PERIOD: 100
+  MARGIN: 0.3
+  MAX_EPOCHS: 50
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: Adam
+  STEPS: (30, 55)
+  WARMUP_FACTOR: 0.3333333333333333
+  WARMUP_ITERS: 500
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0005
+  WEIGHT_DECAY_BIAS: 0.0
+TEST:
+  IMS_PER_BATCH: 1
+  WEIGHT: path
