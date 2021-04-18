@@ -21,7 +21,7 @@ os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 import matplotlib.pyplot as plt
 
 
-def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet'):
+def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet', save_img = True):
 
     id_seq = {}
 
@@ -29,7 +29,10 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, inte
 
     if flow_method == 'mask_flownet':
         flownet = MaskFlownetOF()
-    
+        if save_img:
+            path = os.path.join('../outputs/flow', flow_method)
+            os.makedirs(path, exist_ok=True)
+
     #init the tracking by using the first frame which has at least one detection
     first_det_frame = start_frame
     while(len(id_seq)==0):
@@ -50,9 +53,20 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, inte
             if flow_method == 'mask_flownet':
                 img1 = cv2.imread(frames_paths[i])
                 img2 = cv2.imread(frames_paths[i+1])  
-                flow = flownet.get_optical_flow(img1, img2)    
+
+                if os.path.isfile(os.path.join(path, 'flow_' + str(i) +'.pkl')):
+                    with open(os.path.join(path, 'flow_' + str(i) +'.pkl'), 'rb') as f:
+                        flow = pickle.load(f)
+               
+                else:
+                    flow = flownet.get_optical_flow(img1, img2)    
+                    
+                    with open(os.path.join(path, 'flow_' + str(i) +'.pkl'), 'wb') as f:
+                        pickle.dump(flow.astype(np.float16), f)
+                        
                 u = flow[:,:,0]      
                 v = flow[:,:,1]      
+
             for detection in det_bboxes[str_frame_id(int(idx_frame)+1)]:
                 if not detection['parked']:
                     active_frame = i 

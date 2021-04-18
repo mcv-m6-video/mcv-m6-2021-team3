@@ -99,7 +99,7 @@ class LoadSeq():
         self.det_params = det_params
         self.det_name = self.det_params['mode'] + '_' + det_name
         if self.det_params['mode'] == 'tracking':
-            self.det_name = 'eval_' + det_name
+            self.det_name = 'eval2_' + det_name
         self.track_mode = tracking_mode
         self.OF_mode = OF_mode
         self.mt_args = ConfigMultiTracking().get_args()
