@@ -13,12 +13,11 @@ class Config:
         # ================================ FRAMEWORK ============================= #
         parser.add_argument('--framework', type=str, default='ultralytics', help='What framework to use')
         parser.add_argument('--mode', type=str, default='tracking', choices=['train','eval','inference','tracking'], help='What task to perform')
-        parser.add_argument('--tracking_mode', type=str, default='kalman', choices=['overlapping','kalman','iou_track'], help='What type of tracking to perform')
-        parser.add_argument('--multitracking', type=bool, default=True)
-        parser.add_argument('--OF_mode', type=str, default=None, choices = ['mask_flownet'], help='What type of optical flow to perform')
+        parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman','iou_track'], help='What type of tracking to perform')
+        parser.add_argument('--multitracking', type=bool, default=False)
+        parser.add_argument('--OF_mode', type=str, default='mask_flownet', choices = ['mask_flownet'], help='What type of optical flow to perform')
         # ================================ INPUT ================================= #
         parser.add_argument('--data_path', type=str, default='../../raw_data',#'../../raw_data',
-
                             help="Path where the AICity data is located")
         parser.add_argument('--gt_path', type=str, default='../../datasets', help="Folder where the annotations are stored")
         
