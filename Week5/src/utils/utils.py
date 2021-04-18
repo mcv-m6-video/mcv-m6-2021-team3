@@ -337,19 +337,21 @@ def filter_static(det_bboxes, hist, max_age):
     
     return
 
-def color_hist(img_path, boxes):
+def color_hist(img_path, boxes, bins=25):
+    COLOR_SPACES = ['cv2.COLOR_BGR2RGB', 'cv2.COLOR_BGR2HSV','cv2.COLOR_BGR2LAB','cv2.COLOR_BGR2YCR_CB']
+    COLOR_RANGES = [[[0,255]]*3, [[0,179]]+[[0,255]]*2, [[0,255]]*3, [[0,255]]*3]
+
     img = cv2.imread(img_path)
-    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-    ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
 
-    hist = np.empty([])
+    hist = np.empty([boxes.shape[0],len(COLOR_SPACES),bins,3])
+    for i, (color_space, color_range) in enumerate(zip(COLOR_SPACES, COLOR_RANGES)):
 
-    for box in boxes:
-        rgb_crop = rgb[box[1]:box[3],box[0]:box[2]]
-        hsv_crop = hsv[box[1]:box[3],box[0]:box[2]]
-        lab_crop = lab[box[1]:box[3],box[0]:box[2]]
-        ycrcb_crop = ycrcb[box[1]:box[3],box[0]:box[2]]
-        for c in [0,1,2]:
-            cv2.calcHist([rgb_crop],[c],None,[256],[0,256])
+        img_col = cv2.cvtColor(img, eval(color_space))
+        
+        for b, box in enumerate(boxes):
+            img_box = img_col[box[1]:box[3],box[0]:box[2]]
+            for c, c_r in enumerate(color_range):
+                hist_c = cv2.calcHist([img_box],[c],None,[bins],c_r) #int((c_r[1]-c_r[0])*.1)
+                hist[b,i,:,c] = cv2.normalize(hist_c, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX).squeeze()
+
+    return hist
