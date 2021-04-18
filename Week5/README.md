@@ -1,69 +1,98 @@
-# Week 3
+# Week 5
 
 ## Introduction
-In this project the main goal was to get used to different background estimation methods. The project contains several source code files that implement the required functionality.
+In this project the main goal was to do Multi-target multi-camera tracking, using the previous knowledge on tracking.
 
 * [main.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/main.py): Contains the pipeline to execute the different tasks.
-* [ai_city.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/ai_city.py): Contains the class AICity, where the data is processed in order to obtain the background estimation.
-* [metrics.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/metrics.py): Contains functions related to get quantitative results.
-* [utils.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/utils.py): Contains other functions, such as the one to write a json or read one.
-* [visualize.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/visualize.py): Contains the functinos related to plot the different (qualitative) results.
-* [detect2.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/detect2.py): Contains the class Detect2, which contains the function to predict the Detectron2 models.
-* [tf_models.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/tf_models.py): Contains the class TFModel, which contains the functions to predict and train the TensorFlows models.
-* [yolov3.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/yolov3.py): Contains the class UltralyricsYolo, which contains the funtion to predict and train the Ultralytics Yolo model. 
-* [sort.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week2/src/utils/sort.py): Contains the class Sort, which is the one related to compute the Kalman tracking.
+* [ai_city.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/datasets/ai_city.py): Contains the class AICity, where the information of each sequence is prepared. 
+* [load_seq.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/datasets/load_seq.py): Contains the class LoadSeq, where the differents Sequences are processed.
+* [metrics.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/utils/metrics.py): Contains functions related to get quantitative results.
+* [utils.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/utils/utils.py): Contains other functions, such as the one to write a json or read one.
+* [visualize.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/utils/visualize.py): Contains the functinos related to plot the different (qualitative) results.
+* [cnn_feature_extractor.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/utils/cnn_feature_extractor.py): Contains the class CNNFeatureExtractor which load a pretrained PyTorch model, computes a feature vector of an image and compute the distance between 2 feature vectors in order to realise a matching.
+* [multitracking.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/modes/multitracking.py): Contains the functions required to apply the multi-camera multi-tracking.
+* [optical_flow.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/modes/optical_flow.py): Contains the functions used to apply the differents algorithms of optical flow estimation.
+* [tracking.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/modes/tracking.py): Contains the functions required to apply the methods of single-camera tracking.
+* [sort.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/modes/sort.py): Contains the class Sort, which is the one related to compute the Kalman tracking.
+* [ultralytics_yolo.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/modes/ultralytics_yolo.py): Contains the class UltralyricsYolo, which contains the funtion to predict and train the Ultralytics Yolo model. 
+
 
 
 ## Inference
 ### Available tasks
-* **Task 1.1**: Off-the-shelf
-* **Task 1.2**: Fine-tuning
-* **Task 1.3**: K-fold Cross validation
-* **Task 2.1**: Tracking by Overlap
-* **Task 2.2**: Tracking with a Kalman Filter
-* **Task 2.3**: IDF1 for Multiple Object Tracking
+* **Task 1**: Multi-Target Single-Camera (MTSC) Tracking
+* **Task 2**: Multi-Target Multi-Camera (MTMC) Tracking
 
-
-Run the command below, from Week2/src folder, to obtain the desired task results.
+Run the command below, from Week5/src folder, to obtain the desired task results.
 
 ```bash
 $ python main.py 
 ```
-Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week2/src/config/config.py)
+Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5/src/config/config.py)
 
 ### Directory structure
 
 ```bash
-├── datasets
+├── raw_data
 │   ├── AICity
 │   │   ├── train
+│   │   │   ├── S01
+│   │   │   │   ├── c001
+│   │   │   │   │   ├── vdo
+│   │   │   │   ├── .
+│   │   │   │   ├── .
+│   │   │   │   ├── .
+│   │   │   │   ├── c005
+│   │   │   │   │   ├── vdo
 │   │   │   ├── S03
 │   │   │   │   ├── c010
 │   │   │   │   │   ├── vdo
-├── Week3
+│   │   │   │   ├── .
+│   │   │   │   ├── .
+│   │   │   │   ├── .
+│   │   │   │   ├── c015
+│   │   │   │   │   ├── vdo
+│   │   │   ├── S04
+│   │   │   │   ├── c016
+│   │   │   │   │   ├── vdo
+│   │   │   │   ├── .
+│   │   │   │   ├── .
+│   │   │   │   ├── .
+│   │   │   │   ├── c040
+│   │   │   │   │   ├── vdo
+├── Week5
 │   ├── src
 │   │   ├── main.py
 │   │   ├── utils
-│   │   │   ├── ai_city.py
 │   │   │   ├── metrics.py
 │   │   │   ├── visualize.py
 │   │   │   ├── utils.py
-│   │   │   ├── detect2.py
+│   │   ├── datasets
+│   │   │   ├── ai_city.py
+│   │   │   ├── load_seq.py
+│   │   ├── modes
+│   │   │   ├── optical_flow.py
+│   │   │   ├── tracking.py
+│   │   │   ├── multitracking.py
 │   │   │   ├── tf_models.py
-│   │   │   ├── yolov3.py
+│   │   │   ├── ultralytics_yolo.py
 │   │   │   ├── sort.py
-│   │   ├── data
-│   │   ├── models
+│   │   ├── pyflow
+│   │   ├── MaskFlownet
+│   │   ├── SelFlow
 │   │   ├── yolov3
-│   │   ├── runs
 │   │   ├── config
 │   │   │   ├── config.py
+│   │   │   ├── config_multitracking.py
+│   │   │   ├── mask_flownet_config.py
 ```
 
-## Results
-### Task 1.1: Object Detection: Off-the-shelf
 
-Quantitative results obtained after applying inference on different models.
+
+## Results
+### Task 1: Multi-Target Single-Camera (MTSC) Tracking
+
+Quantitative results obtained after applying MTSC Tracking on those detections obtained after evaluate the model trained.
 
 <table>
     <thead>
@@ -149,9 +178,9 @@ Quantitative results obtained after applying inference on different models.
 
 <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task11.jpg" width="700">
 
-### Task 1.2: Object Detection: Fine-tuning
+### Task 2: Multi-Target Multi-Camera (MTMC) Tracking
 
-Quantitative results obtained after doing fine-tuning on differents models.
+Quantitative results obtained after applying MTMC Tracking on those detections obtained after evaluate the model trained.
 
 <table>
     <thead>
@@ -305,10 +334,6 @@ Results obtained with the best method when applying K-fold Cross Validation usin
 </table>
 
 
-### Task 2.1: Tracking by Overlap
-
-Tracking results when it is used the Overlapping method using a Threshold of 0.5. These results are computed using the detections achieved by YOLOv3.
-
 | Parameters| Interpolation = Off  Denoise = Off | Interpolation = True  Denoise = Off | Interpolation = Off  Denoise = True | Interpolation = True Denoise = True |
 | :---: | :---: | :---: | :---: | :---: |
 | IDF1 | 61.22 | 61.67 | 61.81 | 63.61 | 
@@ -317,18 +342,5 @@ Tracking results when it is used the Overlapping method using a Threshold of 0.5
 <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/4c2e0306c7a1e52557fe0b9abf984e0885bd8eef/Week3/m6w3.gif" width="700">
 </p>
 
-### Task 2.2: Tracking with a Kalman Filter
-
-Tracking results when it is used the Kalman method. These results are computed using the detections achieved by YOLOv3.
-
-| Threshold | 0.3 | 0.5 | 0.7 |
-| :---: | :---: | :---: | :---: |
-| IDF1 | 63.05 | 62.82 | 61.61 | 
-
-<p align="center">
-    <img align="center" src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/be83276ec1d00bf487dac148199e9d530abbae13/Week3/Task22.jpg" width="500">
-    <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/4c2e0306c7a1e52557fe0b9abf984e0885bd8eef/Week3/m6w3_clara.gif" width="700">
-</p>
-
 ## Report
-The report for week 3 is available [here](https://docs.google.com/presentation/d/1M0Vw8quKhlRDudc1A5YYByKr7KclVOnSPspYGjmRxCo/edit?usp=sharing).
+The report for week 5 is available [here](https://docs.google.com/presentation/d/1hDOKs9FtG4Ze7O4RaPLsKDmh25QD2bDDGGLuZz_B0QU/edit?usp=sharing).
