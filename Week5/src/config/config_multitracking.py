@@ -10,6 +10,10 @@ class ConfigMultiTracking:
     def get_args():
         parser = argparse.ArgumentParser()
 
+        # ==================== BASE =====================
+        parser.add_argument('--mode', default='mtmc_vt', choices=['AIC2018','color_hist','mtmc_vt'])
+        parser.add_argument('--txt_name', default='track1.txt')
+
         # =================== AIC2018 ====================
         parser.add_argument('--data_path', default='../../raw_data/AICity/train', type=str, help='Dataset path')
         parser.add_argument('--tracking_csv', default= '../outputs/tracking_iou', type=str, help='tracking result csv file')

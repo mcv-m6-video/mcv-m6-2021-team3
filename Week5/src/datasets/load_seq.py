@@ -13,12 +13,12 @@ from sklearn.model_selection import train_test_split, KFold
 from config.config_multitracking import ConfigMultiTracking
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 
-from modes.tf_models import TFModel, to_tf_record
-from modes.multitracking import compute_multitracking
+#from modes.tf_models import TFModel, to_tf_record
+from modes.multitracking import iamai_multitracking, hist_multitracking
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou
 from utils.visualize import visualize_trajectories, visualize_filter_roi
-from utils.utils import write_json_file, read_json_file, update_data, match_trajectories, dist_to_roi, filter_by_roi
-from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
+from utils.utils import write_json_file, read_json_file, update_data, match_trajectories, dist_to_roi, filter_by_roi, read_txt_to_dict
+from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics, compute_IDmetrics_multi
 
 import motmetrics as mm
 
@@ -97,12 +97,12 @@ class LoadSeq():
         self.data_path = data_path
         self.seq = seq
         self.det_params = det_params
-        self.det_name = self.det_params['mode'] + '_' + det_name
+        self.det_name = self.det_params['mode'] + '2_' + det_name
         if self.det_params['mode'] == 'tracking':
-            self.det_name = 'eval_' + det_name
+            self.det_name = 'eval2_' + det_name
         self.track_mode = tracking_mode
         self.OF_mode = OF_mode
-        #self.mt_args = ConfigMultiTracking().get_args()
+        self.mt_args = ConfigMultiTracking().get_args()
 
         # OUTPUT PARAMETERS
         self.output_path = output_path
@@ -116,35 +116,52 @@ class LoadSeq():
 
         self.accumulators = {}
 
-        for cam in os.listdir(join(data_path, seq)):
-            if '.' in cam:
-                continue
-            # Save paths to frames
-            cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
-            #cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
-            cam_paths.sort()
-            self.frames_paths.update({cam:cam_paths})
-            # Load cam mask (roi)
-            self.mask.update({cam:dist_to_roi(join(data_path,seq,cam,'roi.jpg'))})
-            
-            # Load gt
-            self.gt_bboxes.update({cam: load_annot(join(data_path, seq, cam), 'gt/gt.txt')})
-
-            # Check if detections already computed
-            json_path = join(output_path, seq, cam)
-            os.makedirs(json_path, exist_ok=True)
-            json_path = join(json_path, self.det_name)
-            if exists(json_path):
-                self.det_bboxes.update({cam:read_json_file(json_path)})
-                for frame_id in self.frames_paths[cam]:
-                    idx = frame_id[-8:-4]
-                    if idx not in self.det_bboxes[cam].keys():
-                        self.det_bboxes[cam] = update_data(self.det_bboxes[cam], idx,*[-1,-1,-1,-1],0,0, True)
+        if self.mt_args.mode in 'mtmc_vt':
+            if seq not in 'S03':
+                pass
             else:
-                self.det_bboxes.update({cam:{}})
-            
-            # Creat accumulator 
-            self.accumulators.update({cam: mm.MOTAccumulator()})
+                self.det_bboxes = read_txt_to_dict(self.mt_args.txt_name)
+                for cam, _ in self.det_bboxes.items():
+                    # Save paths to frames
+                    cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
+                    #cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
+                    cam_paths.sort()
+                    self.frames_paths.update({cam:cam_paths})
+                    # Load gt
+                    self.gt_bboxes.update({cam: load_annot(join(data_path, seq, cam), 'gt/gt.txt')})
+                    # Creat accumulator
+                    self.accumulators.update({cam: mm.MOTAccumulator()})
+
+        else:
+            for cam in os.listdir(join(data_path, seq)):
+                if '.' in cam:
+                    continue
+                # Save paths to frames
+                cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
+                #cam_paths = [path for frame_id,_ in self.gt_bboxes[cam].items() for path in cam_paths if frame_id in path]
+                cam_paths.sort()
+                self.frames_paths.update({cam:cam_paths})
+                # Load cam mask (roi)
+                self.mask.update({cam:dist_to_roi(join(data_path,seq,cam,'roi.jpg'))})
+                
+                # Load gt
+                self.gt_bboxes.update({cam: load_annot(join(data_path, seq, cam), 'gt/gt.txt')})
+
+                # Check if detections already computed
+                json_path = join(output_path, seq, cam)
+                os.makedirs(json_path, exist_ok=True)
+                json_path = join(json_path, self.det_name)
+                if exists(json_path):
+                    self.det_bboxes.update({cam:read_json_file(json_path)})
+                    for frame_id in self.frames_paths[cam]:
+                        idx = frame_id[-8:-4]
+                        if idx not in self.det_bboxes[cam].keys():
+                            self.det_bboxes[cam] = update_data(self.det_bboxes[cam], idx,*[-1,-1,-1,-1],0,0, True)
+                else:
+                    self.det_bboxes.update({cam:{}})
+                
+                # Creat accumulator 
+                self.accumulators.update({cam: mm.MOTAccumulator()})
 
     def train_val_split(self, split=.25, mode='test'):
         """
@@ -195,30 +212,38 @@ class LoadSeq():
 
         return self.get_mAP()
 
-    def tracking(self):
-        self.ID_metrics = {}
+    def single_cam_tracking(self):
+        for cam, det_bboxes in self.det_bboxes.items():
+            det_bboxes = filter_by_roi(det_bboxes,self.mask[cam])
+            if self.track_mode in ['overlapping', 'kalman']:
 
-        if self.track_mode in 'multitracking':
-            compute_multitracking(self.mt_args)
+                if self.track_mode in 'overlapping':            
+                    det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode)
+
+                elif self.track_mode in 'kalman':
+                    det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
+
+                self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam],self.frames_paths[cam][0])})
+                print(f'Camera: {cam}')
+                print(self.ID_metrics[cam])
+
+                self.det_bboxes[cam] = det_bboxes
+
+            elif self.track_mode in 'iou_track':
+                self.tracker.update({cam:compute_tracking_iou(det_bboxes,cam,self.data_path)})
+
+    def tracking(self, multitracking):
+        self.ID_metrics={}
+        if multitracking:
+            if self.mt_args.mode in 'color_hist':
+                self.single_cam_tracking()
+                hist_multitracking(self.det_bboxes, self.frames_paths)
+            elif self.mt_args.mode in 'iamai':
+                iamai_multitracking(self.mt_args)
+            elif self.mt_args.mode in 'mtmc_vt':
+                self.ID_metrics = compute_IDmetrics_multi(self.gt_bboxes,self.det_bboxes,self.accumulators,self.frames_paths)
         else:
-            for cam, det_bboxes in self.det_bboxes.items():
-
-                det_bboxes = filter_by_roi(det_bboxes,self.mask[cam])
-
-                if self.track_mode in ['overlapping', 'kalman']:
-
-                    if self.track_mode in 'overlapping':            
-                        det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode)
-
-                    elif self.track_mode in 'kalman':
-                        det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
-
-                    self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam],self.frames_paths[cam][0])})
-                    print(f'Camera: {cam}')
-                    print(self.ID_metrics[cam])
-
-                elif self.track_mode in 'iou_track':
-                    self.tracker.update({cam: compute_tracking_iou(det_bboxes, cam, self.output_path)})
+            self.single_cam_tracking()
           
     def get_mAP(self):
         """
