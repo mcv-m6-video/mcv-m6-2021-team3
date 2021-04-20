@@ -162,6 +162,18 @@ def dict_to_array(data):
                 idf1_list.append([float(frame_id),float(detect['obj_id']),float(detect['bbox'][0]),float(detect['bbox'][1]),float(detect['bbox'][2]), float(detect['bbox'][3]),float(detect['confidence'])])
     return np.array(idf1_list)
 
+def array_to_dict(array):
+    """
+    Transform a list into a dict with the format needed in the pipeline
+    :param data: list with the information needed to create the dict
+    :return: return the dict created
+    """
+    dets = {}
+    for det in array:
+        dets = update_data(dets,det[0], *det[2:], det[1])
+    return dets
+    
+
 def dict_to_list_track(frame_info):
     """
     Transform a dictionary into a list
@@ -280,12 +292,14 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf, obj_id=0, parked=
 
     return annot
 
-def match_trajectories(det_bboxes, matches):
+def match_trajectories(det_bboxes, matches, in_out_ids):
     """
     Match ids between gt and predictions.
     """
+    map_cam1 = {i:obj_id for i, obj_id in enumerate(in_out_ids[0])}
+    map_cam2 = {i:obj_id for i, obj_id in enumerate(in_out_ids[1])}
     for matched in zip(*matches):
-        det_bboxes[np.where(det_bboxes[:,1] == matched[1]),1]=matched[0]
+        det_bboxes[np.where(det_bboxes[:,1] == map_cam2[matched[1]]),1]=map_cam1[matched[0]]
     return det_bboxes
 
 def compute_centroid(bb, resize_factor=1):
@@ -337,9 +351,7 @@ def filter_static(det_bboxes, hist, max_age):
     
     return
 
-def color_hist(img_path, boxes, bins=25):
-    COLOR_SPACES = ['cv2.COLOR_BGR2RGB', 'cv2.COLOR_BGR2HSV','cv2.COLOR_BGR2LAB','cv2.COLOR_BGR2YCR_CB']
-    COLOR_RANGES = [[[0,255]]*3, [[0,179]]+[[0,255]]*2, [[0,255]]*3, [[0,255]]*3]
+def color_hist(img_path, boxes, COLOR_SPACES, COLOR_RANGES, bins=25):
 
     img = cv2.imread(img_path)
 
@@ -355,3 +367,22 @@ def color_hist(img_path, boxes, bins=25):
                 hist[b,i,:,c] = cv2.normalize(hist_c, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX).squeeze()
 
     return hist
+
+def read_txt_to_dict(txtpath):
+    multitrack = {'c010':{},'c011':{},'c012':{},'c013':{},'c014':{},'c015':{}} 
+
+    with open(txtpath, 'r') as fp:
+        lines = fp.readlines()
+        for line in lines:
+            l = line.split(' ')
+            cam = 'c0' + l[0]
+            frame_id = int(l[2])
+            xmin = int(l[3])
+            ymin = int(l[4])
+            xmax = xmin + int(l[5])
+            ymax = ymin + int(l[6])
+            conf = -1
+            obj_id = int(l[1])
+            multitrack[cam] = update_data(multitrack[cam],frame_id,xmin,ymin,xmax,ymax,conf,obj_id)
+
+    return multitrack
