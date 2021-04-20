@@ -11,6 +11,7 @@ import cv2
 import png
 import yaml
 import subprocess
+from imageio import imread
 from termcolor import colored
 from numpngw import write_png
 from scipy import ndimage
@@ -21,23 +22,10 @@ def read_kitti_OF(flow_file):
     :param flow_file: name of the flow file
     :return: optical flow data in matrix
     """
-    
-    flow_object = png.Reader(filename=flow_file)
-    flow_direct = flow_object.asDirect()
-    flow_data = list(flow_direct[2])
-    (w, h) = flow_direct[3]['size']
-    print("Reading %d x %d flow file in .png format" % (h, w))
-    flow = np.zeros((h, w, 3), dtype=np.float64)
-
-    for i in range(len(flow_data)):
-        flow[i, :, 0] = flow_data[i][0::3]
-        flow[i, :, 1] = flow_data[i][1::3]
-        flow[i, :, 2] = flow_data[i][2::3]
-
-    invalid_idx = (flow[:, :, 2] == 0)
-    flow[:, :, 0:2] = (flow[:, :, 0:2] - 2 ** 15) / 64.0
-    flow[invalid_idx, 0] = 0
-    flow[invalid_idx, 1] = 0
+    flow = cv2.imread(flow_file, cv2.IMREAD_UNCHANGED)
+    flow = flow[:,:,::-1].astype(np.float64)
+    flow = flow[:,:,:2]
+    flow = (flow - 2**15) / 64.0
 
     return flow
 

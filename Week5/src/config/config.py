@@ -15,7 +15,7 @@ class Config:
         parser.add_argument('--mode', type=str, default='tracking', choices=['train','eval','inference','tracking'], help='What task to perform')
         parser.add_argument('--tracking_mode', type=str, default='overlapping', choices=['overlapping','kalman','iou_track'], help='What type of tracking to perform')
         parser.add_argument('--multitracking', type=bool, default=False)
-        parser.add_argument('--OF_mode', type=str, default='mask_flownet', choices = ['mask_flownet'], help='What type of optical flow to perform')
+        parser.add_argument('--OF_mode', type=str, default=None, choices = ['mask_flownet'], help='What type of optical flow to perform')
         # ================================ INPUT ================================= #
         parser.add_argument('--data_path', type=str, default='../../raw_data',#'../../raw_data',
                             help="Path where the AICity data is located")
