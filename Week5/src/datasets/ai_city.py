@@ -67,6 +67,7 @@ class AICity:
         self.seq_test = args.seq_test
 
         self.tracking_mode = args.tracking_mode
+        self.multitracking = args.multitracking
         self.OF_mode = args.OF_mode
 
         # LOAD SEQUENCE
@@ -150,8 +151,9 @@ class AICity:
 
     def track(self, seqs):
         for seq in seqs:
-            self.sequences[seq].tracking()
-            #self.sequences[seq].visualize()
+            self.sequences[seq].tracking(self.multitracking)
+            self.sequences[seq].visualize()
+
             
 
 
