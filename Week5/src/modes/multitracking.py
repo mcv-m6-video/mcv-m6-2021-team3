@@ -2,13 +2,22 @@ import sys
 sys.path.insert(1, './AIC2018')
 
 import os
-from os.path import dirname, join
+from os.path import dirname, join, exists
 import pickle
 import numpy as np
+from tqdm.auto import tqdm
+from sklearn.utils import shuffle
 from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.cluster import MiniBatchKMeans, KMeans
+from sklearn.mixture import GaussianMixture
 from scipy.spatial.distance import braycurtis
 from itertools import combinations, product
 from scipy.optimize import linear_sum_assignment as linear_assignment
+
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 from utils.utils import dict_to_array, color_hist, str_frame_id, write_json_file, read_json_file, match_trajectories, array_to_dict
 from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_features
@@ -155,60 +164,113 @@ def iamai_multitracking(args):
 
 def hist_multitracking(det_bboxes, frames_path, bins=25):
 
+    # Define new dictionary of detections
     new_det_bboxes = det_bboxes.copy()
 
-    mean_hist=read_json_file('mean_hist.json')#{}
+    # Define color spaces used and their channel ranges
     COLOR_SPACES = ['cv2.COLOR_BGR2RGB', 'cv2.COLOR_BGR2HSV','cv2.COLOR_BGR2LAB','cv2.COLOR_BGR2YCR_CB']
     COLOR_RANGES = [[[0,255]]*3, [[0,179]]+[[0,255]]*2, [[0,255]]*3, [[0,255]]*3]
 
-    '''for cam, dets in det_bboxes.items():
-        det_array = dict_to_array(dets)
+    # Where to store computed histograms
+    hist_file = 'mean_hist.json'
 
-        img_dir = dirname(frames_path[cam][0])
-    
-        frames_ids = np.unique(det_array[:,0])
+    if not exists(hist_file):
+        # Initialize histogram and dict of arrays of detections
+        mean_hist={}
+        det_array={}
 
-        det_ids = np.unique(det_array[:, 1])
-        n_dets = len(det_ids)
+        for cam, dets in tqdm(det_bboxes.items(),'Computing color histograms'):
+            # Update dict with array of dets for the camera
+            det_array.update({cam:dict_to_array(dets)})
+            # Get image directory
+            img_dir = dirname(frames_path[cam][0])
 
-        hist = np.empty([det_array.shape[0],len(COLOR_SPACES),bins,3],dtype=float)
+            # Define frames and detections ids
+            frames_ids = np.unique(det_array[cam][:,0])
+            det_ids = np.unique(det_array[cam][:, 1])
+            n_dets = len(det_ids)
+
+            # Initialize histogram (num of detections, num color spaces, bins, channels)
+            hist = np.empty([det_array[cam].shape[0],len(COLOR_SPACES),bins,3],dtype=float)
+            
+            # For loop for each frame with detections
+            for frame_id in frames_ids:
+                # Get detections at that frame and compute histogram of each
+                loc = np.where(det_array[cam][:,0] == frame_id)[0]
+                hist[loc,:,:,:] = color_hist(join(img_dir,str_frame_id(frame_id)+'.jpg'), det_array[cam][loc, 2:6].astype(int), COLOR_SPACES, COLOR_RANGES, bins)
+            
+            # Organize histogram by detections ids
+            trajs = [hist[np.where(det_array[cam][:, 1] == det_ids[i])[0], :]
+                        for i in range(n_dets)]
+            
+            # Update histogram for the camera
+            mean_hist.update({cam:[np.mean(np.mean(traj,axis=0),axis=2) for traj in trajs]})
         
-        for frame_id in frames_ids:
-            loc = np.where(det_array[:,0] == frame_id)[0]
-            hist[loc,:,:,:] = color_hist(join(img_dir,str_frame_id(frame_id)+'.jpg'), det_array[loc, 2:6].astype(int), COLOR_SPACES, COLOR_RANGES, bins)
+        # Prepare and save results
+        mean_hist_json = {k:[d.tolist() for d in data] for k, data in mean_hist.items()}
+        write_json_file(mean_hist_json, hist_file)
+
+    else:
+        # Read results of histogram
+        mean_hist=read_json_file(hist_file)
         
-        trajs = [hist[np.where(det_array[:, 1] == det_ids[i])[0], :]
-                    for i in range(n_dets)]
-
-        mean_hist.update({cam:[np.mean(np.mean(traj,axis=0),axis=2) for traj in trajs]})
+        # Create dictionary of arrays
+        det_array={}
+        for cam, dets in det_bboxes.items():
+            det_array.update({cam:dict_to_array(dets)})
     
-    mean_hist_json = {k:[d.tolist() for d in data] for k, data in mean_hist.items()}
-    write_json_file(mean_hist_json,'mean_hist.json')'''
-    
-    det_array={}
-    for cam, dets in det_bboxes.items():
-        det_array.update({cam:dict_to_array(dets)})
+    ## MATCH IDS USING BRAY CURTIS DISTANCE ##
 
+    # Get the id of the camera with large number of detection ids
     max_ids = np.argmax([len(m_h) for m_h in mean_hist.values()])
-    #total_bc_distance = np.ones((max_ids, max_ids, len(mean_hist), len(mean_hist)))*np.inf
+    '''k = np.max([len(m_h) for m_h in mean_hist.values()])
+    data = np.vstack([np.stack(hist) for hist in mean_hist.values()])
+    cam_id = np.vstack([i*np.ones((np.stack(val).shape[0],1)) for i,val in enumerate(mean_hist.values())])
+    
+    labels = []
+    for c in range(len(COLOR_SPACES)):
+        #kmeans = KMeans(n_clusters=k, random_state=0).fit(data[:,c,:])
+        #labels.append(kmeans.labels_)
 
+        labels_ = GaussianMixture(n_components=k, random_state=0).fit_predict(data[:,c,:])
+        labels.append(labels_)
+
+        #PCA
+        if False:
+            lda = LDA()
+            data_ = lda.fit_transform(data[:,c,:],labels_)
+
+            #pca = PCA(3) 
+            #data_ = pca.fit_transform(data[:,c,:])
+
+            fig = plt.figure()
+            ax = fig.add_subplot(projection='3d')
+            ax.scatter(data_[:,0],data_[:,1],data_[:,2],c=labels[c])
+            plt.show()
+    
+    [labels[0][np.where(cam_id==i)[0]] for i in np.unique(cam_id)]'''
+
+
+    # Define mapper form int to str cam
     cam_map = {c:cam for c,cam in enumerate(mean_hist)}
-    #cam_comb = list(combinations(mean_hist,2))
+
+    # Create combinations of the camera with larger ids and the rest
     cam_comb = list(product([cam_map[max_ids]],[cam for cam in mean_hist if cam not in cam_map[max_ids]]))
 
     new_det_bboxes.update({cam_map[max_ids]:det_bboxes[cam_map[max_ids]]})
+    # For loop over the combinations
     for (cam1, cam2) in cam_comb:
-        traj_comb = list(product(list(range(len(mean_hist[cam1]))),list(range(0,len(mean_hist[cam2])))))
+        # Initialize bray curtis distance matrix
         bc_distance = np.empty((len(mean_hist[cam1]),len(mean_hist[cam2]),len(COLOR_SPACES)))
-        for (t1, t2) in traj_comb:
+        
+        # For every pair of car trajectories compute distance
+        for (t1, t2) in list(product(list(range(len(mean_hist[cam1]))),list(range(0,len(mean_hist[cam2]))))):
             for c in range(len(COLOR_SPACES)):
                 bc_distance[t1,t2,c] = braycurtis(np.array(mean_hist[cam1][t1])[c,:], np.array(mean_hist[cam2][t2])[c,:], w=None)
         
+        # Find matches and re-assign ids
         matches = linear_assignment(np.sum(bc_distance,axis=2))
         det_array[cam2] = match_trajectories(det_array[cam2],matches,[np.unique(det_array[cam1][:, 1]),np.unique(det_array[cam2][:, 1])])
-        
         new_det_bboxes.update({cam2:array_to_dict(det_array[cam2])})
-
-        #total_bc_distance[:bc_distance.shape[0],:bc_distance.shape[1],cam_map[cam1],cam_map[cam2]] = np.sum(bc_distance,axis=2)
-
+    
     return new_det_bboxes
