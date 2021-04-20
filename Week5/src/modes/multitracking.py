@@ -143,7 +143,7 @@ def _multi_camera_tracking(args):
         dump_imgs(args.dump_dir, t)
 
 
-def compute_multitracking(args):
+def iamai_multitracking(args):
     """
         This function implements the full pipeline for AIC2018
     """

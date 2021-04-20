@@ -29,13 +29,14 @@ class AICity:
     This class contains all the logic of the background estimation process for the AICity dataset
     """
 
-    def __init__(self, args):
+    def __init__(self, args, mt_args):
         """
         Init of the AICity class
 
         :param args: configuration for the current estimation
         """
         self.options = args
+        self.mt_options = mt_args
 
         # INPUT PARAMETERS
         self.data_path = join(args.data_path,'AICity','train')
@@ -74,9 +75,14 @@ class AICity:
         self.sequences = {}
         for seq in os.listdir(self.data_path):
             if '.' not in seq[0]:
-                det_name = '_'.join((self.model, self.framework+'.json'))
-                self.sequences.update({seq:LoadSeq(self.data_path, seq, self.output_path, self.tracking_mode, det_name, self.OF_mode, det_params=self.det_params)})
-        
+                if self.mt_options.mode in 'mtmc_vt':
+                    if self.multitracking and seq in self.mt_options.txt_name:
+                        det_name = '_'.join((self.model, self.framework+'.json'))
+                        self.sequences.update({seq:LoadSeq(self.data_path, seq, self.output_path, self.tracking_mode, det_name, self.OF_mode, det_params=self.det_params)})
+                else:
+                    det_name = '_'.join((self.model, self.framework+'.json'))
+                    self.sequences.update({seq:LoadSeq(self.data_path, seq, self.output_path, self.tracking_mode, det_name, self.OF_mode, det_params=self.det_params)})
+
     def __len__(self):
         return len(self.sequences)
 

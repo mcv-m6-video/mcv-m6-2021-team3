@@ -12,7 +12,7 @@ class ConfigMultiTracking:
 
         # ==================== BASE =====================
         parser.add_argument('--mode', default='mtmc_vt', choices=['AIC2018','color_hist','mtmc_vt'])
-        parser.add_argument('--txt_name', default='track1.txt')
+        parser.add_argument('--txt_name', default='../inputs/track1_S03_maskrcnn_vgg.txt')
 
         # =================== AIC2018 ====================
         parser.add_argument('--data_path', default='../../raw_data/AICity/train', type=str, help='Dataset path')

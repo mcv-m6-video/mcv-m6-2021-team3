@@ -8,13 +8,14 @@ from tqdm import tqdm
 from os.path import join, exists, dirname
 import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
+from termcolor import colored
 
 
 from config.config_multitracking import ConfigMultiTracking
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
 
 #from modes.tf_models import TFModel, to_tf_record
-from modes.multitracking import iamai_multitracking, hist_multitracking
+from modes.multitracking import iamai_multitracking
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou
 from utils.visualize import visualize_trajectories, visualize_filter_roi
 from utils.utils import write_json_file, read_json_file, update_data, match_trajectories, dist_to_roi, filter_by_roi, read_txt_to_dict
@@ -117,10 +118,11 @@ class LoadSeq():
         self.accumulators = {}
 
         if self.mt_args.mode in 'mtmc_vt':
-            if seq not in 'S03':
+            if seq not in self.mt_args.txt_name:
                 pass
             else:
                 self.det_bboxes = read_txt_to_dict(self.mt_args.txt_name)
+
                 for cam, _ in self.det_bboxes.items():
                     # Save paths to frames
                     cam_paths = glob.glob(join(data_path,seq,cam,'vdo/*.'+extension))
@@ -242,6 +244,11 @@ class LoadSeq():
                 iamai_multitracking(self.mt_args)
             elif self.mt_args.mode in 'mtmc_vt':
                 self.ID_metrics = compute_IDmetrics_multi(self.gt_bboxes,self.det_bboxes,self.accumulators,self.frames_paths)
+                print(colored('IDF1: ', 'blue', attrs=['bold']) + str(self.ID_metrics.idf1.OVERALL))
+                print(colored('IDP: ', 'blue', attrs=['bold']) + str(self.ID_metrics.idp.OVERALL))
+                print(colored('IDR: ', 'blue', attrs=['bold']) + str(self.ID_metrics.idr.OVERALL))
+                print(colored('Precision: ', 'blue', attrs=['bold']) + str(self.ID_metrics.precision.OVERALL))
+                print(colored('Recall: ', 'blue', attrs=['bold']) + str(self.ID_metrics.recall.OVERALL))
         else:
             self.single_cam_tracking()
           

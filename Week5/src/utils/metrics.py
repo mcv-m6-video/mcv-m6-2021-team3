@@ -496,6 +496,7 @@ def compute_IDmetrics_multi(gt_bboxes,det_bboxes,acc,path):
             acc[cam].update(gt_ids, det_ids, dists, frameid=int(frame_id), vf='')
     acc = [a for a in acc.values()]
     mh = mm.metrics.create()
-    summary = mh.compute_many(acc, metrics=['num_frames', 'idf1', 'idp', 'idr', 'precision', 'recall'], names=['c010', 'c011', 'c012', 'c013', 'c014', 'c015'], generate_overall=True)
+
+    summary = mh.compute_many(acc, metrics=['num_frames', 'idf1', 'idp', 'idr', 'precision', 'recall'], names=list(path.keys()), generate_overall=True)
 
     return summary

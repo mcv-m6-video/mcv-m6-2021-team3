@@ -335,3 +335,34 @@ def filter_static(det_bboxes, hist, max_age):
                   for i in range(n_dets)]
     
     return
+
+def read_txt_to_dict(txtpath):
+    if 'S01' in txtpath:
+        multitrack = {'c001': {}, 'c002': {}, 'c003': {}, 'c004': {}, 'c005': {}}
+    elif 'S03' in txtpath:
+        multitrack = {'c010': {}, 'c011': {}, 'c012': {}, 'c013': {}, 'c014': {}, 'c015': {}}
+    elif 'S04' in txtpath:
+        multitrack = {'c016': {}, 'c017': {}, 'c018': {}, 'c019': {}, 'c020': {}, 'c021': {}, 
+                      'c022': {}, 'c023': {}, 'c024': {}, 'c025': {}, 'c026': {}, 'c027': {}, 
+                      'c028': {}, 'c029': {}, 'c030': {}, 'c031': {}, 'c032': {}, 'c033': {}, 
+                      'c034': {}, 'c035': {}, 'c036': {}, 'c037': {}, 'c038': {}, 'c039': {},
+                      'c040': {}}
+
+    with open(txtpath, 'r') as fp:
+        lines = fp.readlines()
+        for line in lines:
+            l = line.split(' ')
+            if len(l[0]) == 2:
+                cam = 'c0' + l[0]
+            else:
+                cam = 'c00' + l[0]
+            frame_id = int(l[2])
+            xmin = int(l[3])
+            ymin = int(l[4])
+            xmax = xmin + int(l[5])
+            ymax = ymin + int(l[6])
+            conf = -1
+            obj_id = int(l[1])
+            multitrack[cam] = update_data(multitrack[cam],frame_id,xmin,ymin,xmax,ymax,conf,obj_id)
+
+    return multitrack
