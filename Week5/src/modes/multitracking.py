@@ -5,8 +5,12 @@ import os
 from os.path import dirname, join
 import pickle
 import numpy as np
+from sklearn.decomposition import PCA
+from scipy.spatial.distance import braycurtis
+from itertools import combinations, product
+from scipy.optimize import linear_sum_assignment as linear_assignment
 
-from utils.utils import dict_to_array, color_hist, str_frame_id
+from utils.utils import dict_to_array, color_hist, str_frame_id, write_json_file, read_json_file, match_trajectories, array_to_dict
 from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_features
 from AIC2018.ReID.MCT import import_pkl, remove, debug_loc, debug_id, debug_frame, dump_imgs,\
                              cluster_fill, multi_camera_matching
@@ -15,10 +19,8 @@ def _post_tracking(args):
     """
         This function performs post iou trackin operations i.e. cleans a little
         bit the tracks.
-
         It generates new pkl and csv files that will be used on the later stages
         of the algorithm
-
     """
 
     available_csv_files = os.listdir(args.tracking_csv)
@@ -61,9 +63,7 @@ def _multi_camera_tracking(args):
     """
     Args:
         args:
-
     Returns:
-
     """
 
     # Create sequence names
@@ -153,21 +153,62 @@ def iamai_multitracking(args):
     _post_tracking(args)
     _multi_camera_tracking(args)
 
-def hist_multitracking(det_bboxes, frames_path):
-    for cam, dets in det_bboxes.items():
-        img_dir = dirname(frames_path[cam][0])
+def hist_multitracking(det_bboxes, frames_path, bins=25):
+
+    new_det_bboxes = det_bboxes.copy()
+
+    mean_hist=read_json_file('mean_hist.json')#{}
+    COLOR_SPACES = ['cv2.COLOR_BGR2RGB', 'cv2.COLOR_BGR2HSV','cv2.COLOR_BGR2LAB','cv2.COLOR_BGR2YCR_CB']
+    COLOR_RANGES = [[[0,255]]*3, [[0,179]]+[[0,255]]*2, [[0,255]]*3, [[0,255]]*3]
+
+    '''for cam, dets in det_bboxes.items():
         det_array = dict_to_array(dets)
 
+        img_dir = dirname(frames_path[cam][0])
+    
         frames_ids = np.unique(det_array[:,0])
 
         det_ids = np.unique(det_array[:, 1])
         n_dets = len(det_ids)
-        trajs = [det_array[np.where(det_array[:, 1] == det_ids[i])[0], :]
-                    for i in range(n_dets)]
+
+        hist = np.empty([det_array.shape[0],len(COLOR_SPACES),bins,3],dtype=float)
         
         for frame_id in frames_ids:
             loc = np.where(det_array[:,0] == frame_id)[0]
-            color_hist(join(img_dir,str_frame_id(frame_id)+'.jpg'), det_array[loc, 2:6].astype(int))
-            
+            hist[loc,:,:,:] = color_hist(join(img_dir,str_frame_id(frame_id)+'.jpg'), det_array[loc, 2:6].astype(int), COLOR_SPACES, COLOR_RANGES, bins)
+        
+        trajs = [hist[np.where(det_array[:, 1] == det_ids[i])[0], :]
+                    for i in range(n_dets)]
 
-                
+        mean_hist.update({cam:[np.mean(np.mean(traj,axis=0),axis=2) for traj in trajs]})
+    
+    mean_hist_json = {k:[d.tolist() for d in data] for k, data in mean_hist.items()}
+    write_json_file(mean_hist_json,'mean_hist.json')'''
+    
+    det_array={}
+    for cam, dets in det_bboxes.items():
+        det_array.update({cam:dict_to_array(dets)})
+
+    max_ids = np.argmax([len(m_h) for m_h in mean_hist.values()])
+    #total_bc_distance = np.ones((max_ids, max_ids, len(mean_hist), len(mean_hist)))*np.inf
+
+    cam_map = {c:cam for c,cam in enumerate(mean_hist)}
+    #cam_comb = list(combinations(mean_hist,2))
+    cam_comb = list(product([cam_map[max_ids]],[cam for cam in mean_hist if cam not in cam_map[max_ids]]))
+
+    new_det_bboxes.update({cam_map[max_ids]:det_bboxes[cam_map[max_ids]]})
+    for (cam1, cam2) in cam_comb:
+        traj_comb = list(product(list(range(len(mean_hist[cam1]))),list(range(0,len(mean_hist[cam2])))))
+        bc_distance = np.empty((len(mean_hist[cam1]),len(mean_hist[cam2]),len(COLOR_SPACES)))
+        for (t1, t2) in traj_comb:
+            for c in range(len(COLOR_SPACES)):
+                bc_distance[t1,t2,c] = braycurtis(np.array(mean_hist[cam1][t1])[c,:], np.array(mean_hist[cam2][t2])[c,:], w=None)
+        
+        matches = linear_assignment(np.sum(bc_distance,axis=2))
+        det_array[cam2] = match_trajectories(det_array[cam2],matches,[np.unique(det_array[cam1][:, 1]),np.unique(det_array[cam2][:, 1])])
+        
+        new_det_bboxes.update({cam2:array_to_dict(det_array[cam2])})
+
+        #total_bc_distance[:bc_distance.shape[0],:bc_distance.shape[1],cam_map[cam1],cam_map[cam2]] = np.sum(bc_distance,axis=2)
+
+    return new_det_bboxes

@@ -221,7 +221,7 @@ class LoadSeq():
         if multitracking:
             if self.mt_args.mode in 'color_hist':
                 self.single_cam_tracking()
-                hist_multitracking(self.det_bboxes, self.frames_paths)
+                self.det_bboxes = hist_multitracking(self.det_bboxes, self.frames_paths)
             elif self.mt_args.mode in 'iamai':
                 iamai_multitracking(self.mt_args)
         else:
