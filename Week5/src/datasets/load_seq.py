@@ -201,7 +201,7 @@ class LoadSeq():
             if self.track_mode in ['overlapping', 'kalman']:
 
                 if self.track_mode in 'overlapping':            
-                    det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode)
+                    det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode, cam = cam)
 
                 elif self.track_mode in 'kalman':
                     det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])

@@ -9,7 +9,7 @@ import time
 from tqdm import tqdm
 from .sort import Sort
 import matplotlib.pyplot as plt
-from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track
+from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track, write_png_flow
 from utils.metrics import compute_iou, interpolate_bb, compute_dist_matrix, compute_iou
 from .optical_flow import block_matching, MaskFlownetOF
 from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
@@ -21,7 +21,7 @@ os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 import matplotlib.pyplot as plt
 
 
-def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet', save_img = True):
+def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet', save_img = True, cam = ''):
 
     id_seq = {}
 
@@ -30,7 +30,7 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, inte
     if flow_method == 'mask_flownet':
         flownet = MaskFlownetOF()
         if save_img:
-            path = os.path.join('../outputs/flow', flow_method)
+            path = os.path.join('../outputs/flow', flow_method, cam)
             os.makedirs(path, exist_ok=True)
 
     #init the tracking by using the first frame which has at least one detection
@@ -54,16 +54,13 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, inte
                 img1 = cv2.imread(frames_paths[i])
                 img2 = cv2.imread(frames_paths[i+1])  
 
-                if os.path.isfile(os.path.join(path, 'flow_' + str(i) +'.pkl')):
-                    with open(os.path.join(path, 'flow_' + str(i) +'.pkl'), 'rb') as f:
-                        flow = pickle.load(f)
+                if os.path.isfile(os.path.join(path, 'flow_' + str(i) +'.png')):
+                    flow = cv2.imread(os.path.join(path, 'flow_' + str(i) +'.png'))
                
                 else:
                     flow = flownet.get_optical_flow(img1, img2)    
-                    
-                    with open(os.path.join(path, 'flow_' + str(i) +'.pkl'), 'wb') as f:
-                        pickle.dump(flow.astype(np.float16), f)
-                        
+                    write_png_flow(flow, os.path.join(path, 'flow_' + str(i) +'.png'))
+
                 u = flow[:,:,0]      
                 v = flow[:,:,1]      
 
