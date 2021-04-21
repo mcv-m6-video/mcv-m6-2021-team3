@@ -196,7 +196,7 @@ Quantitative results obtained after applying MTMC Tracking on those detections o
     </thead>
     <tbody>
         <tr>
-            <td rowspan=3>Detections: Mask-RCNN <br> Car features: ResNet50</td>
+            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Detections: Mask-RCNN <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Car features: ResNet50</td>
             <td>&nbsp;&nbsp;S01</td>
             <td>0.2112</td>
             <td>0.2360</td>
@@ -221,7 +221,7 @@ Quantitative results obtained after applying MTMC Tracking on those detections o
             <td>0.7463</td>
         </tr>
         <tr>
-            <td rowspan=3>Detections: YoloV3 (our training) <br> Car features: ResNet50</td>
+            <td rowspan=3>Detections: YoloV3 (our training) <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Car features: ResNet50</td>
             <td>&nbsp;&nbsp;S01</td>
             <td>0.1248</td>
             <td>0.2828</td>
@@ -246,7 +246,7 @@ Quantitative results obtained after applying MTMC Tracking on those detections o
             <td>0.3932</td>
         </tr>
         <tr>
-            <td rowspan=3>Detections: Mask-RCNN <br> Car features: VGG16</td>
+            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Detections: Mask-RCNN <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Car features: VGG16</td>
             <td>&nbsp;&nbsp;S01</td>
             <td>0.3377</td>
             <td>0.2654</td>
@@ -271,7 +271,7 @@ Quantitative results obtained after applying MTMC Tracking on those detections o
             <td>0.8126</td>
         </tr>
         <tr>
-            <td rowspan=3>Detections: Mask-RCNN <br> Car features: ResNe101</td>
+            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Detections: Mask-RCNN <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Car features: ResNe101</td>
             <td>&nbsp;&nbsp;S01</td>
             <td>0.1992</td>
             <td>0.2083</td>
@@ -296,7 +296,7 @@ Quantitative results obtained after applying MTMC Tracking on those detections o
             <td>0.6987</td>
         </tr>
         <tr>
-            <td rowspan=3>Detections: Mask-RCNN <br> Car features: MobileNet</td>
+            <td rowspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Detections: Mask-RCNN <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Car features: MobileNet</td>
             <td>&nbsp;&nbsp;S01</td>
             <td>0.2002</td>
             <td>0.2086</td>
