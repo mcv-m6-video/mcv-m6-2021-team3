@@ -185,153 +185,145 @@ Quantitative results obtained after applying MTMC Tracking on those detections o
 <table>
     <thead>
         <tr>
-            <th>Network</th>
-            <th>Framework</th>
-            <th>mIoU</th>
-            <th>mAP50</th>
-            <th>mAP70</th>
+            <th>Configuration</th>
+            <th>Scene</th>
+            <th>IDF1</th>
+            <th>IDP</th>
+            <th>IDR</th>
+            <th>Precision</th>
+            <th>Recall</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td>Yolo V3</td>
-            <td rowspan=3>Ultralytics</td>
-            <td>0.8866</td>
-            <td>0.9445</td>
-            <td>0.9065</td>
+            <td rowspan=3>Detections: Mask-RCNN <br> Car features: ResNet50</td>
+            <td>&nbsp;&nbsp;S01</td>
+            <td>0.2112</td>
+            <td>0.2360</td>
+            <td>0.2030</td>
+            <td>&nbsp;&nbsp;0.4647</td>
+            <td>0.4358</td>
         </tr>
         <tr>
-            <td>Yolo V3 - SPP</td>
-            <td>0.8435</td>
-            <td>0.8083</td>
-            <td>0.8148</td>
+            <td>&nbsp;&nbsp;S03</td>
+            <td>0.4318</td>
+            <td>0.3300</td>
+            <td>0.6417</td>
+            <td>&nbsp;&nbsp;0.3870</td>
+            <td>0.7703</td>
         </tr>
         <tr>
-            <td>Yolo V3 - Tiny</td>
-            <td>0.8436</td>
-            <td>0.8096</td>
-            <td>0.8148</td>
+            <td>&nbsp;&nbsp;S04</td>
+            <td>0.2951</td>
+            <td>0.2246</td>
+            <td>0.4870</td>
+            <td>&nbsp;&nbsp;0.3478</td>
+            <td>0.7463</td>
         </tr>
         <tr>
-            <td>SSD MN V1 FPN 640x640</td>
-            <td rowspan=2>TensorFlow</td>
-            <td>0.4929</td>
-            <td>0.7842</td>
-            <td>0.7585</td>
+            <td rowspan=3>Detections: YoloV3 (our training) <br> Car features: ResNet50</td>
+            <td>&nbsp;&nbsp;S01</td>
+            <td>0.1248</td>
+            <td>0.2828</td>
+            <td>0.0876</td>
+            <td>&nbsp;&nbsp;0.5647</td>
+            <td>0.1979</td>
         </tr>
         <tr>
-            <td>EfficientDet D1 640x640</td>
-            <td>0.6914</td>
-            <td>0.7965</td>
-            <td>0.7899</td>
+            <td>&nbsp;&nbsp;S03</td>
+            <td>0.3314</td>
+            <td>0.3073</td>
+            <td>0.3597</td>
+            <td>&nbsp;&nbsp;0.3653</td>
+            <td>0.4275</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;S04</td>
+            <td>0.1968</td>
+            <td>0.1973</td>
+            <td>0.1962</td>
+            <td>&nbsp;&nbsp;0.3954</td>
+            <td>0.3932</td>
+        </tr>
+        <tr>
+            <td rowspan=3>Detections: Mask-RCNN <br> Car features: VGG16</td>
+            <td>&nbsp;&nbsp;S01</td>
+            <td>0.3377</td>
+            <td>0.2654</td>
+            <td>0.4639</td>
+            <td>&nbsp;&nbsp;0.4385</td>
+            <td>0.7664</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;S03</td>
+            <td>0.4599</td>
+            <td>0.3157</td>
+            <td>0.8467</td>
+            <td>&nbsp;&nbsp;0.3446</td>
+            <td>0.9243</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;S04</td>
+            <td>0.2778</td>
+            <td>0.1946</td>
+            <td>0.4851</td>
+            <td>&nbsp;&nbsp;0.3260</td>
+            <td>0.8126</td>
+        </tr>
+        <tr>
+            <td rowspan=3>Detections: Mask-RCNN <br> Car features: ResNe101</td>
+            <td>&nbsp;&nbsp;S01</td>
+            <td>0.1992</td>
+            <td>0.2083</td>
+            <td>0.1908</td>
+            <td>&nbsp;&nbsp;0.4452</td>
+            <td>0.4079</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;S03</td>
+            <td>0.4334</td>
+            <td>0.3180</td>
+            <td>0.6799</td>
+            <td>&nbsp;&nbsp;0.3848</td>
+            <td>0.8226</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;S04</td>
+            <td>0.2430</td>
+            <td>0.1771</td>
+            <td>0.3870</td>
+            <td>&nbsp;&nbsp;0.3198</td>
+            <td>0.6987</td>
+        </tr>
+        <tr>
+            <td rowspan=3>Detections: Mask-RCNN <br> Car features: MobileNet</td>
+            <td>&nbsp;&nbsp;S01</td>
+            <td>0.2002</td>
+            <td>0.2086</td>
+            <td>0.1924</td>
+            <td>&nbsp;&nbsp;0.4453</td>
+            <td>0.4107</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;S03</td>
+            <td>0.4349</td>
+            <td>0.3235</td>
+            <td>0.6631</td>
+            <td>&nbsp;&nbsp;0.3921</td>
+            <td>0.8036</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;S04</td>
+            <td>0.2420</td>
+            <td>0.1782</td>
+            <td>0.3767</td>
+            <td>&nbsp;&nbsp;0.3245</td>
+            <td>0.6858</td>
         </tr>
     </tbody>
 </table>
 
 <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task12.jpg" width="700">
-
-### Task 1.3: K-fold Cross validation
-
-Results obtained with the best method when applying K-fold Cross Validation using as a model YOLOv3.
-
-<table>
-    <thead>
-        <tr>
-            <th colspan=4>Sorted</th>
-            <th>mIoU</th>
-            <th>mAP50</th>
-            <th>mAP70</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>train</td>
-            <td colspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
-            <td>0.8866</td>
-            <td>0.9445</td>
-            <td>0.9065</td>
-        </tr>
-        <tr>
-            <td>test</td>
-            <td>train</td>
-            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
-            <td>0.9056</td>
-            <td>0.9458</td>
-            <td>0.9073</td>
-        </tr>
-        <tr>
-            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
-            <td>train</td>
-            <td>test</td>
-            <td>0.8899</td>
-            <td>0.9474</td>
-            <td>0.9069</td>
-        </tr>
-        <tr>
-            <td colspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
-            <td>train</td>
-            <td>0.8921</td>
-            <td>0.9558</td>
-            <td>0.9075</td>
-        </tr>
-        <tr>
-            <td colspan=4></td>
-            <td>0.8935 <br> ±7e-3</td>
-            <td>0.9484 <br> ±4e-3</td>
-            <td>0.9070 <br> ±3e-4</td>
-        </tr>
-    </tbody>
-</table>
-
-
-<table>
-    <thead>
-        <tr>
-            <th colspan=4>Shuffle</th>
-            <th>mIoU</th>
-            <th>mAP50</th>
-            <th>mAP70</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>train</td>
-            <td colspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
-            <td>0.9001</td>
-            <td>0.9520</td>
-            <td>0.9079</td>
-        </tr>
-        <tr>
-            <td>test</td>
-            <td>train</td>
-            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
-            <td>0.9038</td>
-            <td>0.9555</td>
-            <td>0.9079</td>
-        </tr>
-        <tr>
-            <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
-            <td>train</td>
-            <td>test</td>
-            <td>0.9021</td>
-            <td>0.9587</td>
-            <td>0.9082</td>
-        </tr>
-        <tr>
-            <td colspan=3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test</td>
-            <td>train</td>
-            <td>0.9038</td>
-            <td>0.9512</td>
-            <td>0.9081</td>
-        </tr>
-        <tr>
-            <td colspan=4></td>
-            <td>0.9025 <br> ±1e-3</td>
-            <td>0.9543 <br> ±3e-3</td>
-            <td>0.9080 <br> ±1e-4</td>
-        </tr>
-    </tbody>
-</table>
 
 
 | Parameters| Interpolation = Off  Denoise = Off | Interpolation = True  Denoise = Off | Interpolation = Off  Denoise = True | Interpolation = True Denoise = True |
