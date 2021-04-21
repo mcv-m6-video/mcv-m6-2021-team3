@@ -479,3 +479,24 @@ def compute_IDmetrics(gt_bboxes,det_bboxes,acc,path):
     summary = mh.compute(acc, metrics=['num_frames', 'idf1', 'idp', 'idr', 'precision', 'recall'], name='acc')
 
     return summary
+
+def compute_IDmetrics_multi(gt_bboxes,det_bboxes,acc,path):
+
+    for cam, det_bb in det_bboxes.items():
+        for frame_id, gt_data in tqdm(gt_bboxes[cam].items(),'Defining accumulator for ID metrics'):
+            dists=[]
+            det_ids=[]
+            if frame_id in det_bb.keys():
+                det_data = [det for det in det_bb[frame_id] if not det['parked']]
+
+                dists = compute_dist_matrix(det_data, gt_data, join(dirname(path[cam][0]),frame_id+'.jpg'))
+                det_ids = [det['obj_id'] for det in det_data]
+
+            gt_ids = [gt['obj_id'] for gt in gt_data]
+            acc[cam].update(gt_ids, det_ids, dists, frameid=int(frame_id), vf='')
+    acc = [a for a in acc.values()]
+    mh = mm.metrics.create()
+    summary = mh.compute_many(acc, metrics=['num_frames', 'idf1', 'idp', 'idr', 'precision', 'recall'], 
+                                   names=list(gt_bboxes.keys()), generate_overall=True)
+
+    return summary

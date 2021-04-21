@@ -13,6 +13,14 @@ class ConfigMultiTracking:
         # ==================== BASE =====================
         parser.add_argument('--mode', default='color_hist', choices=['AIC2018','color_hist'])
 
+        # =============== COLOR HISTOGRAM ================
+
+        parser.add_argument('--color_space', type=str, default='lab', choices=['rgb','hsv','lab','ycrcb'])
+        parser.add_argument('--bins', type=int, default=25)
+        parser.add_argument('--cluster_hist', type=str, default='braycurtis', choices=['braycurtis','kmeans','gmm'], help='cluster methods')
+        parser.add_argument('--hist_file', type=str, default='mean_hist_S03_kalman.json')
+        parser.add_argument('--vis_cluster', type=bool, default=False)
+
         # =================== AIC2018 ====================
         parser.add_argument('--data_path', default='../../raw_data/AICity/train', type=str, help='Dataset path')
         parser.add_argument('--tracking_csv', default= '../outputs/tracking_iou', type=str, help='tracking result csv file')

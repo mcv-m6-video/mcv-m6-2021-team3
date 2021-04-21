@@ -9,6 +9,7 @@ from os.path import join, exists, dirname
 import xml.etree.ElementTree as ET
 from sklearn.model_selection import train_test_split, KFold
 
+import matplotlib.pyplot as plt
 
 from config.config_multitracking import ConfigMultiTracking
 from modes.ultralytics_yolo import UltralyricsYolo, to_yolov3
@@ -18,12 +19,10 @@ from modes.multitracking import iamai_multitracking, hist_multitracking
 from modes.tracking import compute_tracking_overlapping, compute_tracking_kalman, compute_tracking_iou
 from utils.visualize import visualize_trajectories, visualize_filter_roi
 from utils.utils import write_json_file, read_json_file, update_data, match_trajectories, dist_to_roi, filter_by_roi
-from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics
+from utils.metrics import voc_eval, compute_iou, compute_total_miou, interpolate_bb, IDF1, compute_IDmetrics, compute_IDmetrics_multi
 
 import motmetrics as mm
 
-
-import matplotlib.pyplot as plt
 
 def load_text(text_dir, text_name):
     """
@@ -195,7 +194,7 @@ class LoadSeq():
 
         return self.get_mAP()
 
-    def single_cam_tracking(self):
+    def single_cam_tracking(self, multitracking):
         for cam, det_bboxes in self.det_bboxes.items():
             det_bboxes = filter_by_roi(det_bboxes,self.mask[cam])
             if self.track_mode in ['overlapping', 'kalman']:
@@ -204,11 +203,12 @@ class LoadSeq():
                     det_bboxes = compute_tracking_overlapping(det_bboxes, self.frames_paths[cam], flow_method= self.OF_mode, cam = cam)
 
                 elif self.track_mode in 'kalman':
-                    det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])#, self.accumulators[cam])
+                    det_bboxes = compute_tracking_kalman(det_bboxes, self.gt_bboxes[cam])
 
-                self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam],self.frames_paths[cam][0])})
-                print(f'Camera: {cam}')
-                print(self.ID_metrics[cam])
+                if not multitracking:
+                    self.ID_metrics.update({cam:compute_IDmetrics(self.gt_bboxes[cam],det_bboxes,self.accumulators[cam],self.frames_paths[cam][0])})
+                    print(f'Camera: {cam}')
+                    print(self.ID_metrics[cam])
 
                 self.det_bboxes[cam] = det_bboxes
 
@@ -220,12 +220,17 @@ class LoadSeq():
 
         if multitracking:
             if self.mt_args.mode in 'color_hist':
-                self.single_cam_tracking()
-                self.det_bboxes = hist_multitracking(self.det_bboxes, self.frames_paths)
+                self.single_cam_tracking(multitracking)
+                self.det_bboxes = hist_multitracking(self.det_bboxes, self.frames_paths, self.mt_args)
             elif self.mt_args.mode in 'iamai':
                 iamai_multitracking(self.mt_args)
+            
+            summary = compute_IDmetrics_multi(self.gt_bboxes,self.det_bboxes,self.accumulators,self.frames_paths)
+            print(f'Seq: {self.seq}')
+            print(summary)
+
         else:
-            self.single_cam_tracking()
+            self.single_cam_tracking(multitracking)
           
     def get_mAP(self):
         """
@@ -255,7 +260,8 @@ class LoadSeq():
         for (cam,cam_paths), det_bboxes in tqdm(zip(self.frames_paths.items(), self.det_bboxes.values()), 'Saving tracking qualitative results'):
             path_in = dirname(cam_paths[0])
             if self.det_params['mode'] == 'tracking':
-                visualize_trajectories(path_in, join(self.output_path,self.seq,cam), det_bboxes)
+                visualize_trajectories(path_in, join(self.output_path,self.seq,cam, '_'.join((self.mt_args.color_space,
+                                                     str(self.mt_args.bins),self.mt_args.cluster, self.track_mode))), det_bboxes)
     
     def visualize_filter(self):
         for cam, det_bboxes in self.det_bboxes.items():

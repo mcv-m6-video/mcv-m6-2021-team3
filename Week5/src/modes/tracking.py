@@ -9,7 +9,8 @@ import time
 from tqdm import tqdm
 from .sort import Sort
 import matplotlib.pyplot as plt
-from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track, write_png_flow, read_kitti_OF, compute_centroid
+from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track, \
+                        write_png_flow, read_kitti_OF, compute_centroid, filter_static
 from utils.metrics import compute_iou, interpolate_bb, compute_dist_matrix, compute_iou
 from .optical_flow import block_matching, MaskFlownetOF
 from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
@@ -21,7 +22,8 @@ os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 import matplotlib.pyplot as plt
 
 
-def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet', save_img = True, remove_parked = True, cam = ''):
+def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, interpolate = True, remove_noise = True,
+                                 flow_method = 'mask_flownet', save_img = True, remove_parked = True, cam = ''):
     #if cam not in ['c013']:
      #   return det_bboxes
     id_seq = {}
@@ -155,38 +157,13 @@ def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, inte
             for idx_bb, detection in enumerate(detections):
                 if detection['obj_id'] in ids_to_remove and not detection['parked']:
                     det_bboxes[idx_frame].pop(idx_bb)
-    # remove cars which do not move much on its trajectory
-    # compute frame history per id
+    
     if remove_parked:
-        id_ocurrence = {}
-        # Count ocurrences
-        for idx_frame, detections in det_bboxes.items():
-            for detection in detections:
-                if not detection['parked']:
-                    obj_id = detection['obj_id']
-                    if obj_id in id_ocurrence:
-                        id_ocurrence[obj_id].append(idx_frame)
-                    else:
-                        id_ocurrence[obj_id] = [idx_frame]
-        # Compute BB displacement from first to last frame
-        id_distance = {}
-        for det_id, frames in id_ocurrence.items():
-            first_frame = frames[0]
-            last_frame = frames[-1]
-            first_bb = return_bb(det_bboxes,int(first_frame), int(det_id)) 
-            last_bb = return_bb(det_bboxes,int(last_frame), int(det_id)) 
-            distance = np.sum(np.array((np.array(compute_centroid(first_bb)) - np.array(compute_centroid(last_bb))))**2)
-            id_distance.update({det_id: distance})
-        # revemo ids with distances below the threshold 
-        ids_to_remove = [id_obj for id_obj in id_distance if id_distance[id_obj]<150]
-        for idx_frame, detections in det_bboxes.items():
-            for idx_bb, detection in enumerate(detections):
-                if detection['obj_id'] in ids_to_remove and not detection['parked']:
-                    det_bboxes[idx_frame][idx_bb]['parked'] = True
+        det_bboxes = filter_static(det_bboxes)
 
     return det_bboxes
 
-def compute_tracking_kalman(det_bboxes, gt_bboxes):#, accumulator): 
+def compute_tracking_kalman(det_bboxes, gt_bboxes, remove_parked=True):
     '''
     Funtion to compute the tracking using Kalman filter
     :return: dictionary with the detections and the ids of each bbox computed by the tracking
@@ -199,7 +176,7 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes):#, accumulator):
     out = []
     idx_frame = []
 
-    mot_tracker = Sort() #create instance of the SORT tracker
+    mot_tracker = Sort(max_age=4,min_hits=1) #create instance of the SORT tracker
 
     det_bboxes_new = {}
 
@@ -222,7 +199,10 @@ def compute_tracking_kalman(det_bboxes, gt_bboxes):#, accumulator):
             for obj in frame_det:
                 if obj['parked']:
                     det_bboxes_new = update_data(det_bboxes_new, idx_frame, *obj['bbox'], obj['confidence'], -1, True)
-        
+    
+    if remove_parked:
+        det_bboxes_new = filter_static(det_bboxes_new)
+
     return det_bboxes_new
 
 def compute_tracking_iou(det_bboxes,cam, path):

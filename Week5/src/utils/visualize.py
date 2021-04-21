@@ -47,6 +47,7 @@ def visualize_trajectories(path_in, path_out, det_bboxes):
                 id_ocurrence[obj_id] = [(i,compute_centroid(detection['bbox']))] 
     # Ensure unique color for ID
     num_colors = 1000
+    np.random.seed(0)
     colours = np.random.rand(num_colors,3) 
     for i in tqdm(range(start_frame, num_frames),"saving tracking img"):
         f_id = str_frame_id(i)
@@ -82,14 +83,14 @@ def draw_frame_track(path_in, frame, detections, colors, ids, id_ocurrence=[]):
     img = cv2.imread(join(path_in,frame)+'.jpg')
     for detection, bb_id in zip(detections, ids):
         #get color and draw bbox with id
-        color = colors[bb_id%1000,:]*255
+        color = colors[int(bb_id)%1000,:]*255
         img = cv2.rectangle(img, (int(detection[0]),int(detection[1])), (int(detection[2]),int(detection[3])), tuple(color), 3)
         img = cv2.putText(img, str(bb_id), (int(detection[0]),int(detection[1])-10),cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
         #draw trajectories while the id is on the frmame
         if id_ocurrence:
             for track_id, tracking  in id_ocurrence.items():
                 c_start = 0
-                color = colors[track_id%1000,:]*255
+                color = colors[int(track_id)%1000,:]*255
                 if (c_start == 0) and (tracking[-1][0] < int(frame)):
                     continue
                 for f_id, c_end in tracking:

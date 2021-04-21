@@ -328,16 +328,37 @@ def filter_by_roi(det_bboxes, roi_dist, th=100):
 
     return det_bboxes
 
-def filter_static(det_bboxes, hist, max_age):
+def filter_static(det_bboxes):
 
-    det_array = dict_to_array(det_bboxes)
-
-    det_ids = np.unique(det_array[:, 1])
-    n_dets = len(det_ids)
-    dets = [det_array[np.where(det_array[:, 1] == det_ids[i])[0], :]
-                  for i in range(n_dets)]
+    # remove cars which do not move much on its trajectory
+    # compute frame history per id
+    id_ocurrence = {}
+    # Count ocurrences
+    for idx_frame, detections in det_bboxes.items():
+        for detection in detections:
+            if not detection['parked']:
+                obj_id = detection['obj_id']
+                if obj_id in id_ocurrence:
+                    id_ocurrence[obj_id].append(idx_frame)
+                else:
+                    id_ocurrence[obj_id] = [idx_frame]
+    # Compute BB displacement from first to last frame
+    id_distance = {}
+    for det_id, frames in id_ocurrence.items():
+        first_frame = frames[0]
+        last_frame = frames[-1]
+        first_bb = return_bb(det_bboxes,int(first_frame), int(det_id)) 
+        last_bb = return_bb(det_bboxes,int(last_frame), int(det_id)) 
+        distance = np.sum(np.array((np.array(compute_centroid(first_bb)) - np.array(compute_centroid(last_bb))))**2)
+        id_distance.update({det_id: distance})
+    # remove ids with distances below the threshold 
+    ids_to_remove = [id_obj for id_obj in id_distance if id_distance[id_obj]<150]
+    for idx_frame, detections in det_bboxes.items():
+        for idx_bb, detection in enumerate(detections):
+            if detection['obj_id'] in ids_to_remove and not detection['parked']:
+                det_bboxes[idx_frame][idx_bb]['parked'] = True
     
-    return
+    return det_bboxes
 
 def color_hist(img_path, boxes, COLOR_SPACES, COLOR_RANGES, bins=25):
 
@@ -374,3 +395,4 @@ def read_txt_to_dict(txtpath):
             multitrack[cam] = update_data(multitrack[cam],frame_id,xmin,ymin,xmax,ymax,conf,obj_id)
 
     return multitrack
+
