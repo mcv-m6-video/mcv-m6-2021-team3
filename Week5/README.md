@@ -110,7 +110,7 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
             <td>c003</td>
             <td>c004</td>
             <td>c005</td>
-            <td>Average</td>
+            <td>Avg</td>
         </tr>
         <tr>
             <td>Overlap</td>
@@ -157,7 +157,7 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
             <td>c013</td>
             <td>c014</td>
             <td>c015</td>
-            <td>Average</td>
+            <td>Avg</td>
         </tr>
         <tr>
             <td>Overlap</td>
@@ -287,7 +287,7 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
             <td>c038</td>
             <td>c039</td>
             <td>c040</td>
-            <td>Average</td>
+            <td>Avg</td>
         </tr>
         <tr>
             <td>Overlap</td>
