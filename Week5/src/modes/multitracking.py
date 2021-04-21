@@ -225,17 +225,23 @@ def hist_multitracking(det_bboxes, frames_path, opts):
     
     
     if cluster in ['kmeans','gmm']:
+        #Define number of clusters equal to max number of ids
         k = np.max([len(m_h) for m_h in mean_hist.values()])
+
+        # Stack all data into a matrix
         data = np.vstack([np.stack(hist) for hist in mean_hist.values()])
         cam_id = np.vstack([i*np.ones((np.stack(val).shape[0],1)) for i,val in enumerate(mean_hist.values())])
         
+        # Choose color space
         c = map_color_spaces[color_space]
             
         if cluster in 'kmeans':
+            # Kmeans clustering
             kmeans = KMeans(n_clusters=k, random_state=0).fit(data[:,c,:])
             labels = kmeans.labels_
 
         elif cluster in 'gmm':
+            # Gaussian mixture model clustering
             labels_ = GaussianMixture(n_components=k, random_state=0).fit_predict(data[:,c,:])
             labels = labels_
 
@@ -252,10 +258,11 @@ def hist_multitracking(det_bboxes, frames_path, opts):
             ax.scatter(data_[:,0],data_[:,1],data_[:,2],c=labels[c])
             plt.show()
         
+        # Split results per camera
         res_ids = [labels[np.where(cam_id==i)[0]] for i in np.unique(cam_id)]
 
-        for ids, (cam, array) in zip(res_ids, det_array.items()):
-            
+        # Save results to dict
+        for ids, (cam, array) in zip(res_ids, det_array.items()):            
             for prev_id, new_id in zip(np.unique(array[:,1]), ids):
                 array[np.where(array[:,1]==prev_id)[0],1] = new_id
             new_det_bboxes.update({cam:array_to_dict(array)})

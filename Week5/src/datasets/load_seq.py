@@ -261,7 +261,7 @@ class LoadSeq():
             path_in = dirname(cam_paths[0])
             if self.det_params['mode'] == 'tracking':
                 visualize_trajectories(path_in, join(self.output_path,self.seq,cam, '_'.join((self.mt_args.color_space,
-                                                     str(self.mt_args.bins),self.mt_args.cluster, self.track_mode))), det_bboxes)
+                                                     str(self.mt_args.bins),self.mt_args.cluster_hist, self.track_mode))), det_bboxes)
     
     def visualize_filter(self):
         for cam, det_bboxes in self.det_bboxes.items():

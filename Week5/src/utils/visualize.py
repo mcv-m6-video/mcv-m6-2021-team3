@@ -85,7 +85,7 @@ def draw_frame_track(path_in, frame, detections, colors, ids, id_ocurrence=[]):
         #get color and draw bbox with id
         color = colors[int(bb_id)%1000,:]*255
         img = cv2.rectangle(img, (int(detection[0]),int(detection[1])), (int(detection[2]),int(detection[3])), tuple(color), 3)
-        img = cv2.putText(img, str(bb_id), (int(detection[0]),int(detection[1])-10),cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+        img = cv2.putText(img, str(int(bb_id)), (int(detection[0]),int(detection[1])-10),cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
         #draw trajectories while the id is on the frmame
         if id_ocurrence:
             for track_id, tracking  in id_ocurrence.items():
