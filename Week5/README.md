@@ -110,7 +110,7 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
             <td>c003</td>
             <td>c004</td>
             <td>c005</td>
-            <td>Average</td>
+            <td>Avg</td>
         </tr>
         <tr>
             <td>Overlap</td>
@@ -157,7 +157,7 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
             <td>c013</td>
             <td>c014</td>
             <td>c015</td>
-            <td>Average</td>
+            <td>Avg</td>
         </tr>
         <tr>
             <td>Overlap</td>
@@ -192,7 +192,156 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
     </tbody>
 </table>
 
-<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task11.jpg" width="700">
+<table>
+    <thead>
+        <tr>
+            <th colspan=14>IDF1 S04</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Technique</td>
+            <td>c016</td>
+            <td>c017</td>
+            <td>c018</td>
+            <td>c019</td>
+            <td>c020</td>
+            <td>c021</td>
+            <td>c022</td>
+            <td>c023</td>
+            <td>c024</td>
+            <td>c025</td>
+            <td>c026</td>
+            <td>c027</td>
+            <td>c028</td>
+        </tr>
+        <tr>
+            <td>Overlap</td>
+            <td>0.568</td>
+            <td>0.681</td>
+            <td>0.603</td>
+            <td>0.940</td>
+            <td>0.583</td>
+            <td>0.364</td>
+            <td>0.707</td>
+            <td>0.932</td>
+            <td>0.774</td>
+            <td>0.685</td>
+            <td>0.574</td>
+            <td>0.407</td>
+            <td>0.959</td>
+        </tr>
+        <tr>
+            <td>Kalman</td>
+            <td>0.446</td>
+            <td>0.686</td>
+            <td>0.602</td>
+            <td>0.926</td>
+            <td>0.429</td>
+            <td>0.365</td>
+            <td>0.551</td>
+            <td>0.815</td>
+            <td>0.840</td>
+            <td>0.611</td>
+            <td>0.744</td>
+            <td>0.455</td>
+            <td>0.962</td>
+        </tr>
+        <tr>
+            <td>Overlap + OF</td>
+            <td>0.568</td>
+            <td>0.681</td>
+            <td>0.603</td>
+            <td>0.940</td>
+            <td>0.583</td>
+            <td>0.364</td>
+            <td>0.707</td>
+            <td>0.933</td>
+            <td>0.733</td>
+            <td>0.685</td>
+            <td>0.573</td>
+            <td>0.407</td>
+            <td>0.958</td>
+        </tr>
+    </tbody>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th colspan=14>IDF1 S04</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Technique</td>
+            <td>c029</td>
+            <td>c030</td>
+            <td>c031</td>
+            <td>c032</td>
+            <td>c033</td>
+            <td>c034</td>
+            <td>c035</td>
+            <td>c036</td>
+            <td>c037</td>
+            <td>c038</td>
+            <td>c039</td>
+            <td>c040</td>
+            <td>Avg</td>
+        </tr>
+        <tr>
+            <td>Overlap</td>
+            <td>0.262</td>
+            <td>0.447</td>
+            <td>0.818</td>
+            <td>0.612</td>
+            <td>0.155</td>
+            <td>0.202</td>
+            <td>0.279</td>
+            <td>0.211</td>
+            <td>0.346</td>
+            <td>0.414</td>
+            <td>0.784</td>
+            <td>0.679</td>
+            <td>0.559</td>
+        </tr>
+        <tr>
+            <td>Kalman</td>
+            <td>0.316</td>
+            <td>0.509</td>
+            <td>0.554</td>
+            <td>0.534</td>
+            <td>0.192</td>
+            <td>0.220</td>
+            <td>0.361</td>
+            <td>0.203</td>
+            <td>0.330</td>
+            <td>0.443</td>
+            <td>0.791</td>
+            <td>0.638</td>
+            <td>0.541</td>
+        </tr>
+        <tr>
+            <td>Overlap + OF</td>
+            <td>0.262</td>
+            <td>0.447</td>
+            <td>0.818</td>
+            <td>0.612</td>
+            <td>0.155</td>
+            <td>0.202</td>
+            <td>0.280</td>
+            <td>0.211</td>
+            <td>0.357</td>
+            <td>0.414</td>
+            <td>0.782</td>
+            <td>0.679</td>
+            <td>0.558</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/aad7c559e713213e909fef2b60c4fa4a4a4645b4/Week5/MTSC_agvYolo.png" width="700" align="center">
 
 ### Task 2: Multi-Target Multi-Camera (MTMC) Tracking
 
@@ -339,12 +488,8 @@ Quantitative results obtained after applying MTMC Tracking on those detections o
     </tbody>
 </table>
 
-<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task12.jpg" width="700">
+<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/aad7c559e713213e909fef2b60c4fa4a4a4645b4/Week5/MTMC.png" width="700" align="center">
 
-
-| Parameters| Interpolation = Off  Denoise = Off | Interpolation = True  Denoise = Off | Interpolation = Off  Denoise = True | Interpolation = True Denoise = True |
-| :---: | :---: | :---: | :---: | :---: |
-| IDF1 | 61.22 | 61.67 | 61.81 | 63.61 | 
 
 <p align="center">
 <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/4c2e0306c7a1e52557fe0b9abf984e0885bd8eef/Week3/m6w3.gif" width="700">
