@@ -223,7 +223,7 @@ def hist_multitracking(det_bboxes, frames_path, bins=25):
 
     # Get the id of the camera with large number of detection ids
     max_ids = np.argmax([len(m_h) for m_h in mean_hist.values()])
-    '''k = np.max([len(m_h) for m_h in mean_hist.values()])
+    k = np.max([len(m_h) for m_h in mean_hist.values()])
     data = np.vstack([np.stack(hist) for hist in mean_hist.values()])
     cam_id = np.vstack([i*np.ones((np.stack(val).shape[0],1)) for i,val in enumerate(mean_hist.values())])
     
@@ -248,7 +248,13 @@ def hist_multitracking(det_bboxes, frames_path, bins=25):
             ax.scatter(data_[:,0],data_[:,1],data_[:,2],c=labels[c])
             plt.show()
     
-    [labels[0][np.where(cam_id==i)[0]] for i in np.unique(cam_id)]'''
+    res_ids = [labels[0][np.where(cam_id==i)[0]] for i in np.unique(cam_id)]
+
+    for ids, (cam, array) in zip(res_ids, det_array.items()):
+        
+        for prev_id, new_id in zip(np.unique(array[:,1]), ids):
+            array[np.where(array[:,1]==prev_id)[0],1] = new_id
+        new_det_bboxes.update({cam:array_to_dict(array)})
 
 
     # Define mapper form int to str cam
@@ -274,3 +280,4 @@ def hist_multitracking(det_bboxes, frames_path, bins=25):
         new_det_bboxes.update({cam2:array_to_dict(det_array[cam2])})
     
     return new_det_bboxes
+
