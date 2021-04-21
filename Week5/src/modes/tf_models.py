@@ -4,6 +4,7 @@ import glob
 import time
 import yaml
 from tqdm import tqdm
+from os.path import join, dirname
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -58,14 +59,14 @@ class TFModel():
         else:
             self.path_to_labels = 'data/tf2_finetune/label_map.pbtxt'
             self.checkpoints_path = weights
-            self.config_file = os.path.join(self.checkpoints_path, 'pipeline.config')
+            self.config_file = join(dirname(self.checkpoints_path), 'pipeline.config')
             print(self.config_file)
             print(self.checkpoints_path)
             configs = config_util.get_configs_from_pipeline_file(self.config_file)
             model_config = configs['model']
             self.model = model_builder.build(model_config=model_config, is_training=False)
             ckpt = tf.compat.v2.train.Checkpoint(model=self.model)
-            ckpt.restore(os.path.join(self.checkpoints_path, 'trained', 'ckpt-0')).expect_partial()
+            ckpt.restore(self.checkpoints_path).expect_partial()
 
         self.category_index = label_map_util.create_category_index_from_labelmap(self.path_to_labels, 
                                                                                  use_display_name=True)
@@ -96,7 +97,7 @@ class TFModel():
         """
 
         # running inference
-        if not self.coco_model:
+        '''if not self.coco_model:
             with tf.io.gfile.GFile(filename, 'rb') as fid:
                 encoded_image = fid.read()
             image = Image.open(BytesIO(encoded_image))
@@ -110,19 +111,20 @@ class TFModel():
             detection_boxes = detections['detection_boxes'][0].numpy()
             detection_scores = detections['detection_scores'][0].numpy()
             detection_classes = detections['detection_classes'][0].numpy()
-        else:
-            image_np = cv2.imread(filename)
-            height, width, n_channels = image_np.shape
-            image = image_np.copy()
-            image_np = image_np.reshape(1, height, width, n_channels).astype(np.uint8)
-            results = self.model(image_np)
+        else:'''
+        image_np = cv2.imread(filename)
+        height, width, n_channels = image_np.shape
+        image = image_np.copy()
+        image_np = image_np.reshape(1, height, width, n_channels).astype(np.uint8)
+        input_tensor = tf.convert_to_tensor(image_np, dtype=tf.float32)
+        results = self.model(input_tensor)
 
-            detection_boxes = results['detection_boxes'][0].numpy()
-            detection_scores = results['detection_scores'][0].numpy()
-            detection_classes = results['detection_classes'][0].numpy()
+        detection_boxes = results['detection_boxes'][0].numpy()
+        detection_scores = results['detection_scores'][0].numpy()
+        detection_classes = results['detection_classes'][0].numpy()
 
         idx = tf.image.non_max_suppression(
-                    detection_boxes, detection_scores, 50, iou_thres=self.iou_thres,
+                    detection_boxes, detection_scores, 50, iou_threshold=self.iou_thres,
                     score_threshold=float('-inf'), name=None)
         
         detection_classes = detection_classes[idx.numpy()]
