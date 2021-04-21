@@ -94,84 +94,99 @@ Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-vi
 
 Quantitative results obtained after applying MTSC Tracking on those detections obtained after evaluate the model trained.
 
+#### YoloV3:
+
 <table>
     <thead>
         <tr>
-            <th>Network</th>
-            <th>Framework</th>
-            <th>mIoU</th>
-            <th>mAP50</th>
-            <th>mAP70</th>
+            <th colspan=7>IDF1 S01</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td>Yolo V3 640x640</td>
-            <td rowspan=3>&nbsp;Ultralytics</td>
-            <td>0.7456</td>
-            <td>0.5247</td>
-            <td>0.5188</td>
+            <td>Technique</td>
+            <td>c001</td>
+            <td>c002</td>
+            <td>c003</td>
+            <td>c004</td>
+            <td>c005</td>
+            <td>Average</td>
         </tr>
         <tr>
-            <td>Yolo V3 SPP 640x640</td>
-            <td>0.7262</td>
-            <td>0.5532</td>
-            <td>0.5339</td>
+            <td>Overlap</td>
+            <td>0.4459</td>
+            <td>0.5517</td>
+            <td>0.3785</td>
+            <td>0.4546</td>
+            <td>0.2141</td>
+            <td>0.4089</td>
         </tr>
         <tr>
-            <td>Yolo V3 Tiny 640x640</td>
-            <td>0.7476</td>
-            <td>0.5738</td>
-            <td>0.5409</td>
+            <td>Kalman</td>
+            <td>0.5623</td>
+            <td>0.6008</td>
+            <td>0.4422</td>
+            <td>0.5167</td>
+            <td>0.3100</td>
+            <td>0.4864</td>
         </tr>
         <tr>
-            <td>SSD MN V1 FPN 640x640</td>
-            <td rowspan=8>TensorFlow</td>
-            <td>0.3911</td>
-            <td>0.5782</td>
-            <td>0.5655</td>
+            <td>Overlap + OF</td>
+            <td>0.</td>
+            <td>0.</td>
+            <td>0.</td>
+            <td>0.</td>
+            <td>0.</td>
+            <td>0.</td>
+        </tr>
+    </tbody>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th colspan=8>IDF1 S03</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Technique</td>
+            <td>c010</td>
+            <td>c011</td>
+            <td>c012</td>
+            <td>c013</td>
+            <td>c014</td>
+            <td>c015</td>
+            <td>Average</td>
         </tr>
         <tr>
-            <td>SSD MN V2 FPNLite 640x640</td>
-            <td>0.3022</td>
-            <td>0.6152</td>
-            <td>0.5943</td>
+            <td>Overlap</td>
+            <td>0.9286</td>
+            <td>0.3987</td>
+            <td>0.3005</td>
+            <td>0.7671</td>
+            <td>0.5159</td>
+            <td>1.0000</td>
+            <td>0.6518</td>
         </tr>
         <tr>
-            <td>SSD RN101 V1 FPN 640x640</td>
-            <td>0.2267</td>
-            <td>0.3753</td>
-            <td>0.3687</td>
+            <td>Kalman</td>
+            <td>0.8150</td>
+            <td>0.4010</td>
+            <td>0.3325</td>
+            <td>0.7663</td>
+            <td>0.6692</td>
+            <td>1.0000</td>
+            <td>0.6640</td>
         </tr>
         <tr>
-            <td>SSD RN152 V1 FPN 640x640</td>
-            <td>0.2365</td>
-            <td>0.4724</td>
-            <td>0.4683</td>
-        </tr>
-        <tr>
-            <td>EfficientDet D1 640x640</td>
-            <td>0.2184</td>
-            <td>0.4995</td>
-            <td>0.5069</td>
-        </tr>
-        <tr>
-            <td>FR-CNN RN101 V1 640x640</td>
-            <td>0.256</td>
-            <td>0.443</td>
-            <td>0.4366</td>
-        </tr>
-        <tr>
-            <td>CN RN101 V1 FPN 512x512</td>
-            <td>0.2412</td>
-            <td>0.4377</td>
-            <td>0.4254</td>
-        </tr>
-        <tr>
-            <td>MR-CNN Inception RN V2 1024x1024</td>
-            <td>0.2943</td>
-            <td>0.4405</td>
-            <td>0.4499</td>
+            <td>Overlap + OF</td>
+            <td>0.</td>
+            <td>0.</td>
+            <td>0.</td>
+            <td>0.</td>
+            <td>0.</td>
+            <td>0.</td>
         </tr>
     </tbody>
 </table>
