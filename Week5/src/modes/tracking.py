@@ -8,22 +8,31 @@ import pickle
 import time
 from tqdm import tqdm
 from .sort import Sort
-from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track
+import matplotlib.pyplot as plt
+from utils.utils import return_bb, str_frame_id, update_data, pol2cart, dict_to_list_track, write_png_flow, read_kitti_OF, compute_centroid
 from utils.metrics import compute_iou, interpolate_bb, compute_dist_matrix, compute_iou
 from .optical_flow import block_matching, MaskFlownetOF
-#from AIC2018.ReID.Post_tracking import parse_tracks, filter_tracks, extract_images
+from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
 #import pyflow.pyflow as pyflow
+
+#otherwise it needs more than 4gbs to startup the model
+os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 
 import matplotlib.pyplot as plt
 
-#from AIC2018.Tracking.ioutracker.iou_tracker import track_iou
 
-def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True, remove_noise = True):
-
+def compute_tracking_overlapping(det_bboxes, frames_paths, threshold = 0.5, interpolate = True, remove_noise = True, flow_method = 'mask_flownet', save_img = True, remove_parked = True, cam = ''):
+    #if cam not in ['c013']:
+     #   return det_bboxes
     id_seq = {}
 
     start_frame = int(min(det_bboxes.keys()))
-    num_frames = int(max(det_bboxes.keys())) - start_frame + 1
+
+    if flow_method == 'mask_flownet':
+        flownet = MaskFlownetOF()
+        if save_img:
+            path = os.path.join('../outputs/flow', flow_method, cam)
+            os.makedirs(path, exist_ok=True)
 
     #init the tracking by using the first frame which has at least one detection
     first_det_frame = start_frame
@@ -40,17 +49,64 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True
     for idx_frame, _ in tqdm(det_bboxes.items(),'Frames Overlapping Tracking'):
         id_seq = {obj_id: False for obj_id in id_seq}
         i = int(idx_frame)       
-        if str_frame_id(int(idx_frame)+1) in det_bboxes.keys():
+        if str_frame_id(int(idx_frame)+1) in det_bboxes.keys() and len([det for det in det_bboxes[str_frame_id(int(idx_frame)+1)] if det['parked'] == False])>0:
+            #load frames for OF computation
+            if flow_method == 'mask_flownet':
+                img1 = cv2.imread(frames_paths[i])
+                img2 = cv2.imread(frames_paths[i+1])  
+
+                scale_percent = 50 # percent of original size
+                width = int(img1.shape[1] * scale_percent / 100)
+                height = int(img1.shape[0] * scale_percent / 100)
+                dim = (width, height)
+                img1 = cv2.resize(img1, dim, interpolation = cv2.INTER_AREA)
+                img2 = cv2.resize(img2, dim, interpolation = cv2.INTER_AREA)
+               
+                if os.path.isfile(os.path.join(path, 'flow_' + str(i) +'.png')):
+                   
+                    flow = read_kitti_OF(os.path.join(path, 'flow_' + str(i) +'.png'))
+               
+                else:
+                    flow = flownet.get_optical_flow(img1, img2)    
+                    
+                    scale_percent = 200 # percent of original size
+                    width = int(flow.shape[1] * scale_percent / 100)
+                    height = int(flow.shape[0] * scale_percent / 100)
+                    dim = (width, height)
+                    flow = cv2.resize(flow, dim, interpolation = cv2.INTER_AREA)
+
+                    write_png_flow(flow, os.path.join(path, 'flow_' + str(i) +'.png'))
+
+                u = flow[:,:,0]      
+                v = flow[:,:,1]      
+
             for detection in det_bboxes[str_frame_id(int(idx_frame)+1)]:
-                if not detection['parked']:
+                if not detection['parked'] and detection['bbox'] != [-1.0, -1.0, -1.0, -1.0]:
                     active_frame = i 
-                    bbox_matched = False
+                    bbox_matched = False     
+                    if flow_method == 'mask_flownet':
+                        OF_x = u[int(detection['bbox'][1]):int(detection['bbox'][3]),int(detection['bbox'][0]):int(detection['bbox'][2])]
+                        OF_y = v[int(detection['bbox'][1]):int(detection['bbox'][3]),int(detection['bbox'][0]):int(detection['bbox'][2])]
+
+                        mag, ang = cv2.cartToPolar(OF_x.astype(np.float32), OF_y.astype(np.float32))
+                        #keep the values which is found the most for mag and ang
+                        uniques, counts = np.unique(mag, return_counts=True)
+                        mc_mag = uniques[counts.argmax()]
+                        uniques, counts = np.unique(ang, return_counts=True)
+                        mc_ang = uniques[counts.argmax()]
+                        x, y = pol2cart(mc_mag, mc_ang)
+
+                        OF_bbox = [detection['bbox'][0]-x, detection['bbox'][1]-y, 
+                                    detection['bbox'][2]-x, detection['bbox'][3]-y]
+                    else: 
+                        OF_bbox = detection['bbox'].copy()                
+                    
                     #if there is no good match on previous frame, check n-1 up to n=5
                     while (bbox_matched == False) and (active_frame >= start_frame) and ((i - active_frame)<5):
                         candidates_bbox = [candidate['bbox'] for candidate in det_bboxes[str_frame_id(active_frame)] if candidate['parked']==False]
                         #compare with detections in previous frame
                         if len(candidates_bbox) > 0:
-                            iou = compute_iou(np.array(candidates_bbox), np.array(detection['bbox']))
+                            iou = compute_iou(np.array(candidates_bbox), np.array(OF_bbox))
                         else:
                             iou = 0
                         while np.max(iou) > threshold:
@@ -86,8 +142,8 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True
         id_ocurrence = {}
         # Count ocurrences
         for idx_frame, detections in det_bboxes.items():
-            if not detection['parked']:
-                for detection in detections:
+            for detection in detections:
+                if not detection['parked']:
                     obj_id = detection['obj_id']
                     if obj_id in id_ocurrence:
                         id_ocurrence[obj_id] += 1
@@ -99,6 +155,34 @@ def compute_tracking_overlapping(det_bboxes, threshold = 0.5, interpolate = True
             for idx_bb, detection in enumerate(detections):
                 if detection['obj_id'] in ids_to_remove and not detection['parked']:
                     det_bboxes[idx_frame].pop(idx_bb)
+    # remove cars which do not move much on its trajectory
+    # compute frame history per id
+    if remove_parked:
+        id_ocurrence = {}
+        # Count ocurrences
+        for idx_frame, detections in det_bboxes.items():
+            for detection in detections:
+                if not detection['parked']:
+                    obj_id = detection['obj_id']
+                    if obj_id in id_ocurrence:
+                        id_ocurrence[obj_id].append(idx_frame)
+                    else:
+                        id_ocurrence[obj_id] = [idx_frame]
+        # Compute BB displacement from first to last frame
+        id_distance = {}
+        for det_id, frames in id_ocurrence.items():
+            first_frame = frames[0]
+            last_frame = frames[-1]
+            first_bb = return_bb(det_bboxes,int(first_frame), int(det_id)) 
+            last_bb = return_bb(det_bboxes,int(last_frame), int(det_id)) 
+            distance = np.sum(np.array((np.array(compute_centroid(first_bb)) - np.array(compute_centroid(last_bb))))**2)
+            id_distance.update({det_id: distance})
+        # revemo ids with distances below the threshold 
+        ids_to_remove = [id_obj for id_obj in id_distance if id_distance[id_obj]<150]
+        for idx_frame, detections in det_bboxes.items():
+            for idx_bb, detection in enumerate(detections):
+                if detection['obj_id'] in ids_to_remove and not detection['parked']:
+                    det_bboxes[idx_frame][idx_bb]['parked'] = True
 
     return det_bboxes
 
@@ -146,31 +230,6 @@ def compute_tracking_iou(det_bboxes,cam, path):
     for detection in det_bboxes.values():
         list_det_bboxes.append(detection)
 
-    tracking_dict = track_iou(list_det_bboxes, 0.2, 0.7, 0.5, 1, cam, path)
+    tracking_dict = track_iou(list_det_bboxes, 0.2, 0.7, 0.5, 1, cam=cam, path=path)
 
     return tracking_dict
-
-def compute_multitracking(args):
-    
-    # Read tracks
-    tracks = parse_tracks(args.tracking_csv)
-
-    # Filter tracks
-    tracks = filter_tracks(tracks, args.size_th, args.mask)
-   
-    # Extract images
-    # tracks = extract_images(tracks, args.video, args.size_th, args.dist_th, args.mask, args.img_dir)
-    
-    if tracks is None: 
-        sys.exit()
-    
-    # Save track obj
-    os.system('mkdir -p %s' % args.output)
-    file_name = args.video.split('/')[-1].split('.')[0]
-    with open(os.path.join(args.output, '%s.pkl'%file_name), 'wb') as f:
-        pickle.dump(tracks, f, protocol=pickle.HIGHEST_PROTOCOL)
-    dets = []
-    for t in tracks:
-        dets.append(t.dump())
-    dets = np.concatenate(dets, axis=0)
-    np.savetxt(os.path.join(args.output, '%s.csv'%file_name), dets, delimiter=',', fmt='%f')

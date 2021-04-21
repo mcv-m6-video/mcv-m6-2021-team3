@@ -1,4 +1,5 @@
 import os
+from os.path import join, dirname
 import numpy as np
 import sys
 from tqdm import tqdm
@@ -434,7 +435,7 @@ def cost_between_gt_pred(groundtruth, prediction, threshold):
 
 def compute_dist_matrix(det_bboxes,gt_bboxes,image_path = None,thr = 0.3, matching_mode = 'iou'):
     if matching_mode in 'cnn':
-        matcher = CNNFeatureExtractor(device='cpu')
+        matcher = CNNFeatureExtractor(device='gpu')
 
     dist_mat = []
     for detection in det_bboxes:
@@ -447,9 +448,9 @@ def compute_dist_matrix(det_bboxes,gt_bboxes,image_path = None,thr = 0.3, matchi
                 else:
                     gt_det.append(np.NaN)
             elif matching_mode in 'cnn':
-                feature_det = get_image_features(image_path,detection)
-                feature_gt = get_image_features(image_path,gt)
-                dist = get_feature_distance(feature_det, feature_gt)
+                feature_det = matcher.get_image_features(image_path,detection['bbox'])
+                feature_gt = matcher.get_image_features(image_path,gt['bbox'])
+                (dist,thr) = matcher.get_feature_distance(feature_det, feature_gt)
                 
                 if dist < thr:
                     gt_det.append(dist)
@@ -460,15 +461,15 @@ def compute_dist_matrix(det_bboxes,gt_bboxes,image_path = None,thr = 0.3, matchi
 
     return dist_mat
 
-def compute_IDmetrics(gt_bboxes,det_bboxes,acc):
+def compute_IDmetrics(gt_bboxes,det_bboxes,acc,path):
 
     for frame_id, gt_data in tqdm(gt_bboxes.items(),'Defining accumulator for ID metrics'):
         dists=[]
         det_ids=[]
-        if frame_id in det_bboxes.keys():
+        if frame_id in det_bboxes.keys():            
             det_data = [det for det in det_bboxes[frame_id] if not det['parked']]
 
-            dists = compute_dist_matrix(det_data, gt_data)
+            dists = compute_dist_matrix(det_data, gt_data, join(dirname(path),frame_id+'.jpg'))
             det_ids = [det['obj_id'] for det in det_data]
             
         gt_ids = [gt['obj_id'] for gt in gt_data]

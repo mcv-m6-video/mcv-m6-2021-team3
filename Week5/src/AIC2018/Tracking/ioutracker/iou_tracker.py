@@ -5,12 +5,12 @@
 # Written by Erik Bochinski
 # ---------------------------------------------------------
 
-
+import os
 from time import time
 from .util import iou, load_mot, save_to_csv
 from progressbar import ProgressBar
 
-def track_iou(detections, sigma_l, sigma_h, sigma_iou, t_min, cam, path):
+def track_iou(detections, sigma_l, sigma_h, sigma_iou, t_min, cam=None, path=None):
     """
     Simple IOU based tracker.
     See "High-Speed Tracking-by-Detection Without Using Image Information by E. Bochinski, V. Eiselein, T. Sikora" for
@@ -62,7 +62,10 @@ def track_iou(detections, sigma_l, sigma_h, sigma_iou, t_min, cam, path):
     tracks_finished += [track for track in tracks_active
                         if track['max_score'] >= sigma_h and len(track['bboxes']) >= t_min]
     
-    save_to_csv(path+'/'+cam+'.csv', tracks_finished)
+    if cam is not None:
+        save_to_csv(os.path.join(path, 'csv', cam + '.csv'), tracks_finished)
+    else:
+        save_to_csv(os.path.join(path, 'csv', 'track_iou.csv'), tracks_finished)
 
     return tracks_finished
 

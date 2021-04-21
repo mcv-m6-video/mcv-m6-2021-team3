@@ -11,6 +11,7 @@ import cv2
 import png
 import yaml
 import subprocess
+from imageio import imread
 from termcolor import colored
 from numpngw import write_png
 from scipy import ndimage
@@ -21,23 +22,10 @@ def read_kitti_OF(flow_file):
     :param flow_file: name of the flow file
     :return: optical flow data in matrix
     """
-    
-    flow_object = png.Reader(filename=flow_file)
-    flow_direct = flow_object.asDirect()
-    flow_data = list(flow_direct[2])
-    (w, h) = flow_direct[3]['size']
-    print("Reading %d x %d flow file in .png format" % (h, w))
-    flow = np.zeros((h, w, 3), dtype=np.float64)
-
-    for i in range(len(flow_data)):
-        flow[i, :, 0] = flow_data[i][0::3]
-        flow[i, :, 1] = flow_data[i][1::3]
-        flow[i, :, 2] = flow_data[i][2::3]
-
-    invalid_idx = (flow[:, :, 2] == 0)
-    flow[:, :, 0:2] = (flow[:, :, 0:2] - 2 ** 15) / 64.0
-    flow[invalid_idx, 0] = 0
-    flow[invalid_idx, 1] = 0
+    flow = cv2.imread(flow_file, cv2.IMREAD_UNCHANGED)
+    flow = flow[:,:,::-1].astype(np.float64)
+    flow = flow[:,:,:2]
+    flow = (flow - 2**15) / 64.0
 
     return flow
 
@@ -158,8 +146,21 @@ def dict_to_array(data):
 
     for frame_id, frame in data.items():
         for detect in frame:
-            idf1_list.append([float(frame_id),float(detect['obj_id']),float(detect['bbox'][0]),float(detect['bbox'][1]),float(detect['bbox'][2]), float(detect['bbox'][3]),float(detect['confidence'])])
+            if not detect['parked']:
+                idf1_list.append([float(frame_id),float(detect['obj_id']),float(detect['bbox'][0]),float(detect['bbox'][1]),float(detect['bbox'][2]), float(detect['bbox'][3]),float(detect['confidence'])])
     return np.array(idf1_list)
+
+def array_to_dict(array):
+    """
+    Transform a list into a dict with the format needed in the pipeline
+    :param data: list with the information needed to create the dict
+    :return: return the dict created
+    """
+    dets = {}
+    for det in array:
+        dets = update_data(dets,det[0], *det[2:], det[1])
+    return dets
+    
 
 def dict_to_list_track(frame_info):
     """
@@ -279,12 +280,14 @@ def update_data(annot, frame_id, xmin, ymin, xmax, ymax, conf, obj_id=0, parked=
 
     return annot
 
-def match_trajectories(det_bboxes, matches):
+def match_trajectories(det_bboxes, matches, in_out_ids):
     """
     Match ids between gt and predictions.
     """
+    map_cam1 = {i:obj_id for i, obj_id in enumerate(in_out_ids[0])}
+    map_cam2 = {i:obj_id for i, obj_id in enumerate(in_out_ids[1])}
     for matched in zip(*matches):
-        det_bboxes[np.where(det_bboxes[:,1] == matched[1]),1]=matched[0]
+        det_bboxes[np.where(det_bboxes[:,1] == map_cam2[matched[1]]),1]=map_cam1[matched[0]]
     return det_bboxes
 
 def compute_centroid(bb, resize_factor=1):
@@ -335,3 +338,39 @@ def filter_static(det_bboxes, hist, max_age):
                   for i in range(n_dets)]
     
     return
+
+def color_hist(img_path, boxes, COLOR_SPACES, COLOR_RANGES, bins=25):
+
+    img = cv2.imread(img_path)
+
+    hist = np.empty([boxes.shape[0],len(COLOR_SPACES),bins,3])
+    for i, (color_space, color_range) in enumerate(zip(COLOR_SPACES, COLOR_RANGES)):
+
+        img_col = cv2.cvtColor(img, eval(color_space))
+        
+        for b, box in enumerate(boxes):
+            img_box = img_col[box[1]:box[3],box[0]:box[2]]
+            for c, c_r in enumerate(color_range):
+                hist_c = cv2.calcHist([img_box],[c],None,[bins],c_r) #int((c_r[1]-c_r[0])*.1)
+                hist[b,i,:,c] = cv2.normalize(hist_c, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX).squeeze()
+
+    return hist
+
+def read_txt_to_dict(txtpath):
+    multitrack = {'c010':{},'c011':{},'c012':{},'c013':{},'c014':{},'c015':{}} 
+
+    with open(txtpath, 'r') as fp:
+        lines = fp.readlines()
+        for line in lines:
+            l = line.split(' ')
+            cam = 'c0' + l[0]
+            frame_id = int(l[2])
+            xmin = int(l[3])
+            ymin = int(l[4])
+            xmax = xmin + int(l[5])
+            ymax = ymin + int(l[6])
+            conf = -1
+            obj_id = int(l[1])
+            multitrack[cam] = update_data(multitrack[cam],frame_id,xmin,ymin,xmax,ymax,conf,obj_id)
+
+    return multitrack

@@ -21,7 +21,7 @@ import time
 
 import tensorflow as tf
 from datasets.load_seq import LoadSeq
-#from modes.ultralytics_yolo import UltralyricsYolo
+from modes.ultralytics_yolo import UltralyricsYolo
 from utils.utils import write_json_file, read_json_file, write_yaml_file
 
 class AICity:
@@ -67,13 +67,15 @@ class AICity:
         self.seq_test = args.seq_test
 
         self.tracking_mode = args.tracking_mode
+        self.multitracking = args.multitracking
+        self.OF_mode = args.OF_mode
 
         # LOAD SEQUENCE
         self.sequences = {}
         for seq in os.listdir(self.data_path):
             if '.' not in seq[0]:
                 det_name = '_'.join((self.model, self.framework+'.json'))
-                self.sequences.update({seq:LoadSeq(self.data_path, seq, self.output_path, self.tracking_mode, det_name, det_params=self.det_params)})
+                self.sequences.update({seq:LoadSeq(self.data_path, seq, self.output_path, self.tracking_mode, det_name, self.OF_mode, det_params=self.det_params)})
         
     def __len__(self):
         return len(self.sequences)
@@ -149,7 +151,7 @@ class AICity:
 
     def track(self, seqs):
         for seq in seqs:
-            self.sequences[seq].tracking()
+            self.sequences[seq].tracking(self.multitracking)
             #self.sequences[seq].visualize()
             
 
