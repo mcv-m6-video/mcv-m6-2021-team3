@@ -491,10 +491,6 @@ Quantitative results obtained after applying MTMC Tracking on those detections o
 <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/aad7c559e713213e909fef2b60c4fa4a4a4645b4/Week5/MTMC.png" width="700" align="center">
 
 
-| Parameters| Interpolation = Off  Denoise = Off | Interpolation = True  Denoise = Off | Interpolation = Off  Denoise = True | Interpolation = True Denoise = True |
-| :---: | :---: | :---: | :---: | :---: |
-| IDF1 | 61.22 | 61.67 | 61.81 | 63.61 | 
-
 <p align="center">
 <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/4c2e0306c7a1e52557fe0b9abf984e0885bd8eef/Week3/m6w3.gif" width="700">
 </p>
