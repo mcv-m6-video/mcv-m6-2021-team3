@@ -341,7 +341,7 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
 </table>
 
 
-<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/af963ca82b75a6332d701df067bba98a36594f96/Week3/Task11.jpg" width="700">
+<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/aad7c559e713213e909fef2b60c4fa4a4a4645b4/Week5/MTSC_agvYolo.png" width="700" align="center">
 
 ### Task 2: Multi-Target Multi-Camera (MTMC) Tracking
 
@@ -488,7 +488,7 @@ Quantitative results obtained after applying MTMC Tracking on those detections o
     </tbody>
 </table>
 
-<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/aad7c559e713213e909fef2b60c4fa4a4a4645b4/Week5/MTMC.png" width="700">
+<img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/aad7c559e713213e909fef2b60c4fa4a4a4645b4/Week5/MTMC.png" width="700" align="center">
 
 
 | Parameters| Interpolation = Off  Denoise = Off | Interpolation = True  Denoise = Off | Interpolation = Off  Denoise = True | Interpolation = True Denoise = True |
