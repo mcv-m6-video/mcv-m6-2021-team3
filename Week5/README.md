@@ -114,30 +114,30 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
         </tr>
         <tr>
             <td>Overlap</td>
-            <td>0.4459</td>
-            <td>0.5517</td>
-            <td>0.3785</td>
-            <td>0.4546</td>
-            <td>0.2141</td>
-            <td>0.4089</td>
+            <td>0.4595</td>
+            <td>0.5708</td>
+            <td>0.3839</td>
+            <td>0.4746</td>
+            <td>0.2596</td>
+            <td>0.4297</td>
         </tr>
         <tr>
             <td>Kalman</td>
-            <td>0.5623</td>
+            <td>0.5952</td>
             <td>0.6008</td>
-            <td>0.4422</td>
+            <td>0.4763</td>
             <td>0.5167</td>
-            <td>0.3100</td>
-            <td>0.4864</td>
+            <td>0.3546</td>
+            <td>0.5087</td>
         </tr>
         <tr>
             <td>Overlap + OF</td>
-            <td>0.</td>
-            <td>0.</td>
-            <td>0.</td>
-            <td>0.</td>
-            <td>0.</td>
-            <td>0.</td>
+            <td>0.4017</td>
+            <td>0.5790</td>
+            <td>0.3842</td>
+            <td>0.4745</td>
+            <td>0.2587</td>
+            <td>0.4196</td>
         </tr>
     </tbody>
 </table>
@@ -161,32 +161,33 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
         </tr>
         <tr>
             <td>Overlap</td>
-            <td>0.9286</td>
-            <td>0.3987</td>
-            <td>0.3005</td>
-            <td>0.7671</td>
-            <td>0.5159</td>
+            <td>0.9391</td>
+            <td>0.7990</td>
+            <td>0.3185</td>
+            <td>0.7742</td>
+            <td>0.5632</td>
             <td>1.0000</td>
-            <td>0.6518</td>
+            <td>0.7323</td>
         </tr>
         <tr>
             <td>Kalman</td>
-            <td>0.8150</td>
-            <td>0.4010</td>
-            <td>0.3325</td>
-            <td>0.7663</td>
-            <td>0.6692</td>
+            <td>0.8236</td>
+            <td>0.7347</td>
+            <td>0.3536</td>
+            <td>0.7708</td>
+            <td>0.6988</td>
             <td>1.0000</td>
-            <td>0.6640</td>
+            <td>0.7303</td>
         </tr>
         <tr>
             <td>Overlap + OF</td>
-            <td>0.</td>
-            <td>0.</td>
-            <td>0.</td>
-            <td>0.</td>
-            <td>0.</td>
-            <td>0.</td>
+            <td>0.9400</td>
+            <td>0.7985</td>
+            <td>0.3320</td>
+            <td>0.7743</td>
+            <td>0.5632</td>
+            <td>1.0000</td>
+            <td>0.7347</td>
         </tr>
     </tbody>
 </table>
