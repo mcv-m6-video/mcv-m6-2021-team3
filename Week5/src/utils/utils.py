@@ -312,19 +312,12 @@ def dist_to_roi(mask_path):
 def filter_by_roi(det_bboxes, roi_dist, th=100):
     # Filter by proximity to roi area
     for frame_id, obj in det_bboxes.items():
-        #new_obj = []
         for i, det in enumerate(obj):
-            #xmin,ymin,xmax,ymax = det['bbox']
-            #dist = np.min([roi_dist[int(y),int(x)] for x,y in [(xmin,ymin),(xmin,ymax),(xmax,ymin),(xmax,ymax)]])
-            #if dist > th:
             centroid = compute_centroid(det['bbox'])
             if roi_dist[centroid[1],centroid[0]]>th:
                 det_bboxes[frame_id][i].update({'parked':False})
             else:
                 det_bboxes[frame_id][i].update({'parked':True})
-                #det.update({'parked':False})
-                #new_obj.append(det)
-        #det_bboxes[frame_id] = new_obj.copy()
 
     return det_bboxes
 
