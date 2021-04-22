@@ -30,4 +30,4 @@ $ pip install -r requirements.txt
 
 ## Report 
 
-[The final report](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/1cb6c8ea16e51618c0bbf8a53c3dd27f417ac8fa/G3%20-%20Final%20Presentation.pdf)
+The final report is [here](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/1cb6c8ea16e51618c0bbf8a53c3dd27f417ac8fa/G3%20-%20Final%20Presentation.pdf)
