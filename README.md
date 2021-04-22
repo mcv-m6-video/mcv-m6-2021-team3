@@ -27,3 +27,7 @@ $ pip install -r requirements.txt
 ### [Week 4: Optical Flow: Stabilization and Tracking](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week4)
 
 ### [Week 5: Multi-Target Multi-Camera Tracking](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5)
+
+## Report 
+
+[The final report](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/1cb6c8ea16e51618c0bbf8a53c3dd27f417ac8fa/G3%20-%20Final%20Presentation.pdf)
