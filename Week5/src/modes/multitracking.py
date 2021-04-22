@@ -248,15 +248,15 @@ def hist_multitracking(det_bboxes, frames_path, opts):
         # LDA or PCA to visualize
         if opts.vis_cluster:
             lda = LDA()
-            data_ = lda.fit_transform(data[:,c,:],labels_)
+            data_ = lda.fit_transform(data[:,c,:],labels)
 
             #pca = PCA(3) 
             #data_ = pca.fit_transform(data[:,c,:])
 
-            fig = plt.figure()
+            fig = plt.figure(figsize=(6,5))
             ax = fig.add_subplot(projection='3d')
-            ax.scatter(data_[:,0],data_[:,1],data_[:,2],c=labels[c])
-            plt.show()
+            ax.scatter(data_[:,0],data_[:,1],data_[:,2],c=labels)
+            plt.savefig(hist_file.replace('json','png'))
         
         # Split results per camera
         res_ids = [labels[np.where(cam_id==i)[0]] for i in np.unique(cam_id)]
