@@ -340,8 +340,12 @@ Quantitative results obtained after applying MTSC Tracking on those detections o
     </tbody>
 </table>
 
-
 <img src="https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/aad7c559e713213e909fef2b60c4fa4a4a4645b4/Week5/MTSC_agvYolo.png" width="700" align="center">
+
+Some qualitative results are presented below:
+
+<img src="" width="700" align="center">
+
 
 ### Task 2: Multi-Target Multi-Camera (MTMC) Tracking
 
