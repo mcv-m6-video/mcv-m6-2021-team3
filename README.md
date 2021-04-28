@@ -29,5 +29,5 @@ $ pip install -r requirements.txt
 ### [Week 5: Multi-Target Multi-Camera Tracking](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week5)
 
 ## Report 
-
-The final report is [here](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/1cb6c8ea16e51618c0bbf8a53c3dd27f417ac8fa/G3%20-%20Final%20Presentation.pdf)
+Some sum up slides [here](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/1cb6c8ea16e51618c0bbf8a53c3dd27f417ac8fa/G3%20-%20Final%20Presentation.pdf).
+The final report is [here](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/c9f88cd5d132379f80375941c6de585f6b032416/M6_G3_FinalReport.pdf).
