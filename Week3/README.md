@@ -24,12 +24,12 @@ In this project the main goal was to get used to different background estimation
 * **Task 2.3**: IDF1 for Multiple Object Tracking
 
 
-Run the command below, from Week2/src folder, to obtain the desired task results.
+Run the command below, from Week3/src folder, to obtain the desired task results.
 
 ```bash
 $ python main.py 
 ```
-Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/blob/main/Week2/src/config/config.py)
+Any parameter could be modified in file [Config.py](https://github.com/mcv-m6-video/mcv-m6-2021-team3/tree/main/Week3/src/config/config.py)
 
 ### Directory structure
 
